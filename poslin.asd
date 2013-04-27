@@ -17,12 +17,16 @@
 	    :depends-on ("vars" "structures"))
      (:file "interpreter")
      (:file "new-poslin"
-	    :depends-on ("interpreter"))
+	    :depends-on ("vars" "structures" "interpreter"))
      ))
    (:module
     "poslin"
-    :depends-on ("package")
+    :depends-on ("package" "source")
     :components
-    (
+    ((:file "prims")
+     (:file "stdlib"
+	    :depends-on ("prims"))
+     (:file "poslin"
+	    :depends-on ("prims" "stdlib"))
      ))
    ))
