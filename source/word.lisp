@@ -14,7 +14,7 @@
 	    (if next
 		(lookup word next)))))))
 
-(defmacro defnprim (name &body body)
+(defmacro defnprim (name immediate? &body body)
   `(progn
      ,(if (member name *prims*
 		 :key #'car
@@ -22,25 +22,10 @@
 	 `(warn "Attempt to redefine Poslin prim ~A in ~A"
 		',name '(defnprim ,name ,@body)))
      (setf *prims*
-	   (nconc *prims* '((,name ,@body))))))
+	   (nconc *prims* '((,name ,immediate? ,@body))))))
 
-(defmacro defprim (name &body body)
-  `(defnprim ,name
-     (pop pc)
-     ,@body))
-
-(defmacro defnimmprim (name &body body)
-  `(progn
-     ,(if (member name *prims*
-		 :key #'car
-		 :test #'eq)
-	 `(warn "Attempt to redefine Poslin prim ~A in ~A"
-		',name '(defnprim ,name ,@body)))
-     (setf *imm-prims*
-	   (nconc *imm-prims* '((,name ,@body))))))
-
-(defmacro defimmprim (name &body body)
-  `(defnimmprim ,name
+(defmacro defprim (name immediate? &body body)
+  `(defnprim ,name ,immediate?
      (pop pc)
      ,@body))
 
@@ -50,7 +35,7 @@
 
 (defmacro def-n-ary (n &body ops)
   `(progn
-     ,@(mapcar #`(defprim ,a1
+     ,@(mapcar #`(defprim ,a1 nil
 		   (let ((args ()))
 		     ,@(loop for x
 			  below n

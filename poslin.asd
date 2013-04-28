@@ -18,6 +18,7 @@
      (:file "interpreter")
      (:file "new-poslin"
 	    :depends-on ("vars" "structures" "interpreter"))
+     (:file "inspect")
      ))
    (:module
     "poslin"

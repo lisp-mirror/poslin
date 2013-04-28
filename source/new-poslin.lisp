@@ -20,6 +20,7 @@
 
 (defmacro new-poslin ()
   `(alet ,+registers+
+     (setf dtable (make-hash-table :test #'eq))
      (setf path (list (make-stacktree :name 'root)))
      (install-prims)
      (dolist (v *stdlib*)
@@ -27,22 +28,26 @@
      (plambda (v)
 	 ,+registers+
        (poslin-handle)
-       (car (last path)))))
+       (values (curr)
+	       (car (last path))))))
 
 (defmacro poslin-handle ()
   `(cond
      ((and (symbolp v)
-	   (member (symbol-name v)
-		   (mapcar (lambda (prim)
-			     (symbol-name (car prim)))
-			   *imm-prims*)
-		   :test #'string=))
+	   (let ((found (lookup v path)))
+	     (if found
+		 (word-immediate found))))
       (call v))
      ((consp v)
-      (push-curr (if (eq (car v)
-			 'quote)
-		     (cadr v)
-		     (eval v))))
+      (if (eq (car v)
+	      'quote)
+	  (push-curr (cadr v))
+	  (if (eq (car v)
+		  'lisp)
+	      (push-curr (eval (cadr v)))
+	      (progn
+		(push v pc)
+		(interpreter)))))
      (t (push-curr v))))
 
 (defmacro! call (o!callable)
@@ -62,7 +67,12 @@
       (if (eq (car ,g!callable)
 	      'quote)
 	  (push-curr (cadr ,g!callable))
-	  (push-curr (eval ,g!callable))))
+	  (if (eq (car ,g!callable)
+		  'lisp)
+	      (push-curr (eval ,g!callable))
+	      (progn
+		(push ,g!callable pc)
+		(interpreter)))))
      (stacktree
       (push (stacktree->thread ,g!callable this)
 	    pc)
@@ -70,15 +80,19 @@
 
 (defmacro install-prims ()
   `(progn
-     ,@(mapcar #`(setf
-		  (stacktree-dict (curr))
-		  (make-word :name ',(car a1)
-			     :stack `(,(lambda ()
-					       ,@(cdr a1)))
-			     :thread (lambda ()
-				       ,@(cdr a1))
-			     :prev (stacktree-dict (curr))))
-	       (append *imm-prims* *prims*))))
+     ,@(mapcar #`(let ((thread (lambda ()
+				 ,@(cddr a1))))
+		   (setf
+		    (stacktree-dict (curr))
+		    (make-word :name ',(car a1)
+			       :stack `(,(lambda ()
+						 ,@(cddr a1)))
+			       :thread thread
+			       :prev (stacktree-dict (curr))
+			       :immediate ,(cadr a1)))
+		   (setf (gethash thread dtable)
+			 ',(car a1)))
+	       *prims*)))
 
 (defun stacktree->thread (stacktree poslin-env)
   (with-pandoric (pc path rstack)
@@ -112,14 +126,27 @@
 				"!"))
 		  (let ((callable (nth x (stacktree-stack
 					  stacktree))))
-		    (push x cut)
-		    (callable->function callable poslin-env)))
+		    (if (and (symbolp callable)
+			     (string= (symbol-name callable)
+				      "!"))
+			(word-thread (lookup '! path))
+			(progn
+			  (push x cut)
+			  (callable->thread callable poslin-env)))))
+		 ((and (symbolp v)
+		       (let ((found (lookup v path)))
+			 (and found (word-immediate found))))
+		  (word-thread (lookup v path)))
 		 ((consp v)
 		  (if (eq (car v)
 			  'quote)
 		      (cadr v)
-		      (lambda ()
-			(push-curr (eval v)))))
+		      (if (eq (car v)
+			      'lisp)
+			  (lambda ()
+			    (push-curr (eval v)))
+			  (lambda ()
+			    (push v pc)))))
 		 ((functionp v)
 		  (lambda ()
 		    (push-curr (funcall v))))
@@ -129,7 +156,7 @@
 	     (pop path)
 	     (setf pc (cdr pc)))))))
 
-(defun callable->function (callable poslin-env)
+(defun callable->thread (callable poslin-env)
   (with-pandoric (path)
       poslin-env
     (typecase callable
@@ -139,4 +166,5 @@
 		    (word-thread found)
 		    (error "Tried to call undefined word ~A"
 			   callable))))
-      (stacktree (stacktree->thread callable poslin-env)))))
+      (stacktree (stacktree->thread callable poslin-env))
+      (cons callable))))

@@ -5,12 +5,11 @@
 
 (defmethod print-object ((object stacktree)
 			 stream)
-  (format stream "#<ST ~A: |~{ ~A~} | c:~{ ~A~}
-     ~A>"
+  (format stream "#<ST ~A {~{ ~S~} } ~{ ~A~}>"
 	  (stacktree-name object)
 	  (stacktree-stack object)
-	  (stacktree-children object)
-	  (stacktree-dict object)))
+	  (mapcar #'stacktree-name
+		  (stacktree-children object))))
 
 (defun find-child (childname stacktree)
   (find childname (stacktree-children stacktree)
@@ -18,15 +17,4 @@
 	:test #'eq))
 
 (defstruct word
-  name stack thread prev)
-
-(defmethod print-object ((object word)
-			 stream)
-  (labels ((words (word acc)
-	     (if (not word)
-		 (nreverse acc)
-		 (words (word-prev word)
-			(cons (word-name word)
-			      acc)))))
-    (format stream "#<DICT~{ ~A~}>"
-	    (words object ()))))
+  name stack thread prev immediate)
