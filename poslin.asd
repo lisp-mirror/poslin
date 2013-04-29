@@ -4,30 +4,53 @@
   :description "Describe poslin here"
   :author "Thomas Bartscher <thomas.bartscher@gmail.com>"
   :license "EUPL V1.1"
-  :depends-on ("alexandria" "let-over-lambda")
+  :depends-on ("alexandria")
   :components
   ((:file "package")
    (:module
-    "source"
+    "utility"
     :depends-on ("package")
     :components
+    ((:file "symb")
+     (:file "sharp-backquote"
+	    :depends-on ("symb"))
+     (:file "defmacro!help")
+     (:file "defmacro!"
+	    :depends-on ("symb" "defmacro!help" "sharp-backquote"))
+     (:file "anaphora")
+     (:file "dlambda"
+	    :depends-on ("defmacro!" "sharp-backquote"))
+     (:file "plambda-help"
+	    :depends-on ("sharp-backquote"))
+     (:file "plambda"
+	    :depends-on ("plambda-help" "dlambda"))
+     ))
+   (:module
+    "source"
+    :depends-on ("package" "utility")
+    :components
     ((:file "vars")
-     (:file "structures")
-     (:file "word"
-	    :depends-on ("vars" "structures"))
-     (:file "interpreter")
+     (:file "convenience")
+     (:file "structure"
+	    :depends-on ("convenience"))
+     (:file "interpreter"
+	    :depends-on ("convenience"))
+     (:file "define"
+	    :depends-on ("vars"))
+     (:file "poslin-handle"
+	    :depends-on ("convenience" "interpreter"))
+     (:file "poslin")
+     (:file "prepare-poslin"
+	    :depends-on ("vars" "poslin"))
      (:file "new-poslin"
-	    :depends-on ("vars" "structures" "interpreter"))
-     (:file "inspect")
+	    :depends-on ("vars" "structure" "prepare-poslin"))
+     (:file "stack->thread"
+	    :depends-on ("structure"))
      ))
    (:module
     "poslin"
     :depends-on ("package" "source")
     :components
     ((:file "prims")
-     (:file "stdlib"
-	    :depends-on ("prims"))
-     (:file "poslin"
-	    :depends-on ("prims" "stdlib"))
      ))
    ))
