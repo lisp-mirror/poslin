@@ -29,28 +29,31 @@
     "source"
     :depends-on ("package" "utility")
     :components
-    ((:file "vars")
-     (:file "convenience")
-     (:file "structure"
-	    :depends-on ("convenience"))
+    ((:file "registers")
+     (:file "prims")
+     (:file "stdlib")
+     (:file "stack")
+     (:file "run-poslin")
+     (:file "conv"
+	    :depends-on ("stack"))
+     (:file "word"
+	    :depends-on ("conv"))
      (:file "interpreter"
-	    :depends-on ("convenience"))
-     (:file "define"
-	    :depends-on ("vars"))
-     (:file "poslin-handle"
-	    :depends-on ("convenience" "interpreter"))
-     (:file "poslin")
-     (:file "prepare-poslin"
-	    :depends-on ("vars" "poslin"))
-     (:file "new-poslin"
-	    :depends-on ("vars" "structure" "prepare-poslin"))
-     (:file "stack->thread"
-	    :depends-on ("structure"))
+	    :depends-on ("conv"))
+     (:file "prepare"
+	    :depends-on ("conv" "stack" "run-poslin"))
+     (:file "poslin-env"
+	    :depends-on ("registers" "conv" "word" "interpreter"
+				     "prepare"))
+     (:file "to-thread"
+	    :depends-on ("stack" "word"))
      ))
    (:module
     "poslin"
     :depends-on ("package" "source")
     :components
     ((:file "prims")
+     (:file "stdlib"
+	    :depends-on ("prims"))
      ))
    ))

@@ -1,11 +1,17 @@
 (in-package #:poslin)
 
-(setf *prims* '())
+(defparameter *prims*
+  '())
 
 (defprim ! t
-  (push (call->thread (pop-curr)
-		      this)
-	pc))
+  (push (callable->thread (pop-curr)
+			  this)
+	pc)
+  (interpreter))
+
+(defprim & t
+  (push-curr (cons 'thread (callable->thread (pop-curr)
+					     this))))
 
 (defprim [ t
   (push (make-stack)
@@ -13,51 +19,76 @@
 
 (defprim ] t
   (if (cdr path)
-      (progn
-	(push-par (curr))
-	(pop path))
-      (error "Tried to pop root stack")))
+      (push-curr (pop path))
+      (error "Tried to close root stack")))
 
-(defprim ]! t
-  (if (cdr path)
-      (progn
-	(push-par (stack->thread (curr)
-				 this))
-	(pop path))
-      (error "Tried to pop root stack")))
+(defprim << nil
+  (push (pop-curr)
+	out))
+
+(defprim || nil)
 
 (defprim % nil
-  (let ((name (pop-curr)))
-    (if (symbolp name)
-	(if (eq name '^)
-	    (push-curr (par))
-	    (aif (find name (stack-children (curr))
-		       :key #'stack-name
-		       :test #'eq)
-		 (progn
-		   (setf #1=(stack-content it)
-			 (append #1# (curr-stack)))
-		   (pop path)
-		   (push it path))
-		 (progn
-		   (setf (stack-name (curr))
-			 name)
-		   (push (curr)
-			 (stack-children (par))))))
-	(error "Tried to name a stack with a non-symbol"))))
+  (let ((curr (pop-curr)))
+    (if (stack-p curr)
+	(push curr path)
+	(error "Tried to open ~A"
+	       curr))))
 
-(defprim ~ nil
-  (let ((name (pop-curr)))
-    (if (symbolp name)
-	(if (eq '^ name)
-	    (push-curr (par))
-	    (aif (find name (stack-children (curr))
-		       :key #'stack-name
-		       :test #'eq)
-		 (push-curr it)
-		 (error "There is no child stack ~A of stack ~A"
-			name (stack-name (curr)))))
-	(error "~A is not a symbol and cannot be a stack name"
-	       name))))
+(defprim @ nil
+  (let ((val (pop-curr)))
+    (setf (gethash (pop-curr)
+		   (curr-dict))
+	  (if (and (consp val)
+		   (symbol= (car val)
+			    'thread))
+	      (cdr val)
+	      val))))
 
-;;; <- -> _ $ !* <> ^^ ~> [_] [%] [!] [?] & >r r> if
+(defprim _@ nil
+  (remhash (pop-curr)
+	   (curr-dict)))
+
+(defprim <> nil
+  (rotatef (car (curr-stack))
+	   (cadr (curr-stack))))
+
+(defprim -> nil
+  (push-curr (pop (stack-content (pop-curr)))))
+
+(defprim <- nil
+  (push (pop-curr)
+	(stack-content (car (curr-stack)))))
+
+(defprim _ nil
+  (pop-curr))
+
+(defprim ^ nil
+  (aif (nth (pop-curr)
+	    path)
+       (push-curr it)
+       (error "Tried to access stack above root")))
+
+(defprim @! t
+  (setf (gethash (pop-curr)
+		 (curr-imm))
+	t))
+
+(defprim @~ t
+  (setf (gethash (pop-curr)
+		 (curr-imm))
+	nil))
+
+(defprim @? t
+  (remhash (pop-curr)
+	   (curr-imm)))
+
+(defprim $ nil
+  (push-curr (car (curr-stack))))
+
+(defprim >> nil
+  (let ((eof (gensym "eof")))
+    (with-open-file (stream (pop-curr))
+      (do ((curr (read stream nil eof)))
+	  ((eq curr eof))
+	(funcall this curr)))))
