@@ -4,7 +4,7 @@
   `(if (symbolp v)
        (if (immediate? v)
 	   (progn
-	     (push (lookup v)
+	     (push (lookup-op v)
 		   pc)
 	     (interpreter))
 	   (push-curr v))

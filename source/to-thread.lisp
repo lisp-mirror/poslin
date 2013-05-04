@@ -10,7 +10,11 @@
 	  (typecase curr
 	    (symbol
 	     (if (immediate? curr)
-		 (lookup curr)
+		 (let ((thread (lookup-op curr)))
+		   (if (empty? thread)
+		       (error "Operation ~A not defined"
+			      curr)
+		       thread))
 		 curr))
 	    (cons
 	     (if (symbol= (car curr)
@@ -25,10 +29,11 @@
       env
     (typecase callable
       (symbol
-       (aif (lookup callable)
-	    it
-	    (error "Tried to call ~A, which is not defined."
-		   callable)))
+       (let ((thread (lookup-op callable)))
+	 (if (empty? thread)
+	     (error "Operation ~A not defined"
+		    thread)
+	     thread)))
       (cons
        (let ((id (car callable)))
 	 (cond

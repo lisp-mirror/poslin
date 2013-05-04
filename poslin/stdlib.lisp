@@ -1,24 +1,3 @@
 (in-package #:poslin)
 
-(defparameter *stdlib*
-  '())
-
-
-(addstd
-  !*
-  [ '& &
-    @ & ]
-  & @ !
-  !* @!)
-
-(addstd
-  ]*
-  [ '] &
-    '!* & ]
-  !* ]* @!)
-
-(addstd
-  <>>
-  [ $ &
-    -> &
-    <> & ]*)
+(defparameter *stdlib* '())

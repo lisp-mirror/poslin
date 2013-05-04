@@ -37,7 +37,7 @@
      (:file "conv"
 	    :depends-on ("stack"))
      (:file "word"
-	    :depends-on ("conv"))
+	    :depends-on ("stack" "conv"))
      (:file "interpreter"
 	    :depends-on ("conv"))
      (:file "prepare"

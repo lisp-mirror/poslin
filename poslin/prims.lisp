@@ -1,7 +1,6 @@
 (in-package #:poslin)
 
-(defparameter *prims*
-  '())
+(defparameter *prims* '())
 
 (defprim ! t
   (push (callable->thread (pop-curr)
@@ -10,48 +9,65 @@
   (interpreter))
 
 (defprim & t
-  (push-curr (cons 'thread (callable->thread (pop-curr)
-					     this))))
+  (push-curr (callable->thread (pop-curr)
+			       this)))
+
+(defprim @ nil
+  (let ((thread (callable->thread (pop-curr)
+				  this)))
+    (setf (lookup-op (pop-curr))
+	  thread)))
+
+(defprim @_ nil
+  (remhash (pop-curr)
+	   (curr-opdefs)))
 
 (defprim [ t
-  (push (make-stack)
+  (push (make-stack :vars (make-var-env :par (curr-var-env))
+		    :ops (make-op-env :par (curr-op-env)))
 	path))
 
 (defprim ] t
   (if (cdr path)
       (push-curr (pop path))
-      (error "Tried to close root stack")))
+      (error "Attempt to pop root stack")))
 
-(defprim << nil
-  (push (pop-curr)
-	out))
+(defprim @! nil
+  (setf (immediate? (pop-curr))
+	t))
 
-(defprim || nil)
+(defprim @~ nil
+  (setf (immediate? (pop-curr))
+	nil))
 
-(defprim % nil
-  (let ((curr (pop-curr)))
-    (if (stack-p curr)
-	(push curr path)
-	(error "Tried to open ~A"
-	       curr))))
-
-(defprim @ nil
-  (let ((val (pop-curr)))
-    (setf (gethash (pop-curr)
-		   (curr-dict))
-	  (if (and (consp val)
-		   (symbol= (car val)
-			    'thread))
-	      (cdr val)
-	      val))))
-
-(defprim _@ nil
+(defprim @? nil
   (remhash (pop-curr)
-	   (curr-dict)))
+	   (curr-imm)))
+
+(defprim § nil
+  (let* ((var (pop-curr))
+	 (val (lookup-var var)))
+    (if (empty? val)
+	(error "Variable ~A not set"
+	       var)
+	(push-curr val))))
+
+(defprim §_ nil
+  (remhash (pop-curr)
+	   (curr-vardefs)))
+
+(defprim [% t
+  (let ((stack (pop-curr)))
+    (if (stack-p stack)
+	(push stack path)
+	(error "Tried to enter ~A"
+	       stack))))
 
 (defprim <> nil
-  (rotatef (car (curr-stack))
-	   (cadr (curr-stack))))
+  (if (cdr (curr-stack))
+      (rotatef (car (curr-stack))
+	       (cadr (curr-stack)))
+      (error "Tried to swap with bottom")))
 
 (defprim -> nil
   (push-curr (pop (stack-content (pop-curr)))))
@@ -64,27 +80,16 @@
   (pop-curr))
 
 (defprim ^ nil
-  (aif (nth (pop-curr)
-	    path)
-       (push-curr it)
-       (error "Tried to access stack above root")))
-
-(defprim @! t
-  (setf (gethash (pop-curr)
-		 (curr-imm))
-	t))
-
-(defprim @~ t
-  (setf (gethash (pop-curr)
-		 (curr-imm))
-	nil))
-
-(defprim @? t
-  (remhash (pop-curr)
-	   (curr-imm)))
+  (let ((n (pop-curr)))
+    (aif (nth n path)
+	 (push-curr it)
+	 (error "Poslin path is smaller than ~A"
+		n))))
 
 (defprim $ nil
-  (push-curr (car (curr-stack))))
+  (if (curr-stack)
+      (push-curr (car (curr-stack)))
+      (error "No item on stack to duplicate")))
 
 (defprim >> nil
   (let ((eof (gensym "eof")))
@@ -92,3 +97,14 @@
       (do ((curr (read stream nil eof)))
 	  ((eq curr eof))
 	(funcall this curr)))))
+
+(defprim << nil
+  (push (pop-curr)
+	out))
+
+(defprim >r nil
+  (push (pop-curr)
+	rstack))
+
+(defprim r> nil
+  (push-curr (pop rstack)))
