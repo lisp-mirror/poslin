@@ -9,9 +9,8 @@
 	     (interpreter))
 	   (push-curr v))
        (if (and (consp v)
-		(let ((id (car v)))
-		  (symbolp id)
-		  (symbol= id 'quote)))
+		(string= (car v)
+			 'quote))
 	   (push-curr (cadr v))
 	   (push-curr v))))
 

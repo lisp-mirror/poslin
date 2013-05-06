@@ -2,7 +2,7 @@
 
 (defun stack->thread (stack env)
   (nreverse
-   (with-pandoric (path)
+   (with-pandoric (path pc)
        env
      (loop for curr
 	in (stack-content stack)
@@ -21,7 +21,8 @@
 			  'thread)
 		 (cdr curr)
 		 (lambda ()
-		   curr)))
+		   (pop pc)
+		   (push-curr curr))))
 	    (t curr))))))
 
 (defun callable->thread (callable env)
@@ -35,21 +36,27 @@
 		    thread)
 	     thread)))
       (cons
-       (let ((id (car callable)))
+       (let* ((id (car callable))
+	      (sym? (symbolp id)))
 	 (cond
-	   ((symbol= id 'quote)
-	    (lambda ()
-	      (pop pc)
-	      (cadr callable)))
-	   ((symbol= id 'lisp)
+	   ((and sym? (symbol= id 'quote))
+	    (let ((callable (cadr callable)))
+	      (if (immediate? callable)
+		  (lookup-op callable)
+		  (lambda ()
+		    (pop pc)
+		    callable))))
+	   ((and sym? (symbol= id 'lisp))
 	    (lambda ()
 	      (pop pc)
 	      (eval (cadr callable))))
-	   ((symbol= id 'thread)
+	   ((and sym? (symbol= id 'thread))
 	    (cdr callable))
 	   (t (error "Tried to call ~A"
 		     callable)))))
       (stack
        (stack->thread callable env))
+      (function
+       callable)
       (t (error "Tried to call ~A"
 		callable)))))

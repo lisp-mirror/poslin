@@ -47,6 +47,7 @@
 				     "prepare"))
      (:file "to-thread"
 	    :depends-on ("stack" "word"))
+     (:file "inspect")
      ))
    (:module
     "poslin"
@@ -55,5 +56,11 @@
     ((:file "prims")
      (:file "stdlib"
 	    :depends-on ("prims"))
+     ))
+   (:module
+    "repl"
+    :depends-on ("package" "source" "poslin")
+    :components
+    ((:file "repl")
      ))
    ))

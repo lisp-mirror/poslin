@@ -29,7 +29,9 @@
   `(var-env-defs (curr-var-env)))
 
 (defmacro pop-curr ()
-  `(pop (curr-stack)))
+  `(if (curr-stack)
+       (pop (curr-stack))
+       (error "Attempt to pop bottom")))
 
 (defmacro push-curr (val)
   `(push ,val (curr-stack)))
@@ -59,7 +61,9 @@
   `(var-env-defs (par-var-env)))
 
 (defmacro pop-par ()
-  `(pop (par-stack)))
+  `(if (par-stack)
+       (pop (par-stack))
+       (error "Attempt to pop bottom")))
 
 (defmacro push-par (val)
   `(push ,val (par-stack)))
