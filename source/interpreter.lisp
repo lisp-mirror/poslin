@@ -12,7 +12,7 @@
 		       (push it rstack))
 		  (setf pc curr))
 		 (t
-		  (push-curr curr)
-		  (pop pc))))
+		  (pop pc)
+		  (push-curr curr))))
 	     (push (pop rstack)
 		   pc))))

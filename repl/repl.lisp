@@ -5,14 +5,29 @@
     (let ((pos (poslin-env)))
       (loop do
 	   (progn
-	     (format t "~&[~{~A:~}~{ ~S~}]"
+	     (format t "~&[~{~A:~}~{~<~%~:; ~S~>~}]"
 		     (with-pandoric (path)
 			 pos
 		       (mapcar #'stack-name
 			       (reverse path)))
-		     (with-pandoric (path)
+		     (with-pandoric (path ntable)
 			 pos
-		       (reverse (curr-stack))))
+		       (reverse
+			(mapcar
+			 (alambda (el)
+			   (typecase el
+			     (function
+			      (format
+			       nil "OP{~A}"
+			       (gethash el ntable)))
+			     (cons
+			      (cons (self (car el))
+				    (self (cdr el))))
+			     (stack
+			      (format nil "[ ~A ]"
+				      (stack-name el)))
+			     (t el)))
+			 (curr-stack)))))
 	     (finish-output)
 	     (format t "~&> ")
 	     (finish-output)

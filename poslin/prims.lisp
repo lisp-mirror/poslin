@@ -33,62 +33,65 @@
 
 ;;; Write
 (defprim @n nil
-  ;; Sets the name of the current stack
-  ;; ( name -- )
+  ;; Sets the name of the stack
+  ;; ( [] name -- )
   (let ((name (pop-curr)))
     (if (and (symbolp name)
 	     (not (eq name nil)))
-	(setf (curr-name)
+	(setf (stack-name (pop-curr))
 	      name)
 	(error "Attempt to set stack name to ~A"
 	       name))))
 
 (defprim @o nil
   ;; Sets word in operation environment to thread of top
-  ;; ( name op -- )
+  ;; ( op-env name op -- )
   (let ((val (callable->thread (pop-curr)
 			       this)))
-    (setf (lookup-op (pop-curr))
+    (setf (gethash (pop-curr)
+		   (op-env-defs (pop-curr)))
 	  val)))
 
 (defprim @o_ nil
-  ;; Removes word from operation environment (THIS DOES NOT LOOK INTO
-  ;; PARENT ENVIRONMENTS!)
-  ;; ( name -- )
+  ;; Removes word from operation environment
+  ;; ( op-env name -- )
   (remhash (pop-curr)
-	   (curr-opdefs)))
+	   (op-env-defs (pop-curr))))
 
 (defprim @i+ nil
   ;; Sets word to be immediate
-  ;; (name -- )
-  (setf (immediate? (pop-curr))
+  ;; ( op-env name -- )
+  (setf (gethash (pop-curr)
+		 (op-env-imm (pop-curr)))
 	t))
 
 (defprim @i_ nil
   ;; Unsets immediateness (it is looked up in the parent environment
   ;; from now on)
-  ;; ( name -- )
+  ;; ( op-env name -- )
   (remhash (pop-curr)
-	   (curr-imm)))
+	   (op-env-imm (pop-curr))))
 
 (defprim @i- nil
   ;; Sets word to not be immediate
-  ;; ( name -- )
-  (setf (immediate? (pop-curr))
+  ;; ( op-env name -- )
+  (setf (gethash (pop-curr)
+		 (op-env-imm (pop-curr)))
 	nil))
 
 (defprim @v nil
   ;; Sets variable
-  ;; ( name value -- )
+  ;; ( var-env name value -- )
   (let ((val (pop-curr)))
-    (setf (lookup-var (pop-curr))
+    (setf (gethash (pop-curr)
+		   (var-env-defs (pop-curr)))
 	  val)))
 
 (defprim @v_ nil
   ;; Unsets variable
   ;; ( name -- )
   (remhash (pop-curr)
-	   (curr-vardefs)))
+	   (var-env-defs (pop-curr))))
 
 (defprim @eo nil
   ;; Sets operation environment of stack
@@ -100,6 +103,16 @@
 	(error "Attempt to set ~A as operation environment"
 	       env))))
 
+(defprim @eo+ nil
+  ;; Makes child operation environment
+  ;; ( op-env-par -- op-env-child )
+  (let ((par (pop-curr)))
+    (if (or (op-env-p par)
+	    (null par))
+	(push-curr (make-op-env :par par))
+	(error "Attempt to set ~A as parent of operation environment"
+	       par))))
+
 (defprim @ev nil
   ;; Sets variable environment of stack
   ;; ( [ ... ] var-env -- )
@@ -110,40 +123,52 @@
 	(error "Attempt to set ~A as variable environment"
 	       env))))
 
+(defprim @ev+ nil
+  ;; Makes child variable environment
+  ;; ( var-env-par -- var-env-child )
+  (let ((par (pop-curr)))
+    (if (or (var-env-p par)
+	    (null par))
+	(push-curr (make-var-env :par par))
+	(error "Attempt to set ~A as parent of variable environment"
+	       par))))
+
 ;;; Read
 (defprim ?n nil
-  ;; Gets name of current stack
-  ;; ( -- name )
-  (push-curr (curr-name)))
+  ;; Gets name of stack
+  ;; ( [] -- name )
+  (push-curr (stack-name (pop-curr))))
 
 (defprim ?o nil
   ;; Gets thread from word
-  ;; ( name -- thread )
-  (let* ((name (pop-curr))
-	 (found (lookup-op name)))
-    (if (empty? found)
-	(error "No operation ~A"
-	       name)
-	(push-curr found))))
+  ;; ( op-env name -- thread )
+  (let ((name (pop-curr)))
+    (multiple-value-bind (thread found?)
+	(gethash name (op-env-defs (pop-curr)))
+      (if found?
+	  (push-curr thread)
+	  (error "No operation ~A"
+		 name)))))
 
 (defprim ?v nil
   ;; Gets value from word
-  ;; ( name -- val )
-  (let* ((name (pop-curr))
-	 (found (lookup-var name)))
-    (if (empty? found)
-	(error "~A is not set"
-	       name)
-	(push-curr found))))
+  ;; ( var-env name -- val )
+  (let ((name (pop-curr)))
+    (multiple-value-bind (val found?)
+	(gethash name (var-env-defs (pop-curr)))
+      (if found?
+	  (push-curr val)
+	  (error "~A is not set"
+		 name)))))
 
 (defprim ?eo nil
   ;; Gets operation environment of stack
-  ;; ( [ ... ] -- op-env )
+  ;; ( [] -- op-env )
   (push-curr (stack-ops (pop-curr))))
 
 (defprim ?ev nil
   ;; Gets variable environment of stack
-  ;; ( [ ... ] -- var-env )
+  ;; ( [] -- var-env )
   (push-curr (stack-vars (pop-curr))))
 
 ;;; Stack operations
@@ -159,8 +184,30 @@
   ;; ( [ ... -- [ ... ] )
   (push-curr (pop path)))
 
+(defprim %[ t
+  ;; Open stack on top of stack
+  ;; ( [ ... ] -- [ ... )
+  (let ((stack (pop-curr)))
+    (if (stack-p stack)
+	(push stack path)
+	(error "Attempt to open ~A as stack"
+	       stack))))
+
+(defprim ]] t
+  ;; Close all paths up to the one having the name on top inclusive
+  ;; ( n -- ??? )
+  (let ((name (pop-curr)))
+    (aif (member name path
+		 :key #'stack-name
+		 :test #'string=)
+	 (aif (cdr it)
+	      (setf path it)
+	      (error "Attempt to close root stack"))
+	 (error "No stack named ~A in path"
+		name))))
+
 (defprim <- nil
-  ;; Push onto stack, discarding stack
+  ;; Push onto stack
   ;; ( [ ... ] a -- )
   (push (pop-curr)
 	(stack-content (pop-curr))))
@@ -189,7 +236,7 @@
 
 (defprim § nil
   ;; Duplicate top of stack
-  ;; ( n -- n )
+  ;; ( n -- n n )
   (aif (curr-stack)
        (push-curr (car it))
        (error "Attempt to duplicate bottom")))
@@ -225,7 +272,7 @@
 	  ((eq curr eof))
 	(funcall this curr)))))
 
-(defprim o< nil
+(defprim >o nil
   ;; Push onto output
   ;; ( n -- )
   (push (pop-curr)
@@ -287,25 +334,42 @@
 		   else))))
 
 ;;; Printing
-(defnprim print nil
+(defprim print nil
   ;; Print top of current stack
   ;; ( n -- )
-  (print (pop-curr)))
+  (let ((out (pop-curr)))
+    (if (symbolp out)
+	(format t "~S"
+		out)
+	(format t "~A"
+		out))))
 
-;;; Inspection
-(defprim ?ops t
-  ;; Print operations in current environment
+(defprim newline nil
+  ;; Print newline
   ;; ( -- )
-  (labels ((rec (env acc)
-	     (if (not env)
-		 acc
-		 (let ((acc (copy-list acc)))
-		   (maphash (lambda (k v)
-			      (declare (ignore v))
-			      (pushnew k acc))
-			    (op-env-defs env))
-		   (rec (op-env-par env)
-			acc)))))
-    (format t "~&~{~S ~}"
-	    (rec (curr-op-env)
-		 '()))))
+  (format t "~%"))
+
+;;; Numeric
+(defunary
+  exp abs oddp evenp sin cos tan asin acos atan)
+
+(defbinary
+  + - * / = /= < > <= >= expt log max min)
+
+;;; Logic
+(defunary
+  not)
+
+(defbinary
+  and or)
+
+;;; Lists
+(defunary
+  first rest)
+
+(defbinary
+  cons)
+
+;;; General comparison
+(defbinary
+  eq)
