@@ -3,6 +3,13 @@
 (defparameter *stdlib* '())
 
 (addstd
+  "../poslin-code/stdlib.poslin" >> !)
+
+(addstd
+  "../poslin-code/math.poslin" >> !)
+
+#|
+(addstd
   ;; Pushes the current stack
   ;; ( -- [] )
   0 ^ !
@@ -459,7 +466,7 @@
 
 (addstd
   ;;
-  ;; ( ... [ ...1 op -- ??? [ ...1 )
+  ;; ( ...1 [ ...2 op -- ??? [ ...2 )
   <^!
   [ ^^ &
     <> &
@@ -488,4 +495,4 @@
     rest &
     cons &
     ^<- &
-  }@)
+  }@)|#

@@ -29,8 +29,8 @@
   (let* ((callable (pop-curr))
 	 (thread (callable->thread callable this)))
     (if (empty? thread)
-	(perror undefined-operation "No operation ~S"
-		callable)
+	(perror undefined-operation "No operation ~A"
+		(formatt callable))
 	(progn
 	  (push thread pc)
 	  (interpreter)))))
@@ -42,7 +42,7 @@
   (let* ((callable (pop-curr))
 	 (op (callable->thread callable this)))
     (if (empty? op)
-	(perror undefined-operation "No operation ~S"
+	(perror undefined-operation "No operation ~A"
 		callable)
 	(push-curr (cons 'thread op)))))
 
@@ -67,9 +67,9 @@
 	(if (stack-p stack)
 	    (setf (stack-name stack)
 		  name)
-	    (perror "Attempt to set name of ~S to ~S"
+	    (perror "Attempt to set name of ~A to ~A"
 		    stack name))
-	(perror "Attempt to set name of stack ~S to ~S"
+	(perror "Attempt to set name of stack ~A to ~A"
 		stack name))))
 
 (defprim @o nil
@@ -448,7 +448,8 @@
 	    (pathnamep filename))
 	(with-open-file (stream filename)
 	  (let ((eof (gensym "eof")))
-	    (do ((curr (read stream nil eof)))
+	    (do ((curr (read stream nil eof)
+		       (read stream nil eof)))
 		((eq curr eof))
 	      (funcall this curr))))
 	(perror malformed-filename

@@ -4,7 +4,7 @@
   (typecase thread
     (cons
      (if (cdr thread)
-	 (format nil "~A ~A"
+	 (format nil "(~A ~A)"
 		 (format-thread (car thread)
 				ntable)
 		 (format-thread (cdr thread)

@@ -11,4 +11,5 @@
 	       ',type
 	       (formatt remt)
 	       (formatt remr)
-	       (format nil ,text ,@args)))))
+	       (format nil ,text ,@(mapcar #`(formatt ,a1)
+					   args))))))
