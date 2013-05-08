@@ -444,17 +444,67 @@
   ;; Load poslin file
   ;; ( filename -- ??? )
   (args (filename)
-    (if (or (stringp filename)
-	    (pathnamep filename))
-	(with-open-file (stream filename)
-	  (let ((eof (gensym "eof")))
-	    (do ((curr (read stream nil eof)
-		       (read stream nil eof)))
-		((eq curr eof))
-	      (funcall this curr))))
+    (if (stringp filename)
+	(let ((filename
+	       (if (char= (elt filename 0)
+			  #\/)
+		   filename
+		   (concatenate 'string
+				folder
+				filename))))
+	  (with-open-file (stream filename)
+	    (let ((eof (gensym "eof")))
+	      (do ((curr (read stream nil eof)
+			 (read stream nil eof)))
+		  ((eq curr eof))
+		(funcall this curr)))))
 	(perror malformed-filename
 		"Attempt to open file ~S"
 		filename))))
+
+(defprim cd nil
+  ;;
+  ;; ( pathdiff -- )
+  (args (pathdiff)
+    (if (char= (elt pathdiff 0)
+	       #\/)
+	(setf folder pathdiff)
+	(labels ((split (string acc)
+		   (if (string= "" string)
+		       (nreverse acc)
+		       (let ((/pos (position #\/ string)))
+			 (if /pos
+			     (split (subseq string (1+ /pos))
+				    (cons (subseq string 0 /pos)
+					  acc))
+			     (nreverse (cons string acc)))))))
+	  (loop for diff
+	     in (split pathdiff '())
+	     do (cond
+		  ((string= ".." diff)
+		   (setf folder
+			 (subseq folder 0
+				 (1+ (position #\/ folder
+					       :from-end t
+					       :end
+					       (1- (length
+						    folder)))))))
+		  ((string= "." diff))
+		  ((string= "~" diff)
+		   (setf folder
+			 (let ((home (osicat:environment-variable
+				      "HOME")))
+			   (if (char= (elt home (1- (length home)))
+				      #\/)
+			       home
+			       (concatenate 'string
+					    home "/")))))
+		  (t (setf folder
+			   (concatenate 'string
+					folder diff "/")))))))))
+
+(defprim folder nil
+  (push-curr folder))
 
 (defprim >o nil
   ;; Push onto output

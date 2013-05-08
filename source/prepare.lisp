@@ -23,5 +23,6 @@
      (setf path (list (make-stack :name 'root)))
      (setf dtable (make-hash-table :test #'eq))
      (setf ntable (make-hash-table :test #'eq))
+     (setf folder (osicat:environment-variable "POSLIN_HOME"))
      (install-prims)
      (install-stdlib)))

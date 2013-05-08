@@ -2,5 +2,4 @@
 
 (defpackage #:poslin
   (:use #:cl #:alexandria)
-  (:export))
-
+  (:export #:run-poslin #:poslin-env #:poslin-repl))
