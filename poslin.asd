@@ -53,7 +53,7 @@
      (:file "inspect")
      ))
    (:module
-    "poslin"
+    "startup"
     :depends-on ("package" "source")
     :components
     ((:file "prims")
@@ -62,7 +62,7 @@
      ))
    (:module
     "repl"
-    :depends-on ("package" "source" "poslin")
+    :depends-on ("package" "source" "startup")
     :components
     ((:file "repl")
      ))

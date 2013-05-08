@@ -3,10 +3,10 @@
 (defparameter *stdlib* '())
 
 (addstd
-  "code/stdlib.poslin" >> !)
+  "stdlib.poslin" >> !)
 
 (addstd
-  "code/math.poslin" >> !)
+  "math.poslin" >> !)
 
 #|
 (addstd
