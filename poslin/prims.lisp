@@ -8,18 +8,33 @@
   ;; ( -- )
   )
 
+;;; Error
+(defprim error t
+  (args (type text)
+    (push-curr (lambda ()
+		 (let ((rpc pc)
+		       (rrs rstack))
+		   (setf pc '())
+		   (setf rstack '())
+		   (format t "~&POSLIN-~A-ERROR~% Remaining PC: ~A~% ~
+                              Remaining RSTACK: ~A~%  ~A"
+			   type (formatt rpc)
+			   (formatt rrs)
+			   text))))))
+
 ;;; Calling
 (defprim ! t
   ;; Calls operation on top of stack
   ;; ( op -- ??? )
   (let* ((callable (pop-curr))
-	 (op (callable->thread callable this)))
-    (if (empty? op)
-	(error "No operation ~A"
-	       callable)
+	 (thread (callable->thread callable this)))
+    (if (empty? thread)
+	(perror undefined-operation "No operation ~S"
+		callable)
 	(progn
-	  (push op pc)
+	  (push thread pc)
 	  (interpreter)))))
+	
 
 (defprim & t
   ;; Puts thread of word on top onto stack
@@ -27,149 +42,296 @@
   (let* ((callable (pop-curr))
 	 (op (callable->thread callable this)))
     (if (empty? op)
-	(error "No operation ~A"
-	       callable)
+	(perror undefined-operation "No operation ~S"
+		callable)
 	(push-curr (cons 'thread op)))))
+
+(defprim ?& nil
+  ;;
+  ;; ( val -- b )
+  (args (val)
+    (push-curr (or (functionp val)
+		   (and (consp val)
+			(member (car val)
+				'(quote thread lisp)
+				:test #'symbol=))
+		   (and (symbolp val)
+			(not (empty? (lookup-op val))))))))
 
 ;;; Write
 (defprim @n nil
   ;; Sets the name of the stack
   ;; ( [] name -- )
-  (let ((name (pop-curr)))
-    (if (and (symbolp name)
-	     (not (eq name nil)))
-	(setf (stack-name (pop-curr))
-	      name)
-	(error "Attempt to set stack name to ~A"
-	       name))))
+  (args (stack name)
+    (if (symbolp name)
+	(if (stack-p stack)
+	    (setf (stack-name stack)
+		  name)
+	    (perror "Attempt to set name of ~S to ~S"
+		    stack name))
+	(perror "Attempt to set name of stack ~S to ~S"
+		stack name))))
 
 (defprim @o nil
   ;; Sets word in operation environment to thread of top
   ;; ( op-env name op -- )
-  (let ((val (callable->thread (pop-curr)
-			       this)))
-    (setf (gethash (pop-curr)
-		   (op-env-defs (pop-curr)))
-	  val)))
+  (let* ((op (pop-curr))
+	 (thread (callable->thread op this))
+	 (name (pop-curr))
+	 (op-env (pop-curr)))
+    (if (empty? thread)
+	(perror undefined-operation "No operation ~S"
+		name)
+	(if (symbolp name)
+	    (if (op-env-p op-env)
+		(setf (gethash name (op-env-defs op-env))
+		      thread)
+		(perror malformed-op-env
+			"Attempt to set operation in ~S"
+			op-env))
+	    (perror malformed-op-name
+		    "Attempt to set name ~S in operation environment"
+		    name)))))
 
 (defprim @o_ nil
   ;; Removes word from operation environment
   ;; ( op-env name -- )
-  (remhash (pop-curr)
-	   (op-env-defs (pop-curr))))
+  (args (op-env name)
+    (if (symbolp name)
+	(if (op-env-p op-env)
+	    (remhash name (op-env-defs op-env))
+	    (perror malformed-op-env
+		    "Attempt to remove operation definition ~S from ~
+                     ~S"
+		    name op-env))
+	(perror malformed-op-name
+		"Attempt to remove operation definition ~S from ~
+                 operation environment ~S"
+		name op-env))))
 
 (defprim @i+ nil
   ;; Sets word to be immediate
   ;; ( op-env name -- )
-  (setf (gethash (pop-curr)
-		 (op-env-imm (pop-curr)))
-	t))
+  (args (op-env name)
+    (if (symbolp name)
+	(if (op-env-p op-env)
+	    (setf (gethash name (op-env-imm op-env))
+		  t)
+	    (perror malformed-op-env
+		    "Attempt to set immediateness of ~S in operation ~
+                     environment ~S"
+		    name op-env))
+	(perror malformed-op-name
+		"Attempt to set immediateness of ~S in operation ~
+                 environment ~S"
+		name op-env))))
 
 (defprim @i_ nil
   ;; Unsets immediateness (it is looked up in the parent environment
   ;; from now on)
   ;; ( op-env name -- )
-  (remhash (pop-curr)
-	   (op-env-imm (pop-curr))))
+  (args (op-env name)
+    (if (symbolp name)
+	(if (op-env-p op-env)
+	    (remhash name (op-env-imm op-env))
+	    (perror malformed-op-env
+		    "Attempt to remove immediateness of ~S in ~
+                     operation environment ~S"
+		    name op-env))
+	(perror malformed-op-name
+		"Attempt to remove immediateness of ~S in operation ~
+                 environment ~S"
+		name op-env))))
 
 (defprim @i- nil
   ;; Sets word to not be immediate
   ;; ( op-env name -- )
-  (setf (gethash (pop-curr)
-		 (op-env-imm (pop-curr)))
-	nil))
+  (args (op-env name)
+    (if (symbolp name)
+	(if (op-env-p op-env)
+	    (setf (gethash name (op-env-imm op-env))
+		  nil)
+	    (perror malformed-op-env
+		    "Attempt to set immediateness of ~S in operation ~
+                     environment ~S"
+		    name op-env))
+	(perror malformed-op-name
+		"Attempt to set immediateness of ~S in operation ~
+                 environment ~S"
+		name op-env))))
 
 (defprim @v nil
   ;; Sets variable
   ;; ( var-env name value -- )
-  (let ((val (pop-curr)))
-    (setf (gethash (pop-curr)
-		   (var-env-defs (pop-curr)))
-	  val)))
+  (args (var-env name value)
+    (if (symbolp name)
+	(if (var-env-p var-env)
+	    (setf (find-var name var-env)
+		  value)
+	    (perror malformed-var-env
+		    "Attempt to set variable ~A in ~A"
+		    name var-env))
+	(perror malformed-var-name
+		"Attempt to use ~A as variable name in ~A"
+		name var-env))))
 
 (defprim @v_ nil
   ;; Unsets variable
-  ;; ( name -- )
-  (remhash (pop-curr)
-	   (var-env-defs (pop-curr))))
+  ;; ( var-env name -- )
+  (args (var-env name)
+    (if (symbolp name)
+	(if (var-env-p var-env)
+	    (remhash name (var-env-defs var-env))
+	    (perror malformed-var-env
+		    "Attempt to unset ~A in ~A"
+		    name var-env))
+	(perror malformed-var-name
+		"Attempt to unset ~A in variable environment ~A"
+		name var-env))))
 
 (defprim @eo nil
   ;; Sets operation environment of stack
   ;; ( [ ... ] op-env -- )
-  (let ((env (pop-curr)))
-    (if (op-env-p env)
-	(setf (stack-ops (pop-curr))
-	      env)
-	(error "Attempt to set ~A as operation environment"
-	       env))))
+  (args (stack op-env)
+    (if (op-env-p op-env)
+	(if (stack-p stack)
+	    (setf (stack-ops stack)
+		  op-env)
+	    (perror malformed-stack
+		    "Attempt to set ~S as operation environment of ~S"
+		    op-env stack))
+	(perror malformed-op-env
+		"Attempt to set ~S as operation environment of stack ~S"
+		op-env stack))))
 
 (defprim @eo+ nil
   ;; Makes child operation environment
   ;; ( op-env-par -- op-env-child )
-  (let ((par (pop-curr)))
-    (if (or (op-env-p par)
-	    (null par))
-	(push-curr (make-op-env :par par))
-	(error "Attempt to set ~A as parent of operation environment"
-	       par))))
+  (args (op-env-par)
+    (if (or (op-env-p op-env-par)
+	    (null op-env-par))
+	(push-curr (make-op-env :par op-env-par))
+	(perror malformed-op-env
+		"Attempt to set ~S as parent of operation environment"
+		op-env-par))))
 
 (defprim @ev nil
   ;; Sets variable environment of stack
   ;; ( [ ... ] var-env -- )
-  (let ((env (pop-curr)))
+  (args (stack env)
     (if (var-env-p env)
-	(setf (stack-vars (pop-curr))
-	      env)
-	(error "Attempt to set ~A as variable environment"
-	       env))))
+	(if (stack-p stack)
+	    (setf (stack-vars stack)
+		  env)
+	    (perror malformed-stack
+		    "Attempt to set ~S as variable environment of ~S"
+		    env stack))
+	(perror malformed-var-env
+		"Attempt to set ~S as variable environment of stack ~S"
+		env stack))))
 
 (defprim @ev+ nil
   ;; Makes child variable environment
   ;; ( var-env-par -- var-env-child )
-  (let ((par (pop-curr)))
-    (if (or (var-env-p par)
-	    (null par))
-	(push-curr (make-var-env :par par))
-	(error "Attempt to set ~A as parent of variable environment"
-	       par))))
+  (args (var-env-par)
+    (if (or (var-env-p var-env-par)
+	    (null var-env-par))
+	(push-curr (make-var-env :par var-env-par))
+	(perror malformed-var-env
+		"Attempt to set ~S as parent of variable environment"
+		var-env-par))))
 
 ;;; Read
 (defprim ?n nil
   ;; Gets name of stack
   ;; ( [] -- name )
-  (push-curr (stack-name (pop-curr))))
+  (args (stack)
+    (if (stack-p stack)
+	(push-curr (stack-name stack))
+	(perror malformed-stack
+		"Attempt to get name of ~S"
+		stack))))
 
 (defprim ?o nil
   ;; Gets thread from word
   ;; ( op-env name -- thread )
-  (let ((name (pop-curr)))
-    (multiple-value-bind (thread found?)
-	(gethash name (op-env-defs (pop-curr)))
-      (if found?
-	  (push-curr thread)
-	  (error "No operation ~A"
-		 name)))))
+  (args (op-env name)
+    (if (symbolp name)
+	(if (op-env-p op-env)
+	    (multiple-value-bind (thread found?)
+		(gethash name (op-env-defs op-env))
+	      (if found?
+		  (push-curr thread)
+		  (perror undefined-operation "No operation ~S"
+			  name)))
+	    (perror malformed-op-env
+		    "Attempt to lookup operation ~S in ~S"
+		    name op-env))
+	(perror malformed-op-name
+		"Attempt to lookup operation ~S in ~S"
+		name op-env))))
 
 (defprim ?v nil
   ;; Gets value from word
   ;; ( var-env name -- val )
-  (let ((name (pop-curr)))
-    (multiple-value-bind (val found?)
-	(gethash name (var-env-defs (pop-curr)))
-      (if found?
-	  (push-curr val)
-	  (error "~A is not set"
-		 name)))))
+  (args (var-env name)
+    (if (symbolp name)
+	(if (var-env-p var-env)
+	    (multiple-value-bind (val found?)
+		(gethash name (var-env-defs var-env))
+	      (if found?
+		  (push-curr val)
+		  (perror unbound-var "Variable ~S is unbound in ~S"
+			  name var-env)))
+	    (if (null var-env)
+		(perror unbound-var "Variable ~S is unbound in ~S"
+			name var-env)
+		(perror malformed-var-env
+			"Attempt to lookup ~S in ~S"
+			name var-env)))
+	(perror malformed-var-name
+		"Attempt to lookup ~S in variable environment ~S"
+		name var-env))))
 
 (defprim ?eo nil
   ;; Gets operation environment of stack
   ;; ( [] -- op-env )
-  (push-curr (stack-ops (pop-curr))))
+  (args (stack)
+    (if (stack-p stack)
+	(push-curr (stack-ops stack))
+	(perror malformed-stack
+		"Attempt to get operation environment of ~S"
+		stack))))
+
+(defprim ?eo- nil
+  ;; Gets parent operation environment
+  ;; ( op-env-child -- op-env-par)
+  (args (op-env-child)
+    (if (op-env-p op-env-child)
+	(push-curr (op-env-par op-env-child))
+	(perror malformed-op-env
+		"Attempt to get parent operation environment of ~S"
+		op-env-child))))
 
 (defprim ?ev nil
   ;; Gets variable environment of stack
   ;; ( [] -- var-env )
-  (push-curr (stack-vars (pop-curr))))
+  (args (stack)
+    (if (stack-p stack)
+	(push-curr (stack-vars stack))
+	(perror malformed-stack
+		"Attempt to get variable environment of ~S"
+		stack))))
+
+(defprim ?ev- nil
+  ;; Gets parent variable environment
+  ;; ( var-env-child -- var-env-par)
+  (args (var-env-child)
+    (if (var-env-p var-env-child)
+	(push-curr (var-env-par var-env-child))
+	(perror malformed-var-env
+		"Attempt to get parent variable environment of ~S"
+		var-env-child))))
 
 ;;; Stack operations
 (defprim [ t
@@ -182,101 +344,122 @@
 (defprim ] t
   ;; Close a stack and leave it on it's parent stack
   ;; ( [ ... -- [ ... ] )
-  (push-curr (pop path)))
+  (if (cdr path)
+      (push-curr (pop path))
+      (perror path
+	      "Attempt to close root stack")))
 
 (defprim %[ t
   ;; Open stack on top of stack
   ;; ( [ ... ] -- [ ... )
-  (let ((stack (pop-curr)))
+  (args (stack)
     (if (stack-p stack)
 	(push stack path)
-	(error "Attempt to open ~A as stack"
-	       stack))))
+	(perror malformed-stack "Attempt to open ~S"
+		stack))))
 
 (defprim ]] t
-  ;; Close all paths up to the one having the name on top inclusive
-  ;; ( n -- ??? )
-  (let ((name (pop-curr)))
+  ;; Close all paths up to the one having the name on top
+  ;; ( name -- ??? )
+  (args (name)
     (aif (member name path
 		 :key #'stack-name
 		 :test #'string=)
-	 (aif (cdr it)
-	      (setf path it)
-	      (error "Attempt to close root stack"))
-	 (error "No stack named ~A in path"
-		name))))
+	 (setf path it)
+	 (perror path "No stack named ~S in path"
+		 name))))
 
 (defprim <- nil
   ;; Push onto stack
   ;; ( [ ... ] a -- )
-  (push (pop-curr)
-	(stack-content (pop-curr))))
+  (args (stack val)
+    (if (stack-p stack)
+	(push val (stack-content stack))
+	(perror malformed-stack
+		"Attempt to push ~S onto ~S"
+		val stack))))
 
 (defprim -> nil
   ;; Pop from stack
   ;; ( [ ... a ] -- a )
-  (push-curr (pop (stack-content (pop-curr)))))
+  (args (stack)
+    (if (stack-p stack)
+	(if (stack-content stack)
+	    (push-curr (pop (stack-content stack)))
+	    (perror bottom "Attempt to pop bottom"))
+	(perror malformed-stack "Attempt to pop from ~A"
+		stack))))
 
 (defprim %[ t
   ;; Open stack on top
   ;; ( [ ... ] -- [ ... )
-  (let ((stack (pop-curr)))
+  (args (stack)
     (if (stack-p stack)
 	(push stack path)
-	(error "Attempt to open ~A"
-	       stack))))
+	(perror malformed-stack "Attempt to open ~A"
+		stack))))
 
 (defprim ^ nil
   ;; Get nth stack in path
   ;; ( n -- [ ... ] )
-  (aif (nth (pop-curr)
-	    path)
-       (push-curr it)
-       (error "Path exceeded")))
+  (args (n)
+    (aif (nth n path)
+	 (push-curr it)
+	 (perror path "Path exceeded"))))
 
 (defprim § nil
   ;; Duplicate top of stack
   ;; ( n -- n n )
   (aif (curr-stack)
        (push-curr (car it))
-       (error "Attempt to duplicate bottom")))
+       (perror bottom "Attempt to duplicate bottom")))
 
 (defprim <> nil
   ;; Swap two elements on top of stack
   ;; ( a b -- b a )
-  (if #2=(cdr #1=(curr-stack))
-      (rotatef (car #1#)
-	       (car #2#))
-      (error "Attempt to swap with bottom")))
+  (if (cdr (curr-stack))
+      (rotatef (car (curr-stack))
+	       (cadr (curr-stack)))
+      (perror bottom "Attempt to swap with bottom")))
 
 (defprim _ nil
   ;; Drop top of stack
   ;; ( a -- )
   (if (curr-stack)
       (pop-curr)
-      (error "Attempt to drop bottom")))
+      (perror bottom "Attempt to drop bottom")))
 
 (defprim ?_ nil
   ;; Return T when at bottom of stack, NIL otherwise
-  ;; ( [ -- [ t )
-  ;; ( [ ... -- [ ... nil )
-  (push-curr (not (curr-stack))))
+  ;; ( [ ] -- t )
+  ;; ( [ ... ] -- nil )
+  (args (stack)
+    (if (stack-p stack)
+	(push-curr (null (stack-content stack)))
+	(perror malformed-stack "Attempt to test for bottom of ~A"
+		stack))))
 
 ;;; Input Output
 (defprim >> nil
   ;; Load poslin file
   ;; ( filename -- ??? )
-  (with-open-file (stream (pop-curr))
-    (let ((eof (gensym "eof")))
-      (do ((curr (read stream nil eof)))
-	  ((eq curr eof))
-	(funcall this curr)))))
+  (args (filename)
+    (if (or (stringp filename)
+	    (pathnamep filename))
+	(with-open-file (stream filename)
+	  (let ((eof (gensym "eof")))
+	    (do ((curr (read stream nil eof)))
+		((eq curr eof))
+	      (funcall this curr))))
+	(perror malformed-filename
+		"Attempt to open file ~S"
+		filename))))
 
 (defprim >o nil
   ;; Push onto output
-  ;; ( n -- )
-  (push (pop-curr)
-	out))
+  ;; ( val -- )
+  (args (val)
+    (push val out)))
 
 (defprim o_ nil
   ;; Delete output
@@ -289,13 +472,14 @@
   ;; ( -- n )
   (push-curr (if rstack
 		 (pop rstack)
-		 (error "Attempt to pop empty rstack"))))
+		 (perror rstack-bottom
+			 "Attempt to pop empty rstack"))))
 
 (defprim >r nil
   ;; Push on top of rstack
-  ;; ( n -- )
-  (push (pop-curr)
-	rstack))
+  ;; ( val -- )
+  (args (val)
+    (push val rstack)))
 
 ;;; pc manipulation
 (defprim pc> nil
@@ -303,13 +487,13 @@
   ;; ( -- n )
   (push-curr (if pc
 		 (pop pc)
-		 (error "Tried to pop empty pc"))))
+		 (perror pc-bottom "Tried to pop empty pc"))))
 
 (defprim >pc nil
   ;; Push onto program counter
-  ;; ( n -- )
-  (push (pop-curr)
-	pc))
+  ;; ( val -- )
+  (args (val)
+    (push val pc)))
 
 ;;; conditionals
 (defnprim ?=> nil
@@ -318,31 +502,31 @@
   ;; thread, if NIL jump over next
   ;; ( T ?=> a ... -- a )
   ;; ( NIL ?=> a ... -- ... )
-  (setf pc
-	(if (pop-curr)
-	    (list (cadr pc))
-	    (cddr pc))))
+  (args (b)
+    (setf pc
+	  (if b
+	      (list (cadr pc))
+	      (cddr pc)))))
 
 (defprim <?> nil
   ;; If third to last is nil, leave last, else leave second to last
-  ;; ( T a b <?> -- a )
-  ;; ( NIL a b <?> -- b )
-  (let ((else (pop-curr))
-	(then (pop-curr)))
-    (push-curr (if (pop-curr)
+  ;; ( T then else <?> -- a )
+  ;; ( NIL then else <?> -- b )
+  (args (test then else)
+    (push-curr (if test
 		   then
 		   else))))
 
 ;;; Printing
 (defprim print nil
   ;; Print top of current stack
-  ;; ( n -- )
-  (let ((out (pop-curr)))
-    (if (symbolp out)
+  ;; ( val -- )
+  (args (val)
+    (if (symbolp val)
 	(format t "~S"
-		out)
+		val)
 	(format t "~A"
-		out))))
+		val))))
 
 (defprim newline nil
   ;; Print newline

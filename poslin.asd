@@ -32,10 +32,13 @@
     ((:file "registers")
      (:file "prims")
      (:file "stdlib")
+     (:file "format-thread")
      (:file "stack")
+     (:file "error"
+	    :depends-on ("format-thread"))
      (:file "run-poslin")
      (:file "conv"
-	    :depends-on ("stack"))
+	    :depends-on ("stack" "error"))
      (:file "word"
 	    :depends-on ("stack" "conv"))
      (:file "interpreter"
@@ -46,7 +49,7 @@
 	    :depends-on ("registers" "conv" "word" "interpreter"
 				     "prepare"))
      (:file "to-thread"
-	    :depends-on ("stack" "word"))
+	    :depends-on ("stack" "error" "word"))
      (:file "inspect")
      ))
    (:module

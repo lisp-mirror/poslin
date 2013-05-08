@@ -39,5 +39,5 @@
 			      (string= el 'exit))
 			 (with-pandoric (out)
 			     pos
-			   (return-from repl out))
+			     (return-from repl out))
 			 (funcall pos el)))))))))

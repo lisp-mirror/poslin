@@ -31,7 +31,7 @@
 (defmacro pop-curr ()
   `(if (curr-stack)
        (pop (curr-stack))
-       (error "Attempt to pop bottom")))
+       (perror bottom "Attempt to pop bottom")))
 
 (defmacro push-curr (val)
   `(push ,val (curr-stack)))
@@ -63,7 +63,12 @@
 (defmacro pop-par ()
   `(if (par-stack)
        (pop (par-stack))
-       (error "Attempt to pop bottom")))
+       (perror bottom "Attempt to pop bottom")))
 
 (defmacro push-par (val)
   `(push ,val (par-stack)))
+
+(defmacro args (args &body body)
+  `(let ,(mapcar #`(,a1 (pop-curr))
+		 (reverse args))
+     ,@body))

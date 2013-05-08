@@ -205,14 +205,6 @@
   ]@)
 
 (addstd
-  ;; Calling if (use for recursion)
-  ;; ( b op1 op2 -- ??? )
-  <?>!
-  [ <?> &
-    '! &
-  ]@)
-
-(addstd
   ;; Delayed call (use for recursion)
   ;; ( op -- op ! )
   !&
@@ -221,11 +213,32 @@
   !& @~i+ !)
 
 (addstd
+  ;; Calling if (use for recursion)
+  ;; ( b op1 op2 -- ??? )
+  <?>!
+  [ <?> '& &
+    '!& &
+  ]@
+  <?>! @~i+ !)
+
+(addstd
+  ;; Checks for bottom of current stack
+  ;; ( [ -- [ t )
+  ;; ( [ ... -- [ ... nil )
+  ?~_
+  [ ~ &
+    ?_ &
+  ]@)
+
+(addstd
   ;; Drop everything
   ;; ( ... -- )
   __
-  [ ?_ &
-    || [ _ & __ !& ] <?>! &
+  [ ?~_ &
+    ||
+    [ _ & 
+      __ !& ]
+    <?>!
   ]@)
 
 (addstd
@@ -313,7 +326,7 @@
       <> &
       nth !&
     ]
-    <?>! &
+    <?>!
   ]@)
 
 (addstd
@@ -355,7 +368,7 @@
 
 (addstd
   ;; Gets from parent and saves under name
-  ;; ( name -- )
+  ;; ( name -- name ^-> & @v& )
   arg
   [ ^-> '& &
     '@v& &
@@ -376,6 +389,103 @@
       n &v
       * &
     ]
-    <?>! &
+    <?>!
+    ^<- &
+  }@)
+
+(addstd
+  ;;
+  ;; ( val1 val2 -- val1 val1 val2 )
+  °§
+  [ >r &
+    § &
+    r> &
+  ]@)
+
+(addstd
+  ;;
+  ;; ( val1 val2 -- val1 val2 val1 )
+  <>§
+  [ °§ &
+    <> &
+  ]@)
+
+(addstd
+  ;;
+  ;; ( x [ ... ] y -- [ ... y ] x )
+  <<>
+  [ °§ &
+    <- &
+    <> &
+  ]@)
+
+(addstd
+  ;;
+  ;; ( [ ... x ] -- x [ ... ] )
+  <>>
+  [ § &
+    -> &
+    <> &
+  ]@)
+
+(addstd
+  ;;
+  ;; ( sym -- val )
+  ?^v
+  [ ?~ev &
+    ?ev- &
+    <> &
+    ?v &
+  ]@)
+
+(addstd
+  ;;
+  ;; ( sym -- sym ?^v )
+  &^v
+  [ ?^v '& &
+  ]@
+  &^v @~i+ !)
+
+(addstd
+  ;;
+  ;; ( [ ... ] op -- [ ??? ] )
+  <!
+  [ <> &
+    '%[ &
+    ^-> &
+    '! &
+    '] &
+  ]@)
+
+(addstd
+  ;;
+  ;; ( ... [ ...1 op -- ??? [ ...1 )
+  <^!
+  [ ^^ &
+    <> &
+    <! &
+  ]@)
+
+(addstd
+  ;;
+  ;;
+  step
+  { thread arg
+    thread &v
+    rest &
+    [ thread &v
+      rest &
+      first &
+      § &
+      ?& &
+      <^! ^<- <?>!
+    ]
+    ||
+    <?>!
+    thread
+    thread &v
+    rest &
+    rest &
+    cons &
     ^<- &
   }@)

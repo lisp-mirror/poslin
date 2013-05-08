@@ -2,7 +2,7 @@
 
 (defun stack->thread (stack env)
   (nreverse
-   (with-pandoric (path pc)
+   (with-pandoric (path pc rstack ntable)
        env
      (loop for curr
 	in (stack-content stack)
@@ -12,8 +12,9 @@
 	     (if (immediate? curr)
 		 (let ((thread (lookup-op curr)))
 		   (if (empty? thread)
-		       (error "Operation ~A not defined"
-			      curr)
+		       (perror undefined-operation
+			       "No operation ~S"
+			       curr)
 		       thread))
 		 curr))
 	    (cons
@@ -26,14 +27,14 @@
 	    (t curr))))))
 
 (defun callable->thread (callable env)
-  (with-pandoric (path pc)
+  (with-pandoric (path pc rstack ntable)
       env
     (typecase callable
       (symbol
        (let ((thread (lookup-op callable)))
 	 (if (empty? thread)
-	     (error "Operation ~A not defined"
-		    thread)
+	     (perror undefined-operation "No operation ~S"
+		     callable)
 	     thread)))
       (cons
        (let* ((id (car callable))
@@ -49,11 +50,11 @@
 	      (push-curr (eval (cadr callable)))))
 	   ((and sym? (symbol= id 'thread))
 	    (cdr callable))
-	   (t (error "Tried to call ~A"
-		     callable)))))
+	   (t (perror malformed-call "Tried to call ~A"
+		 callable)))))
       (stack
        (stack->thread callable env))
       (function
        callable)
-      (t (error "Tried to call ~A"
-		callable)))))
+      (t (perror malformed-call "Tried to call ~A"
+		 callable)))))
