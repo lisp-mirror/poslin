@@ -204,6 +204,11 @@
 		"Attempt to set ~S as operation environment of stack ~S"
 		op-env stack))))
 
+(defprim @eo* nil
+  ;; Makes new operation environment
+  ;; ( -- op-env )
+  (push-curr (make-op-env)))
+
 (defprim @eo+ nil
   ;; Makes child operation environment
   ;; ( op-env-par -- op-env-child )
@@ -229,6 +234,11 @@
 	(perror malformed-var-env
 		"Attempt to set ~S as variable environment of stack ~S"
 		env stack))))
+
+(defprim @ev* nil
+  ;; Make new variable environment
+  ;; ( -- var-env )
+  (push-curr (make-var-env)))
 
 (defprim @ev+ nil
   ;; Makes child variable environment
@@ -403,9 +413,14 @@
   ;; Get nth stack in path
   ;; ( n -- [ ... ] )
   (args (n)
-    (aif (nth n path)
-	 (push-curr it)
-	 (perror path "Path exceeded"))))
+    (if (and (integerp n)
+	     (>= n 0))
+	(aif (nth n path)
+	     (push-curr it)
+	     (perror path "Path exceeded"))
+	(perror malformed-natural
+		"Tried to get ~A-th stack in path"
+		n))))
 
 (defprim § nil
   ;; Duplicate top of stack
@@ -453,11 +468,28 @@
 				folder
 				filename))))
 	  (with-open-file (stream filename)
-	    (let ((eof (gensym "eof")))
-	      (do ((curr (read stream nil eof)
-			 (read stream nil eof)))
+	    (let ((eof (gensym "eof"))
+		  (file-content ""))
+	      (do ((curr (read-line stream nil eof)
+			 (read-line stream nil eof)))
 		  ((eq curr eof))
-		(funcall this curr)))))
+		(setf file-content
+		      (concatenate 'string
+				   file-content " " 
+				   (aif (position #\; curr)
+					(subseq curr 0 it)
+					curr))))
+	      (if (not (string= "" file-content))
+		  (do ((curr (read-from-string file-content nil eof)
+			     (read-from-string file-content nil eof)))
+		      ((eq curr eof))
+		    (setf file-content
+			  (let ((rep (format nil "~S" curr)))
+			    (subseq file-content
+				    (+ (search rep file-content
+					       :test 'equalp)
+				       (length rep)))))
+		    (funcall this curr))))))
 	(perror malformed-filename
 		"Attempt to open file ~S"
 		filename))))
@@ -506,13 +538,13 @@
 (defprim folder nil
   (push-curr folder))
 
-(defprim >o nil
+(defprim >out nil
   ;; Push onto output
   ;; ( val -- )
   (args (val)
     (push val out)))
 
-(defprim o_ nil
+(defprim out_ nil
   ;; Delete output
   ;; ( -- )
   (setf out nil))

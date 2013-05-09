@@ -6,6 +6,9 @@
   "stdlib.poslin" >> !)
 
 (addstd
+  "package.poslin" >> !)
+
+(addstd
   "math.poslin" >> !)
 
 #|

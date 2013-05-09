@@ -1,0 +1,55 @@
+?p     ; (pname oname -- thread)
+[ <> & ; oname pname
+  ?v & ; oname op-env
+  <> & ; op-env oname
+  ?o & ; thread
+]@
+
+p*       ; ( pname -- )
+[ @eo* & ; pname op-env
+  @~v &  ;
+]@
+
+@p     ; ( pname oname thread -- )
+[ >r & ; pname oname
+  <> & ; oname pname
+  ?~v  ; oname op-env
+  <> & ; op-env oname
+  r> & ; op-env oname thread
+  @o & ;
+]@
+
+]@p     ; ( pname oname [ ... -- )
+[ ']& & ; pname oname thread
+  @p &  ;
+]i
+
+}@p     ; ( pname [ ... -- )
+[ '] &  ; pname []
+  § &   ; pname [] []
+  ?n &  ; pname [] oname
+  <> &  ; pname oname []
+  '%[ & ; pname oname [ ...
+  '} &  ; pname oname []
+  @p    ;
+]i
+
+p>@     ; ( pname oname -- )
+[ § &   ; pname oname oname
+  >r &  ; pname oname
+  ?p &  ; thread
+  r> &  ; thread oname
+  <> &  ; oname thread
+  @~o & ;
+]@
+
+!p     ; ( pname oname -- ??? )
+[ ?p & ; thread
+  '! & ; ???
+]i
+
+<p<     ; ( pname1 oname pname2 -- )
+[ <>§ & ; pname1 oname pname2 oname
+  ?p &  ; pname1 oname thread
+  @p &  ;
+]@

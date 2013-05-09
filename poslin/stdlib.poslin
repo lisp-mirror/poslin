@@ -1,160 +1,153 @@
+"Does this work?" print !
 0 ^ !
 ?eo !
-~
-[ 0 ^ &
+~       ; ( -- [] )
+[ 0 ^ & ; []
 ] @o !
 
 ~ !
 ?eo !
-?~eo
-[ ~ &
-  ?eo &
+?~eo    ; ( -- op-env )
+[ ~ &   ; []
+  ?eo & ; op-env
 ] @o !
 
 ?~eo !
-^^
-[ 1 ^ &
+^^      ; ( -- [] )
+[ 1 ^ & ; []
 ] @o !
 
 ?~eo !
-^<-
-[ ^^ &
-  <> &
-  <- &
+^<-    ; ( [ ... val -- val [ ... )
+[ ^^ & ; [ ... val []
+  <> & ; [ ... [] val
+  <- & ; val [ ...
 ] @o !
 
 ?~eo !
-^->
-[ ^^ &
-  -> &
+^->    ; ( val [ ... -- [ ... val )
+[ ^^ & ; val [ ... []
+  -> & ; [ ... val
 ] @o !
 
 ?~eo !
-@~eo
-[ ~ &
-  <> &
-  @eo &
+@~eo    ; ( op-env -- )
+[ ~ &   ; op-env []
+  <> &  ; [] op-env
+  @eo & ;
 ] @o !
 
 ?~eo !
-@~o
-[ ?~eo &
-  '[ &
-     ^-> &
-     ^-> &
-     ^-> &
-     <> &
-     @o &
-  '] &
-  _ &
+@~o      ; ( sym op -- )
+[ >r &   ; sym
+  ?~eo & ; sym op-env
+  <> &   ; op-env sym
+  r> &   ; op-env sym op
+  @o &   ;
 ] @o !
 
-?~o
-[ ?~eo &
-  <> &
-  ?o &
+?~o      ; ( oname -- thread )
+[ ?~eo & ; oname op-env
+  <> &   ; op-env oname
+  ?o &   ; thread
 ] @~o !
 
-?~ev
-[ ~ &
-  ?ev &
+?~ev    ; ( -- var-env )
+[ ~ &   ; []
+  ?ev & ; var-env
 ] @~o !
 
-@~ev
-[ ~ &
-  <> &
-  @ev &
+@~ev    ; ( var-env -- )
+[ ~ &   ; var-env []
+  <> &  ; [] var-env
+  @ev & ;
 ] @~o !
 
-@~v
-[ ?~ev &
-  '[ &
-     ^-> &
-     ^-> &
-     ^-> &
-     <> &
-     @v &
-  '] &
-  _ &
+@~v      ; ( vname val -- )
+[ >r &   ; vname
+  ?~ev & ; vname var-env
+  <> &   ; var-env vname
+  r> &   ; var-env vname val
+  @v &   ;
 ] @~o !
 
-?~v
-[ ?~ev &
-  <> &
-  ?v &
+?~v      ; ( vname -- val )
+[ ?~ev & ; vname var-env
+  <> &   ; var-env vname
+  ?v &   ; val
 ] @~o !
 
-@~o_
-[ ?~eo &
-  <> &
-  @o_ &
+@~o_     ; ( oname -- )
+[ ?~eo & ; oname op-env
+  <> &   ; op-env oname
+  @o_ &  ;
 ] @~o !
 
-@~v_
-[ ?~ev &
-  <> &
-  @v_ &
+@~v_     ; ( vname -- )
+[ ?~ev & ; vname var-env
+  <> &   ; var-env vname
+  @v_ &  ;
 ] @~o !
 
-@~i+
-[ ?~eo &
-  <> &
-  @i+ &
+@~i+     ; ( oname -- )
+[ ?~eo & ; oname op-env
+  <> &   ; op-env oname
+  @i+ &  ;
 ] @~o !
 
-@~i_
-[ ?~eo &
-  <> &
-  @i_ &
+@~i_     ; ( oname -- )
+[ ?~eo & ; oname op-env
+  <> &   ; op-env oname
+  @i_ &  ;
 ] @~o !
 
-@~i-
-[ ?~eo &
-  <> &
-  @i- &
+@~i-     ; (oname -- )
+[ ?~eo & ; oname op-env
+  <> &   ; op-env oname
+  @i- &  ;
 ] @~o !
 
-]&
-[ '] &
-  '& &
+]&     ; ( [ ... -- thread )
+[ '] & ; []
+  '& & ; thread
 ] @~o !
 ]& @~i+ !
 
-]@
-[ '] &
-  @~o &
+]@      ; ( sym [ ... -- )
+[ '] &  ; sym []
+  @~o & ;
 ] @~o !
 ]@ @~i+ !
 
-]_
-[ '] &
-  _ &
+]_     ; ( [ ... -- )
+[ '] & ; []
+  _ &  ;
 ]@
 ]_ @~i+ !
 
-]i
-[ '] &
-  >r &
-  § &
-  r> &
-  @~o &
-  @~i+ &
+]i       ; ( sym [ ... -- )
+[ '] &   ; sym []
+  >r &   ; sym
+  § &    ; sym sym
+  r> &   ; sym sym []
+  @~o &  ; sym
+  @~i+ & ;
 ]@
 ]i @~i+ !
 
-@~n
-[ ~ &
-  <> &
-  @n &
+@~n    ; ( sym -- )
+[ ~ &  ; sym []
+  <> & ; [] sym
+  @n & ;
 ]@
 
-?~n
-[ ~ &
-  ?n &
+?~n    ; ( -- sname )
+[ ~ &  ; []
+  ?n & ; sname
 ]@
 
-!&
-[ ''! &
+!&      ; ( op -- op {!} )
+[ ''! & ; op {!}
 ]i
 
 <?>!
@@ -190,18 +183,18 @@ __
 [ '] &
   '[ &
      ''[ &
-     	 ?~eo &
-	 @eo+ &&
-	 @~eo &&
-	 ?~ev &
-	 @ev+ &&
-	 @~ev &&
-	 ^-> &
-	 § &
-	 ^<- &
-	 ?n &
-	 @~n &&
-	 ^-> & &&
+         ?~eo &
+         @eo+ &&
+         @~eo &&
+         ?~ev &
+         @ev+ &&
+         @~ev &&
+         ^-> &
+         § &
+         ^<- &
+         ?n &
+         @~n &&
+         ^-> & &&
      '']_ &
   '] &
 ]i
