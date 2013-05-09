@@ -1,0 +1,9 @@
+documentation
+type system
+looping constructs
+error handling
+code walking
+whole package importing
+system definition facilities
+streams
+generic functions and methods (maybe use environments for that one)
