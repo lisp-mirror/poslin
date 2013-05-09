@@ -42,27 +42,6 @@
    take a moment to run.
 
 3. KNOWN PROBLEMS
-   SBCL1.1.7.0 emits a style warning when running POSLIN-ENV.
-   ; in: POSLIN-ENV
-   ;     (POSLIN::PREPARE)
-   ; --> PROGN POSLIN::INSTALL-PRIMS PROGN LET LAMBDA FUNCTION
-   ; --> POSLIN::ARGS LET POSLIN::POP-CURR IF POSLIN::PERROR PROGN LET
-   ; --> FORMAT FORMAT
-   ; ==>
-   ;   NIL
-   ;
-   ; caught STYLE-WARNING:
-   ;   This is not a UNSIGNED-BYTE:
-   ;     NIL
-   ;   See also:
-   ;     The SBCL Manual, Node "Handling of Types"
-   ;
-   ; compilation unit finished
-   ;   caught 1 STYLE-WARNING condition
-   This does not seem to pose any problems when running poslin but is
-   just visually annoying. Any pointers to where that warning might
-   come from are welcome.
-
    Trying to compile POSLIN-REPL into an executable via
    (sb-ext:save-lisp-and-die "poslin" :executable t :toplevel
    			     #'poslin-repl)

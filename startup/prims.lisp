@@ -271,7 +271,7 @@
 	    (multiple-value-bind (thread found?)
 		(gethash name (op-env-defs op-env))
 	      (if found?
-		  (push-curr thread)
+		  (push-curr (cons 'thread thread))
 		  (perror undefined-operation "No operation ~S"
 			  name)))
 	    (perror malformed-op-env
@@ -287,12 +287,11 @@
   (args (var-env name)
     (if (symbolp name)
 	(if (var-env-p var-env)
-	    (multiple-value-bind (val found?)
-		(gethash name (var-env-defs var-env))
-	      (if found?
-		  (push-curr val)
+	    (let ((val (find-var name var-env)))
+	      (if (empty? val)
 		  (perror unbound-var "Variable ~S is unbound in ~S"
-			  name var-env)))
+			  name var-env)
+		  (push-curr val)))
 	    (if (null var-env)
 		(perror unbound-var "Variable ~S is unbound in ~S"
 			name var-env)
