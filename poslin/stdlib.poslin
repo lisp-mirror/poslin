@@ -1,4 +1,3 @@
-"Does this work?" print !
 0 ^ !
 ?eo !
 ~       ; ( -- [] )

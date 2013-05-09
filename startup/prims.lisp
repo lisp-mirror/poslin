@@ -468,28 +468,20 @@
 				folder
 				filename))))
 	  (with-open-file (stream filename)
-	    (let ((eof (gensym "eof"))
-		  (file-content ""))
+	    (let ((eof (gensym "eof")))
 	      (do ((curr (read-line stream nil eof)
 			 (read-line stream nil eof)))
 		  ((eq curr eof))
-		(setf file-content
-		      (concatenate 'string
-				   file-content " " 
-				   (aif (position #\; curr)
-					(subseq curr 0 it)
-					curr))))
-	      (if (not (string= "" file-content))
-		  (do ((curr (read-from-string file-content nil eof)
-			     (read-from-string file-content nil eof)))
-		      ((eq curr eof))
-		    (setf file-content
-			  (let ((rep (format nil "~S" curr)))
-			    (subseq file-content
-				    (+ (search rep file-content
-					       :test 'equalp)
-				       (length rep)))))
-		    (funcall this curr))))))
+		(multiple-value-bind (w pos)
+		    (read-from-string curr nil eof)
+		  (setf curr (subseq curr pos))
+		  (loop while (not (eq w eof))
+		     do (progn
+			  (funcall this w)
+			  (multiple-value-bind (nw npos)
+			      (read-from-string curr nil eof)
+			    (setf curr (subseq curr npos)
+				  w nw)))))))))
 	(perror malformed-filename
 		"Attempt to open file ~S"
 		filename))))
