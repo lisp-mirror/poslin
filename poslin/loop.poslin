@@ -1,16 +1,29 @@
-for    ; ( op n -- ??? )
+for ; ( op n -- ??? )
 { n arg
   op arg
-  n &v
-  0 <= &
+  n &v 0 <= &
   ||
-  [ op &v
-    <^! &
-    op &v
-    ^<- &
+  [ op &v <^! &
+    op &v ^<- &
     n &v 1- &
     ^<- &
     for <^! &
   ]
+  <?>!
+}@
+
+while ; ( op test -- ??? )
+{ test arg
+  op arg
+  test &v
+  <^! &
+  ^-> &
+  [ op &v
+    <^! &
+    op &v ^<- &
+    test &v ^<- &
+    while <^! &
+  ]
+  ||
   <?>!
 }@

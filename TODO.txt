@@ -8,3 +8,7 @@ whole package importing
 system definition facilities
 streams
 generic functions and methods (maybe use environments for that one)
+
+Introduce bindings. This way environment confusion can be avoided with
+respect to parent environments. Make them available as first level
+objects.
