@@ -15,8 +15,7 @@ for ; ( op n -- ??? )
 while ; ( op test -- ??? )
 { test arg
   op arg
-  test &v
-  <^! &
+  test &v <^! &
   ^-> &
   [ op &v
     <^! &

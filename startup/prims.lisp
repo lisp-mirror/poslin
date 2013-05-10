@@ -1,113 +1,6 @@
 (in-package #:poslin)
 
-(defparameter *prims* '())
-
-;;; No operation
-(defprim || nil
-  ;; Does nothing
-  ;; ( -- )
-  )
-
-;;; Error
-(defprim error t
-  (args (type text)
-    (push-curr (lambda ()
-		 (let ((rpc pc)
-		       (rrs rstack))
-		   (setf pc '())
-		   (setf rstack '())
-		   (format t "~&POSLIN-~A-ERROR~% Remaining PC: ~A~% ~
-                              Remaining RSTACK: ~A~%  ~A"
-			   type (formatt rpc)
-			   (formatt rrs)
-			   text))))))
-
-;;; Calling
-(defprim ! t
-  ;; Calls operation on top of stack
-  ;; ( op -- ??? )
-  (let* ((callable (pop-curr))
-	 (thread (callable->thread callable this)))
-    (if (empty? thread)
-	(perror undefined-operation "No operation ~A"
-		(formatt callable))
-	(progn
-	  (push thread pc)
-	  (interpreter)))))
-	
-
-(defprim & t
-  ;; Puts thread of word on top onto stack
-  ;; ( op -- thread )
-  (let* ((callable (pop-curr))
-	 (op (callable->thread callable this)))
-    (if (empty? op)
-	(perror undefined-operation "No operation ~A"
-		callable)
-	(push-curr (cons 'thread op)))))
-
-(defprim ?& nil
-  ;;
-  ;; ( val -- b )
-  (args (val)
-    (push-curr (or (functionp val)
-		   (and (consp val)
-			(member (car val)
-				'(quote thread lisp)
-				:test #'symbol=))
-		   (and (symbolp val)
-			(not (empty? (lookup-op val))))))))
-
 ;;; Write
-(defprim @n nil
-  ;; Sets the name of the stack
-  ;; ( [] name -- )
-  (args (stack name)
-    (if (symbolp name)
-	(if (stack-p stack)
-	    (setf (stack-name stack)
-		  name)
-	    (perror "Attempt to set name of ~A to ~A"
-		    stack name))
-	(perror "Attempt to set name of stack ~A to ~A"
-		stack name))))
-
-(defprim @o nil
-  ;; Sets word in operation environment to thread of top
-  ;; ( op-env name op -- )
-  (let* ((op (pop-curr))
-	 (thread (callable->thread op this))
-	 (name (pop-curr))
-	 (op-env (pop-curr)))
-    (if (empty? thread)
-	(perror undefined-operation "No operation ~S"
-		name)
-	(if (symbolp name)
-	    (if (op-env-p op-env)
-		(setf (gethash name (op-env-defs op-env))
-		      thread)
-		(perror malformed-op-env
-			"Attempt to set operation in ~S"
-			op-env))
-	    (perror malformed-op-name
-		    "Attempt to set name ~S in operation environment"
-		    name)))))
-
-(defprim @o_ nil
-  ;; Removes word from operation environment
-  ;; ( op-env name -- )
-  (args (op-env name)
-    (if (symbolp name)
-	(if (op-env-p op-env)
-	    (remhash name (op-env-defs op-env))
-	    (perror malformed-op-env
-		    "Attempt to remove operation definition ~S from ~
-                     ~S"
-		    name op-env))
-	(perror malformed-op-name
-		"Attempt to remove operation definition ~S from ~
-                 operation environment ~S"
-		name op-env))))
 
 (defprim @i+ nil
   ;; Sets word to be immediate
@@ -189,37 +82,6 @@
 		"Attempt to unset ~A in variable environment ~A"
 		name var-env))))
 
-(defprim @eo nil
-  ;; Sets operation environment of stack
-  ;; ( [ ... ] op-env -- )
-  (args (stack op-env)
-    (if (op-env-p op-env)
-	(if (stack-p stack)
-	    (setf (stack-ops stack)
-		  op-env)
-	    (perror malformed-stack
-		    "Attempt to set ~S as operation environment of ~S"
-		    op-env stack))
-	(perror malformed-op-env
-		"Attempt to set ~S as operation environment of stack ~S"
-		op-env stack))))
-
-(defprim @eo* nil
-  ;; Makes new operation environment
-  ;; ( -- op-env )
-  (push-curr (make-op-env)))
-
-(defprim @eo+ nil
-  ;; Makes child operation environment
-  ;; ( op-env-par -- op-env-child )
-  (args (op-env-par)
-    (if (or (op-env-p op-env-par)
-	    (null op-env-par))
-	(push-curr (make-op-env :par op-env-par))
-	(perror malformed-op-env
-		"Attempt to set ~S as parent of operation environment"
-		op-env-par))))
-
 (defprim @ev nil
   ;; Sets variable environment of stack
   ;; ( [ ... ] var-env -- )
@@ -252,15 +114,6 @@
 		var-env-par))))
 
 ;;; Read
-(defprim ?n nil
-  ;; Gets name of stack
-  ;; ( [] -- name )
-  (args (stack)
-    (if (stack-p stack)
-	(push-curr (stack-name stack))
-	(perror malformed-stack
-		"Attempt to get name of ~S"
-		stack))))
 
 (defprim ?o nil
   ;; Gets thread from word

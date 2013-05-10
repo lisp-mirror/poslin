@@ -1,5 +1,7 @@
 (in-package #:poslin)
 
+(defparameter *prims* '())
+
 (defmacro defnprim (name immediate? &body body)
   `(setf *prims*
 	 (cons (list* ',name ',immediate? ',body)

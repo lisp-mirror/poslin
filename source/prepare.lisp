@@ -4,8 +4,9 @@
   `(progn
      ,@(mapcar #`(let ((thread (lambda ()
 				 ,@(cddr a1))))
-		   (setf (lookup-op ',(car a1))
-			 thread)
+		   (setf (find-op ',(car a1)
+				  (curr-op-env))
+			 (make-binding :val thread))
 		   ,@(if (cadr a1)
 			 `((setf (immediate? ',(car a1))
 				 t)))

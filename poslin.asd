@@ -33,14 +33,17 @@
      (:file "prims")
      (:file "stdlib")
      (:file "format-thread")
-     (:file "stack")
+     (:file "binding")
+     (:file "env")
+     (:file "stack"
+	    :depends-on ("env"))
      (:file "error"
 	    :depends-on ("format-thread"))
      (:file "run-poslin")
      (:file "conv"
-	    :depends-on ("stack" "error"))
+	    :depends-on ("env" "stack" "error"))
      (:file "word"
-	    :depends-on ("stack" "conv"))
+	    :depends-on ("binding" "env" "conv"))
      (:file "interpreter"
 	    :depends-on ("conv"))
      (:file "prepare"
@@ -50,15 +53,23 @@
 				     "prepare"))
      (:file "to-thread"
 	    :depends-on ("stack" "error" "word"))
-     (:file "inspect")
+     ))
+   (:module
+    "prims"
+    :depends-on ("package" "source")
+    :components
+    ((:file "call")
+     (:file "nop")
+     (:file "error")
+     (:file "binding")
+     (:file "stackname")
+     (:file "op-env")
      ))
    (:module
     "startup"
     :depends-on ("package" "source")
     :components
-    ((:file "prims")
-     (:file "stdlib"
-	    :depends-on ("prims"))
+    ((:file "stdlib")
      ))
    (:module
     "repl"
