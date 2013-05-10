@@ -1,4 +1,4 @@
-loop
+for    ; ( op n -- ??? )
 { n arg
   op arg
   n &v
@@ -8,9 +8,9 @@ loop
     <^! &
     op &v
     ^<- &
-    n &v math 1- &p
+    n &v 1- &
     ^<- &
-    loop <^! &
+    for <^! &
   ]
   <?>!
 }@

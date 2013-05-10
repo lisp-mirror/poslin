@@ -1,37 +1,32 @@
 math p* !
 
-math
 1-      ; ( n -- n-1 )
 [ 1 - &
-]@p
+]@
 
-math
 1+      ; ( n -- n+1 )
 [ 1 + &
-]@p
+]@
 
-math
 *2      ; ( n -- 2n )
 [ 2 * &
-]@p
+]@
 
-math
 /2      ; ( n -- n/2 )
 [ 2 / &
-]@p
+]@
 
-math
 ^2    ; ( n -- n² )
 [ § & ; n n
   * & ; n²
-]@p
+]@
 
 math
 triangle     ; ( n -- n*(n+1)/2
 [ § &        ; n n
-  math 1+ ?p ; n n+1
+  1+ &       ; n n+1
   * &        ; n*(n+1)
-  math /2 ?p ; n*(n+1)/2
+  /2 &       ; n*(n+1)/2
 ]@p
 
 math
@@ -41,7 +36,7 @@ fact    ; ( n -- n! )
   1 <= &
     [ 1 ]
     [ n &v
-      math 1- &p
+      1- &
       math fact '!p &
       n &v
       * &

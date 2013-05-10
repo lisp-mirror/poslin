@@ -3,13 +3,11 @@
 (defparameter *stdlib* '())
 
 (addstd
-  "stdlib.poslin" >> !)
-
-(addstd
-  "package.poslin" >> !)
-
-(addstd
-  "math.poslin" >> !)
+  "stdlib.poslin" >> !
+  "package.poslin" >> !
+  "math.poslin" >> !
+  "loop.poslin" >> !
+  )
 
 #|
 (addstd
