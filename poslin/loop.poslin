@@ -1,0 +1,16 @@
+loop
+{ n arg
+  op arg
+  n &v
+  0 <= &
+  ||
+  [ op &v
+    <^! &
+    op &v
+    ^<- &
+    n &v math 1- &p
+    ^<- &
+    loop <^! &
+  ]
+  <?>!
+}@
