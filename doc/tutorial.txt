@@ -1,0 +1,372 @@
+To give an introduction into programming with poslin I will show how
+the standard library is implemented. Primary operators will be
+explained as we encounter them and together with them the concepts
+they are related to.
+
+
+BASICS
+
+Let's start with some basics we need to understand before we dive into
+the code.
+
+The place where anything happens in poslin is called the 'path'. The
+path is simply a stack that contains other stacks. Those other stacks
+is where data to operate on are saved. It is called the path, because,
+like walking along a path of folders in a file system, one can walk
+along a path of stacks in poslin.
+Those stacks on the path are really a bit more than just a stack -
+although they most obviously contain a stack that holds the data we
+operate on, they also keep track of variables and operations that are
+defined when we are working with them.
+The topmost stack on the path I call the current stack.
+
+When our poslin repl encounters a word it first checks, whether it is
+a symbol. If it is not a symbol, it is simply pushed onto the current
+stack. If it is a symbol, the immediateness of that symbol is looked
+up in the current stack and if it is immediate, the operation
+associated with that symbol is called, otherwise the symbol is just
+put pushed onto the current stack.
+
+Poslin knows 7 immediate primary operators of which we really only
+need 4 right now.
+Those for are '!', '&', '[' and ']'.
+'!' pops the top of the current stack, tries to convert it into a
+thread (which really just is a fancy name for something that poslin
+actually can execute without further conversions) and then executes
+that thread. This is how we call most of our non-immediate (aka
+delayed) operations and it is quite important, as most of our
+operations are delayed.
+'&' also pops the top of the current stack and converts it into a
+thread, but instead of calling the thread it pushes it back onto the
+current thread. This is useful for debugging when you know how to read
+threads but more importantly we will use it to define new operations.
+'[' pushes a fresh thread onto the path. This is also useful in
+defining operations, as stacks are callable and thus can be converted
+into threads by '!' and '&'. So, to define new operations later, we
+will need to make new stacks.
+']' pops the current stack off the path and pushes it onto the then
+new current stack. If we want to convert a stack into an operation we
+will need to have access to it somehow and this is the way we do it
+after we are done with defining it.
+
+
+THE OPERATION ENVIRONMENT
+
+I said that '!' and '&' look up symbols to find threads. Those symbols
+somehow need to be associated with threads. Poslin uses 'operation
+environments' for that purpose. Till now it suffices to know that any
+stack has it's own operation environment and that '!' and '&' look up
+threads in the operation environment of the current stack.
+Now, actually an operation environment doesn't associate symbols with
+threads directly but with bindings that contain threads.
+The primary operators we use to get a thread out of an operation
+environment are all very basic and we need many steps to actually get
+to the thread we want to have. First we need to get the current stack
+to extract it's operation environment, then we need to get the right
+binding out of that and finally we need to get the thread out of the
+binding and mark it as a thread (That last part is necessary because
+poslin uses lisp lists internally to represent threads and
+lists. Because poslin also has lists threads need to be marked when
+they are on the stack.). While we do this we need to preserve all
+necessary information and keep it in the right order. This is quite a
+lot of work, so our first task is to write a set of operators that
+makes dealing with operation environments easier.
+
+The first operator in that set is one that converts a callable into a
+thread and then saves it in an operation environment.
+Right now we don't have any easier way, so we need to prepare our
+environment. If you haven't started up you poslin repl yet, do so
+now. Look into the README.txt to find out how to do it.
+This part of this chapter will be especially long as I want to
+describe every detail. Later operations will be described faster.
+
+To define our operator we use the operator '@bo'. It takes an
+operation environment, a symbol and a binding and saves the binding in
+the operation environment under the given symbol.
+So, to use '@bo' our stack needs to look something like this:
+[ROOT: #<OP-ENV ...> @o #<BINDING ...>]
+So, the first thing to do is to get our current operation environment,
+because this is where '!' and '&' will look for it.
+Our current operation environment we find in our current stack. Our
+current stack is the zeroth stack on our path. To get the nth stack on
+the path we can use the operator '^'.
+So, we first enter
+> 0 ^ !
+If I write something like this it means to ignore the leading '>' as
+this is just the symbol that poslin prints to signal it's waiting for
+input, enter all the other stuff and finally make poslin do what you
+told it to do by pressing enter.
+
+Poslin will print back
+[ROOT: "[ ROOT ]"]
+This means that on the stack ROOT (which is the stack that is
+initially on the path) there is a stack whose name is "ROOT". This
+happens to be the root stack itselfm which is exactly what we want.
+Or, more precisely, we want the operation environment of that
+stack. We can get it with the operator '?eo', which pops a stack and
+pushes the operation environment of that stack. So
+> ?eo !
+does what we want. Poslin now prints back something like this:
+[ROOT:
+  #<OP-ENV ...>]
+All the stuff after the "OP-ENV" is all the operation names defined in
+that operation environment, where immediate operators are marked by
+being in a list whose second value is a T like this:
+(! T)
+
+So, now we have our operation environment. Next we need the name of
+the operation we want to define. I choose to call it '@o'. '@' stands
+for setting something, 'o' stands for "operation".
+> @o
+[ROOT: <#OP-ENV ...> @o]
+
+To recap: We entered the following till now:
+0 ^ ! ; get the current stack
+?eo ! ; get the operation environment of the stack
+@o    ; put the name of the operation to be defined onto the stack
+And now have
+1. our current operation environment
+2. the name of the operation we want to define.
+
+If you think back we need 3 things. The third is a binding containing
+the thread we want to call when calling the operation.
+So first we need to make a new binding in which our thread can be
+saved. 'b*' just pushes a fresh binding onto the current stack.
+> b* !
+[ROOT: #<OP-ENV ...> @o #S(BINDING ...)]
+There is one slight problem: The operation that sets the value of a
+binding pops both the value and the binding, so we can't just put our
+thread onto the stack and save it as we then would have no binding
+left to save in our operation environment. This problem is simply
+solved by doubling the binding on the stack. '§' does exactly that: It
+duplicates the top of the current stack.
+> § !
+[ROOT: #<OP-ENV> @o #S(BINDING) #S(BINDING)]
+Those two bindings on the stack are really one and the same binding,
+so setting the value of one will alos affect the other one.
+
+We can now start to write the stack we will convert into the thread we
+want to save as our operation.
+> [
+[ROOT:NIL:]
+Don't worry that there's nothing to be seen - we are now in a fresh
+and empty stack. What we put onto ROOT is still there.
+
+To write a new thread we put all the threads in the order they are to
+be called onto a stack and then convert that stack into a thread
+itself.
+Basically this operator should do the following things: Convert the
+top of the stack into a thread, put that thread into a fresh binding
+and then save that binding in a given operation environment under a
+given name while returning nothing.
+The effect this has on the stack where this operation is called can be
+described like this:
+( op-env name op -- )
+This basically means: When calling the operation I expect to find an
+operation environment, a name (a symbol) and a callable on the stack,
+where the callable is on top of the stack. The operation will remove
+all of those and will push nothing back.
+
+First we want to convert the callable into a thread. Converting
+something into a thread is done via '&' so I will need to put the
+thread of '&' onto the stack.
+I can't just write 
+> & &
+because poslin will try to execute '&' immediately, finding nothing to
+convert and giving back an error. To prevent this from happening I
+need to quote '&' like this:
+> '& &
+This tells poslin that I don't want it to look up the immediateness of
+'&' but just to push '&' on the current stack. Then an unquoted '&'
+follows, looking up the thread of '&' and pushing it onto the current
+stack.
+[ROOT:NIL: (THREAD . "OP{&}")]
+Now we will need to set up our binding. As earlier we now want to
+create a new binding, which means we will need to double it before
+setting it, because else our work will be done for nothing. The thread
+being created will be in the way then, so we put it away first to put
+it back later.
+Where can we put it? We could use a local variable, but this is just
+slightly less complicated than what we are doing right now and besides
+we could run into conflicts with other usages of the same variable
+later, so this is not a good idea.
+Poslin gives access to the return stack. The return stack manages all
+the threads we need to execute after finishing our current one. As
+long as we revert it to it's original state before finishing our
+current thread we can use it as a temporary storage, so we just do
+that. To put something on the return stack we use the operation '>r'.
+> >r &
+[ROOT:NIL: (THREAD . OP{&}) (THREAD . OP{>R})]
+Now we are free to create our binding and duplicate it.
+> b* & § &
+[ROOT:NIL: OP{&} OP{>R} OP{B*} OP{§}]
+Now we get back our thread with 'r>', which pops the top of the return
+stack and pushes it onto the current stack.
+> r> &
+[ROOT:NIL: OP{&} OP{>R} OP{B*} OP{§} OP{R>}]
+Just to give an idea how the stack would change if we were executing
+those commands on the given stack instead of defining our operation,
+here a pseudo trace (# divides stack from called operation)
+OP-ENV NAME OP # &
+OP-ENV NAME THREAD # >R
+OP-ENV NAME # B*
+OP-ENV NAME BINDING # §
+OP-ENV NAME BINDING BINDING # R>
+OP-ENV NAME BINDING BINDING THREAD
+So now we can save the thread in the binding with the operation '@b'.
+> @b &
+[ROOT:NIL: OP{&} OP{>R} OP{B*} OP{§} OP{R>} OP{@B}]
+OP-ENV NAME BINDING
+Finally we can use '@bo' to save the BINDING under NAME in OP-ENV.
+> @bo &
+[ROOT:NIL: OP{&} OP{>R} OP{B*} OP{§} OP{R>} OP{@B} OP{@BO}]
+This consumes the rest of what we had on the stack and our definition
+is done. We close it with a ']'.
+> ]
+[ROOT: #<OP-ENV> @o #S(BINDING) #S(BINDING) [ "NIL" ]]
+Now the just written stack will be converted into a thread with the
+help of '&'.
+> &
+[ROOT: #<OP-ENV> @o #S(BINDING) #S(BINDING) (THREAD ...)]
+Note that this thread contains the threads in the previously defined
+stack in the defined order.
+Now we write the thread into the binding
+> @b !
+[ROOT: #<OP-ENV> @o #S(BINDING)]
+and the binding into the operation environment
+> @bo !
+[ROOT:]
+
+Congratulations! You just wrote your first operation!
+Now, handling the bindings wasn't very comfy, but with our new
+operation we don't need to do this by hand anymore. We can let poslin
+do it for us.
+The code we wrote do do this in one place looks like this:
+
+> 0 ^ !
+> ?eo !
+> @o      ; ( op-env name op -- )
+> b* !
+> § !
+> [ '& &  ; op-env name thread
+>   >r &  ; op-env name
+>   b* &  ; op-env name bind
+>   § &   ; op-env name bind bind
+>   r> &  ; op-env name bind bind thread
+>   @b &  ; op-env name bind
+>   @bo & ;
+> ] &
+> @b !
+> @bo !
+
+The comment behind the '@o' shows the stack signature of the defined
+operation, the comments behind the lines in the substack show how this
+line changes the stack on which the operation is called. From now on I
+will use this format to show how to write poslin code.
+
+Now, look at the first line of our definition. It retrieves the
+current stack, which sounds like something we might want to do quite
+frequently. So, lets write an operation that does this.
+
+We first retrieve our current operation environment
+> 0 ^ !
+> ?eo !
+and then we write the name of the operation to be defined. I call the
+current stack '~'. The operation doesn't expect anything and leaves a
+stack.
+> ~ ; ( -- [] )
+Now, we already know how to retrieve the current stack: Put a 0 and
+then call '^', so we put just that on our stack.
+> [ 0 ^ & ; []
+Finally, we need to close the stack. Because we now have '@o' we
+didn't need to explicitely create any bindings and we now don't need
+to set them here. We can just do the following:
+> ] @o !
+
+So, in one place:
+> 0 ^ !
+> ?eo !
+> ~       ; ( -- [] )
+> [ 0 ^ ! ; []
+> ] @o !
+Our previous definition saved us 7 words. This one will save us just
+one, but this will add up over time.
+
+Now, once again, look at the top of our definition. The top two lines
+get the current operation environment. We will probably do that a lot,
+so we again put it into it's own definition. As we get the operation
+environment of the current stack I call this operation '?~eo'.
+> ~ !     ; Get the current stack
+> ?eo !   ; Get it's operation environment
+> ?~eo    ; ( -- op-env ) We don't need to know anything, we just want
+  	  ; the current operation environment
+> [ ~ &   ; []
+>   ?eo & ; op-env
+> ] @o !  ; Finish and save
+
+Now we can write definitions in this pattern:
+?~eo
+name-goes-here
+[ define
+  some
+  stuff
+] @o !
+Finding patterns is always a nice thing because it means that the
+pattern can be abstracted away into something smaller.
+So, before I go any further I want to mention that until now we only
+have defined delayed operations. This is fine, because immediate
+operations should be used with care and are intended by me to be
+mainly used for defining new syntax.
+Now, most languages have some kind of special syntax for defining new
+operations. There is no good reason to avoid this and we can actually
+shorten our pattern up there to this with just one additional
+definition:
+name-goes-here
+[ define
+  some
+  stuff
+]@
+The new operation here is the ']@' and as this operation is most
+likely more frequently used to finish definitions then to be used in
+other definitions it makes very much sense to make it immediate.
+But before I get to that, let's write the definition first.
+
+    A quick note: This won't work in a standard poslin session, as
+    there ']@' is already defined and immediate, which meas it will be
+    called as soon as you enter it. You can either input it as ']@
+    every time instead of as ]@ (as I will do here) or you can make a
+    copy of poslin that doesn't load the standard library. For that
+    purpose just open startup/stdlib.lisp and delete all the lines in
+    the ADDSTD form.
+
+To define ]@ we start as usual
+> ?~eo !
+> ]@ ; ( name [ ... -- )
+As you can see in the signature we are starting with an open
+stack. First thing to do is to close it. As ']' is immediate, we need
+to quote it.
+> [ '] & ; name []
+Now we just need to save this as we just did in the current operation
+environment like this:
+>   @~o & ;
+> ] @o !  ; and then we finish.
+This was pretty easy. Last thing to do is to tell our current
+operation environment that we want ']@' to be immediate. For this
+there is the operation '@i+'. It has the signature ( op-env name -- )
+so we need to write
+> ?~eo !   ; in the current operation environment
+> ]@ @i+ ! ; set ]@ to be immediate
+
+As usual, here the whole code:
+> ?~eo !
+> ]@      ; ( name [ ... -- )
+> [ '] &  ; name []
+>   @~o & ;
+> ] @o !
+> ?~eo !
+> ]@ @i+ !
+
+This tutorial will be most likely be continued to implement the whole
+standard library, but for now this will suffice. If you are interested
+in learning a bit of how poslin can be extended beyond what is written
+here, look into the poslin subfolder.
