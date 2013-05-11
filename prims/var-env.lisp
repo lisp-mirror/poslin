@@ -61,7 +61,7 @@
 	  (setf (var-env-defs copy)
 		(make-hash-table :test #'eq))
 	  (maphash (lambda (k v)
-		     (setf (gethash k (car-env-defs copy))
+		     (setf (gethash k (var-env-defs copy))
 			   v))
 		   (var-env-defs var-env))
 	  (push-curr copy))

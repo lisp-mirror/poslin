@@ -6,7 +6,7 @@
     (if (op-env-p op-env)
 	(if (symbolp name)
 	    (if (binding-p binding)
-		(setf (gethash name (op-env-defs))
+		(setf (gethash name (op-env-defs op-env))
 		      binding)
 		(perror malformed-binding
 			"Attempt to set ~A as binding of ~A in ~
@@ -41,7 +41,7 @@
     (if (var-env-p var-env)
 	(if (symbolp name)
 	    (if (binding-p binding)
-		(setf (gethash name (var-env-defs))
+		(setf (gethash name (var-env-defs var-env))
 		      binding)
 		(perror malformed-binding
 			"Attempt to set ~A as binding of ~A in ~
@@ -61,7 +61,7 @@
     (if (var-env-p var-env)
 	(if (symbolp name)
 	    (progn
-	      (remhash name (var-env-defs op-env)))
+	      (remhash name (var-env-defs var-env)))
 	    (perror malformed-car-name
 		    "Attempt to unset ~A in ~A"
 		    name var-env))
@@ -73,8 +73,13 @@
   ; ( binding val -- )
   (args (binding val)
     (if (binding-p binding)
-	(setf (binding-val binding)
-	      val)
+	(let ((val (if (and (consp val)
+			    (symbol= (car val)
+				     'thread))
+		       (cdr val)
+		       val)))
+	  (setf (binding-val binding)
+		val))
 	(perror malformed-binding
 		"Attempt to set ~A in ~A"
 		val binding))))

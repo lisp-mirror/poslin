@@ -11,11 +11,11 @@
 	    (symbol
 	     (if (immediate? curr)
 		 (let ((thread (lookup-op curr)))
-		   (if (empty? thread)
+		   (if thread
+		       thread
 		       (perror undefined-operation
 			       "No operation ~S"
-			       curr)
-		       thread))
+			       curr)))
 		 curr))
 	    (cons
 	     (if (symbol= (car curr)
@@ -32,10 +32,10 @@
     (typecase callable
       (symbol
        (let ((thread (lookup-op callable)))
-	 (if (empty? thread)
+	 (if thread
+	     thread
 	     (perror undefined-operation "No operation ~S"
-		     callable)
-	     thread)))
+		     callable))))
       (cons
        (let* ((id (car callable))
 	      (sym? (symbolp id)))
@@ -50,11 +50,11 @@
 	      (push-curr (eval (cadr callable)))))
 	   ((and sym? (symbol= id 'thread))
 	    (cdr callable))
-	   (t (perror malformed-call "Tried to call ~A"
+	   (t (perror malformed-call "Attempt to call ~A"
 		 callable)))))
       (stack
        (stack->thread callable env))
       (function
        callable)
-      (t (perror malformed-call "Tried to call ~A"
+      (t (perror malformed-call "Attempt to call ~A"
 		 callable)))))

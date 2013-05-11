@@ -5,12 +5,12 @@
   ;; ( op -- ??? )
   (let* ((callable (pop-curr))
 	 (thread (callable->thread callable this)))
-    (if (empty? thread)
-	(perror undefined-operation "No operation ~A"
-		(formatt callable))
+    (if thread
 	(progn
 	  (push thread pc)
-	  (interpreter)))))
+	  (interpreter))
+	(perror undefined-operation "No operation ~A"
+		(formatt callable)))))
 	
 
 (defprim & t
@@ -18,10 +18,10 @@
   ;; ( op -- thread )
   (let* ((callable (pop-curr))
 	 (op (callable->thread callable this)))
-    (if (empty? op)
+    (if op
+	(push-curr (cons 'thread op))
 	(perror undefined-operation "No operation ~A"
-		callable)
-	(push-curr (cons 'thread op)))))
+		callable))))
 
 (defprim ?& nil
   ;;

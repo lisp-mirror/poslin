@@ -3,10 +3,8 @@
 (defparameter *stdlib* '())
 
 (addstd
-  "stdlib.poslin" >> !
-  "package.poslin" >> !
-  "math.poslin" >> !
-  "loop.poslin" >> !
+  "op-env.poslin" >> !
+  "var-env.poslin" >> !
   )
 
 #|

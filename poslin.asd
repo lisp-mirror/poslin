@@ -81,7 +81,7 @@
      ))
    (:module
     "repl"
-    :depends-on ("package" "source" "startup")
+    :depends-on ("package" "source" "prims" "startup")
     :components
     ((:file "repl")
      ))

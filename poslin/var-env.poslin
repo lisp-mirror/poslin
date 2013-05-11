@@ -1,0 +1,38 @@
+?~ev    ; ( -- var-env )
+[ ~ &   ; []
+  ?ev & ; var-env
+]@
+
+@~ev    ; ( var-env -- )
+[ ~ &   ; var-env []
+  <> &  ; [] var-env
+  @ev & ;
+]@
+
+?v      ; ( var-env name -- val )
+[ ?bv & ; bind
+  ?b &  ; val
+]@
+
+@v      ; ( var-env name val -- )
+[ >r &  ; var-env name
+  b* &  ; var-env name bind
+  § &   ; var-env name bind bind
+  r> &  ; var-env name bind bind val
+  @b &  ; var-env name bind
+  @bv & ;
+]@
+
+?~v      ; ( name -- val )
+[ ?~ev & ; name var-env
+  <> &   ; var-env name
+  ?v &   ; val
+]@
+
+@~v      ; ( name val -- )
+[ >r &   ; name
+  ?~ev & ; name var-env
+  <> &   ; var-env name
+  r> &   ; var-env name val
+  @v &   ;
+]@
