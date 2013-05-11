@@ -20,6 +20,21 @@
 		"Attempt to set ~A as binding of ~A in ~A."
 		binding name op-env))))
 
+(defprim @bo_ nil
+  ; ( op-env name -- )
+  (args (op-env name)
+    (if (op-env-p op-env)
+	(if (symbolp name)
+	    (progn
+	      (remhash name (op-env-defs op-env))
+	      (remhash name (op-env-imm op-env)))
+	    (perror malformed-op-name
+		    "Attempt to unset ~A in ~A"
+		    name op-env))
+	(perror malformed-op-env
+		"Attempt to unset ~A in ~A"
+		name op-env))))
+
 (defprim @bv nil
   ; ( var-env name binding -- )
   (args (var-env name binding)
@@ -39,6 +54,20 @@
 	(perror malformed-var-env
 		"Attempt to set ~A as binding of ~A in ~A."
 		binding name var-env))))
+
+(defprim @bv_ nil
+  ; ( var-env name -- )
+  (args (var-env name)
+    (if (var-env-p var-env)
+	(if (symbolp name)
+	    (progn
+	      (remhash name (var-env-defs op-env)))
+	    (perror malformed-car-name
+		    "Attempt to unset ~A in ~A"
+		    name var-env))
+	(perror malformed-var-env
+		"Attempt to unset ~A in ~A"
+		name var-env))))
 
 (defprim @b nil
   ; ( binding val -- )
@@ -107,3 +136,7 @@
 	(perror malformed-binding
 		"Attempt to get documentation of ~A"
 		binding))))
+
+(defprim b* nil
+  ; ( -- binding )
+  (push-curr (make-binding)))

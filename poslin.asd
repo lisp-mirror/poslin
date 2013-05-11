@@ -64,6 +64,14 @@
      (:file "binding")
      (:file "stackname")
      (:file "op-env")
+     (:file "var-env")
+     (:file "path")
+     (:file "stack-ops")
+     (:file "in-out")
+     (:file "low-level-stacks")
+     (:file "conditionals")
+     (:file "printing")
+     (:file "imported")
      ))
    (:module
     "startup"
