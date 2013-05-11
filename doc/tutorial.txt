@@ -361,7 +361,7 @@ As usual, here the whole code:
 > ?~eo !
 > ]@      ; ( name [ ... -- )
 > [ '] &  ; name []
->   @~o & ;
+>   @o &  ;
 > ] @o !
 > ?~eo !
 > ]@ @i+ !
