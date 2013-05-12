@@ -6,6 +6,7 @@
   "op-env.poslin" >> !
   "var-env.poslin" >> !
   "path.poslin" >> !
+  "scope.poslin" >> !
   )
 
 #|

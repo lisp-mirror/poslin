@@ -14,7 +14,7 @@
   ?b &  ; val
 ]@
 
-@v      ; ( var-env name val -- )
+@v*     ; ( var-env name val -- )
 [ >r &  ; var-env name
   b* &  ; var-env name bind
   § &   ; var-env name bind bind
@@ -29,10 +29,10 @@
   ?v &   ; val
 ]@
 
-@~v      ; ( name val -- )
+@~v*     ; ( name val -- )
 [ >r &   ; name
   ?~ev & ; name var-env
   <> &   ; var-env name
   r> &   ; var-env name val
-  @v &   ;
+  @v* &  ;
 ]@

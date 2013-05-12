@@ -103,7 +103,7 @@
   (args (op-env name)
     (if (op-env-p op-env)
 	(if (symbolp name)
-	    (push-curr (gethash name (op-env-defs op-env)))
+	    (push-curr (find-op name op-env))
 	    (perror malformed-op-name
 		    "Attempt to get binding of ~A in ~A"
 		    name op-env))
@@ -116,7 +116,7 @@
   (args (var-env name)
     (if (var-env-p var-env)
 	(if (symbolp name)
-	    (push-curr (gethash name (var-env-defs var-env)))
+	    (push-curr (find-var name var-env))
 	    (perror malformed-var-name
 		    "Attempt to get binding of ~A in ~A"
 		    name var-env))

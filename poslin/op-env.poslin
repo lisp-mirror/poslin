@@ -1,6 +1,6 @@
 0 ^ !
 ?eo !
-@o      ; ( op-env name op -- )
+@o*     ; ( op-env name op -- )
 b* !
 § !
 [ '& &  ; op-env name thread
@@ -18,28 +18,28 @@ b* !
 ?eo !
 ~ ; ( -- [] )
 [ 0 ^ &
-] @o !
+] @o* !
 
 ~ !
 ?eo !
 ?~eo    ; ( -- op-env )
 [ ~ &   ; []
   ?eo & ; op-env
-] @o !
+] @o* !
 
 ?~eo !
-@~o      ; ( name op -- )
+@~o*     ; ( name op -- )
 [ >r &   ; name
   ?~eo & ; name op-env
   <> &   ; op-env name
   r> &   ; op-env name op
-  @o &	 ;
-] @o !
+  @o* &  ;
+] @o* !
 
-]@      ; ( name [ ... -- )
-[ '] &  ; name []
-  @~o & ;
-] @~o !
+]@       ; ( name [ ... -- )
+[ '] &   ; name []
+  @~o* & ;
+] @~o* !
 ?~eo !
 ]@ @i+ !
 
@@ -54,10 +54,15 @@ b* !
   >r &   ; name
   § &    ; name name
   r> &   ; name name []
-  @~o &  ; name
+  @~o* & ; name
   @~i+ & ;
 ]@
 ]i @~i+ !
+
+]&     ; ( [ ... -- thread )
+[ '] & ; [ ... ]
+  '& & ; thread
+]i
 
 @~eo    ; ( op-env -- )
 [ ~ &   ; op-env []
