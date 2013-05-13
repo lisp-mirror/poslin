@@ -4,7 +4,7 @@
   :description "Describe poslin here"
   :author "Thomas Bartscher <thomas.bartscher@gmail.com>"
   :license "EUPL V1.1"
-  :depends-on ("alexandria" "osicat")
+  :depends-on ("alexandria")
   :components
   ((:file "package")
    (:module
@@ -24,65 +24,63 @@
 	    :depends-on ("sharp-backquote"))
      (:file "plambda"
 	    :depends-on ("plambda-help" "dlambda"))
+     (:file "symbol=")
      ))
    (:module
     "source"
     :depends-on ("package" "utility")
     :components
     ((:file "registers")
-     (:file "prims")
-     (:file "stdlib")
-     (:file "format-thread")
-     (:file "binding")
-     (:file "env")
-     (:file "stack"
+     (:file "thread")
+     (:module
+      "env"
+      :components
+      ((:file "binding")
+       (:file "op-env"
+	      :depends-on ("binding"))
+       (:file "var-env"
+	      :depends-on ("binding"))
+       ))
+     (:file "pstack"
 	    :depends-on ("env"))
-     (:file "error"
-	    :depends-on ("format-thread"))
      (:file "run-poslin")
-     (:file "conv"
-	    :depends-on ("env" "stack" "error"))
-     (:file "word"
-	    :depends-on ("binding" "env" "conv"))
-     (:file "interpreter"
-	    :depends-on ("conv"))
-     (:file "prepare"
-	    :depends-on ("conv" "stack" "run-poslin"))
-     (:file "poslin-env"
-	    :depends-on ("registers" "conv" "word" "interpreter"
-				     "prepare"))
-     (:file "to-thread"
-	    :depends-on ("stack" "error" "word"))
+     (:module
+      "print"
+      :components
+      ((:file "print")
+       (:file "error")
+       ))
+     (:module
+      "load"
+      :components
+      ((:file "file")
+       (:file "eval")
+       ))
+     (:module
+      "poslin-env"
+      :depends-on ("registers" "thread" "pstack" "print" "load")
+      :components
+      ((:file "interpreter")
+       (:file "handle")
+       (:file "install")
+       ))
      ))
    (:module
     "prims"
     :depends-on ("package" "source")
     :components
-    ((:file "call")
-     (:file "nop")
-     (:file "error")
-     (:file "binding")
-     (:file "stackname")
-     (:file "op-env")
-     (:file "var-env")
-     (:file "path")
-     (:file "stack-ops")
-     (:file "in-out")
-     (:file "low-level-stacks")
-     (:file "conditionals")
-     (:file "printing")
-     (:file "imported")
+    (
      ))
    (:module
     "startup"
     :depends-on ("package" "source")
     :components
-    ((:file "stdlib")
+    (
      ))
    (:module
     "repl"
     :depends-on ("package" "source" "prims" "startup")
     :components
-    ((:file "repl")
+    (
      ))
    ))
