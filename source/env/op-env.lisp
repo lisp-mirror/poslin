@@ -11,11 +11,10 @@
   (the (values (or binding null)
 	       &optional)
        (if op-env
-	   (aif (funcall (op-env-defs op-env)
-			 name)
-		it
-		(op-env-def (op-env-par op-env)
-			    name)))))
+	   (if-not (funcall (op-env-defs op-env)
+			    name)
+	     (op-env-def (op-env-par op-env)
+			 name)))))
 
 (defmethod (setf op-env-def)
     (binding op-env name)
@@ -38,13 +37,11 @@
 	   (type symbol name))
   (the (values boolean boolean &optional)
        (if op-env
-	   (multiple-value-bind (val found?)
-	       (funcall (op-env-defs op-env)
-			name)
-	     (if found?
-		 (values val t)
+	   (a2if (funcall (op-env-imms op-env)
+			  name)
+		 (values it t)
 		 (op-env-imm (op-env-par op-env)
-			     name)))
+			     name))
 	   (values nil nil))))
 
 (defmethod (setf op-env-imm)

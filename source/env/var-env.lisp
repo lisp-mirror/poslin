@@ -10,11 +10,10 @@
   (the (values (or binding null)
 	       &optional)
        (if var-env
-	   (aif (funcall (var-env-defs var-env)
-			 name)
-		it
-		(var-env-def (var-env-par var-env)
-			     name)))))
+	   (if-not (funcall (var-env-defs var-env)
+			    name)
+	     (var-env-def (var-env-par var-env)
+			  name)))))
 
 (defmethod (setf var-env-def)
     (binding var-env name)

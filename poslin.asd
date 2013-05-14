@@ -25,6 +25,7 @@
      (:file "plambda"
 	    :depends-on ("plambda-help" "dlambda"))
      (:file "symbol=")
+     (:file "if-not")
      ))
    (:module
     "source"
@@ -53,8 +54,10 @@
      (:module
       "load"
       :components
-      ((:file "file")
+      ((:file "read")
        (:file "eval")
+       (:file "load"
+	      :depends-on ("read" "eval"))
        ))
      (:module
       "poslin-env"
