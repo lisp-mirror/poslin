@@ -69,6 +69,7 @@
        (:file "install")
        (:file "poslin")
        ))
+     (:file "defprim")
      ))
    (:module
     "prims"
