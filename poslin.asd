@@ -55,7 +55,9 @@
       "load"
       :components
       ((:file "read")
-       (:file "eval")
+       (:file "interpreter")
+       (:file "eval"
+	      :depends-on ("intepreter"))
        (:file "load"
 	      :depends-on ("read" "eval"))
        ))
@@ -63,8 +65,7 @@
       "poslin-env"
       :depends-on ("registers" "thread" "pstack" "print" "load")
       :components
-      ((:file "interpreter")
-       (:file "handle")
+      ((:file "handle")
        (:file "install")
        ))
      ))
