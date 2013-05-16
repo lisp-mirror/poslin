@@ -22,16 +22,17 @@
 			   ,@(nthcdr 3 a1))))
 	       *prims*)))
 
-(defmacro install ()
-  `(progn
-     (setf ntable (make-hash-table :test #'eq)
-	   dtable (make-hash-table :test #'eq)
-	   folder (concatenate 'string
-			       (namestring (ql:where-is-system
-					    "poslin"))
-			       "poslin/")
+(defmacro install (&optional standard-libraries)
+  (let ((standard-libraries (or standard-libraries *stdlib*)))
+    `(progn
+       (setf ntable (make-hash-table :test #'eq)
+	     dtable (make-hash-table :test #'eq)
+	     folder (concatenate 'string
+				 (namestring (ql:where-is-system
+					      "poslin"))
+				 "poslin/")
 	   path (list (make-pstack :name 'root)))
-     (install-prims)
-     (mapcar (lambda (filename)
-	       (poslin-load filename))
-	     *stdlib*)))
+       (install-prims)
+       (mapcar (lambda (filename)
+		 (poslin-load filename))
+	       ',standard-libraries))))

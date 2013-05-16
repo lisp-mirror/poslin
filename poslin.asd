@@ -57,7 +57,7 @@
       ((:file "read")
        (:file "interpreter")
        (:file "eval"
-	      :depends-on ("intepreter"))
+	      :depends-on ("interpreter"))
        (:file "load"
 	      :depends-on ("read" "eval"))
        ))
@@ -67,6 +67,7 @@
       :components
       ((:file "handle")
        (:file "install")
+       (:file "poslin")
        ))
      ))
    (:module
