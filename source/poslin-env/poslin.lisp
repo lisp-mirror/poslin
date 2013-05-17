@@ -5,4 +5,5 @@
      (install ,standard-libraries)
      (plambda (v)
 	 ,+registers+
-       (handle))))
+       (handle)
+       (pstack-content (car path)))))

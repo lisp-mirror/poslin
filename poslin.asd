@@ -87,9 +87,10 @@
      ))
    (:module
     "prims"
-    :depends-on ("package" "source")
+    :depends-on ("package" "source" "startup")
     :components
     ((:file "call")
+     (:file "binding")
      ))
    (:module
     "repl"

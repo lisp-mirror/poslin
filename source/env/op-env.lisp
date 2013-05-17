@@ -50,7 +50,7 @@
 	   (type op-env op-env)
 	   (type symbol name))
   (let ((old (op-env-imms op-env)))
-    (setf (op-env-defs op-env)
+    (setf (op-env-imms op-env)
 	  (lambda (sym)
 	    (declare (type symbol sym))
 	    (the (values boolean boolean &optional)
