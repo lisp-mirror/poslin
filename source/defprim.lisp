@@ -16,3 +16,6 @@
   `(let (,@(nreverse (mapcar #`(,a1 (pop (pstack-content (car path))))
 			     args)))
      ,@body))
+
+(defmacro push-curr (val)
+  `(push ,val (pstack-content (car path))))

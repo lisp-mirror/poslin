@@ -91,6 +91,7 @@
     :components
     ((:file "call")
      (:file "binding")
+     (:file "op-env")
      ))
    (:module
     "repl"

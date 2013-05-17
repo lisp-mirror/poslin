@@ -11,5 +11,4 @@
 (defprim & t
     "( callable -- thread )"
   (args (callable)
-    (push (callable->thread callable this)
-	  (pstack-content (car path)))))
+    (push-curr (callable->thread callable this))))

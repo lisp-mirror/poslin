@@ -4,8 +4,7 @@
     "( binding -- value )"
   (args (binding)
     (if (binding-p binding)
-	(push (binding-val binding)
-	      (pstack-content (car path)))
+	(push-curr (binding-val binding))
 	(poslin-error 'malformed-binding
 		      "Attempt to set value of ~A"
 		      binding))))
@@ -14,8 +13,7 @@
     "( binding -- docstring )"
   (args (binding)
     (if (binding-p binding)
-	(push (binding-doc binding)
-	      (pstack-content (car path)))
+	(push-curr (binding-doc binding))
 	(poslin-error 'malformed-binding
 		      "Attempt to set docstring of ~A"
 		      binding))))
@@ -46,5 +44,4 @@
 
 (defprim b* nil
     "( -- binding )"
-  (push (make-binding)
-	(pstack-content (car path))))
+  (push-curr (make-binding)))
