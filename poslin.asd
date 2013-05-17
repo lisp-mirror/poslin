@@ -73,7 +73,9 @@
      (:module
       "to-thread"
       :components
-      (
+      ((:file "stack")
+       (:file "callable"
+	      :depends-on ("stack"))
        ))
      ))
    (:module
