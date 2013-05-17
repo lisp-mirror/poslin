@@ -11,3 +11,8 @@
   `(defnprim ,name ,immediate? ,docstring
      (advance pc)
      ,@body))
+
+(defmacro args (args &body body)
+  `(let (,@(nreverse (mapcar #`(,a1 (pop (pstack-content (car path))))
+			     args)))
+     ,@body))

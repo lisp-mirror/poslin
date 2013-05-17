@@ -70,18 +70,24 @@
        (:file "poslin")
        ))
      (:file "defprim")
-     ))
-   (:module
-    "prims"
-    :depends-on ("package" "source")
-    :components
-    (
+     (:module
+      "to-thread"
+      :components
+      (
+       ))
      ))
    (:module
     "startup"
     :depends-on ("package" "source")
     :components
-    (
+    ((:file "prims")
+     (:file "stdlib")
+     ))
+   (:module
+    "prims"
+    :depends-on ("package" "source")
+    :components
+    ((:file "call")
      ))
    (:module
     "repl"
