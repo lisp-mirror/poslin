@@ -93,6 +93,7 @@
      (:file "binding")
      (:file "op-env")
      (:file "var-env")
+     (:file "pstack")
      ))
    (:module
     "repl"

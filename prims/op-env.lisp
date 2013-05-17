@@ -6,10 +6,10 @@
     (if (op-env-p op-env)
 	(if (symbolp sym)
 	    (push-curr (op-env-def op-env sym))
-	    (poslin-error 'malformed-op-name
+	    (poslin-error malformed-op-name
 			  "Attempt to get binding of ~A in ~A"
 			  sym op-env))
-	(poslin-error 'malformed-op-env
+	(poslin-error malformed-op-env
 		      "Attempt to get binding of ~A in ~A"
 		      sym op-env))))
 
@@ -19,10 +19,10 @@
     (if (op-env-p op-env)
 	(if (symbolp sym)
 	    (push-curr (op-env-imm op-env sym))
-	    (poslin-error 'malformed-op-name
+	    (poslin-error malformed-op-name
 			  "Attempt to get binding of ~A in ~A"
 			  sym op-env))
-	(poslin-error 'malformed-op-env
+	(poslin-error malformed-op-env
 		      "Attempt to get binding of ~A in ~A"
 		      sym op-env))))
 
@@ -39,14 +39,14 @@
 					  this))
 		  (setf (op-env-def op-env sym)
 			binding))
-		(poslin-error 'malformed-binding
+		(poslin-error malformed-binding
 			      "Attempt to set binding of ~A in ~A to ~
                                ~A"
 			      sym op-env binding))
-	    (poslin-error 'malformed-op-name
+	    (poslin-error malformed-op-name
 			  "Attempt to set binding of ~A in ~A to ~A"
 			  sym op-env binding))
-	(poslin-error 'malformed-op-env
+	(poslin-error malformed-op-env
 		      "Attempt to set binding of ~A in ~A to ~A"
 		      sym op-env binding))))
 
@@ -59,15 +59,15 @@
 		    (eq bool t))
 		(setf (op-env-imm op-env sym)
 		      bool)
-		(poslin-error 'malformed-boolean
+		(poslin-error malformed-boolean
 			      "Attempt to set immediateness of ~A in ~
                                ~A to ~A"
 			      sym op-env bool))
-	    (poslin-error 'malformed-op-name
+	    (poslin-error malformed-op-name
 			  "Attempt to set immediateness of ~A in ~
                            ~A to ~A"
 			  sym op-env bool))
-	(poslin-error 'malformed-op-env
+	(poslin-error malformed-op-env
 		      "Attempt to set immediateness of ~A in ~
                        ~A to ~A"
 		      sym op-env bool))))
@@ -82,7 +82,7 @@
     (if (or (op-env-p op-env)
 	    (null op-env))
 	(push-curr (make-op-env :par op-env))
-	(poslin-error 'malformed-op-env
+	(poslin-error malformed-op-env
 		      "Attempt to make child operation environment ~
                        of ~A"
 		      op-env))))
@@ -92,7 +92,7 @@
   (args (op-env)
     (if (op-env-p op-env)
 	(push-curr (op-env-par op-env))
-	(poslin-error 'malformed-op-env
+	(poslin-error malformed-op-env
 		      "Attempt to get parent operation environment ~
                        of ~A"
 		      op-env))))
@@ -105,7 +105,7 @@
 		 (null op-env-par)))
 	(setf (op-env-par op-env)
 	      op-env-par)
-	(poslin-error 'malformed-op-env
+	(poslin-error malformed-op-env
 		      "Attempt to set parent of operation ~
                        environment of ~A to ~A"
 		      op-env op-env-par))))
@@ -115,6 +115,6 @@
   (args (op-env)
     (if (op-env-p op-env)
 	(push-curr (copy-op-env op-env))
-	(poslin-error 'malformed-op-env
+	(poslin-error malformed-op-env
 		      "Attempt to make copy of ~A"
 		      op-env))))
