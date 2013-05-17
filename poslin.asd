@@ -92,6 +92,7 @@
     ((:file "call")
      (:file "binding")
      (:file "op-env")
+     (:file "var-env")
      ))
    (:module
     "repl"
