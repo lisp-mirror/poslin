@@ -22,5 +22,5 @@
 
 (defmacro poslin-error (error-type controlstring &rest args)
   `(progn
-     (princ (poserror poslin ',error-type ,controlstring ,@args))
+     (princ (poserror this ',error-type ,controlstring ,@args))
      (return-from prim)))
