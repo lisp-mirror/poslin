@@ -35,7 +35,7 @@
   ?~ev & ; name var-env
   ~<> &  ; var-env name
   r-> &  ; var-env name val
-  @v &   ;
+  @v* &  ;
 ]@
 
 @v        ; ( var-env name val -- )
