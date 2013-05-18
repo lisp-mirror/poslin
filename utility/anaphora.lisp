@@ -23,3 +23,8 @@
      (setf this ,@(last body))
      ,@(butlast body)
      this))
+
+(defmacro awhen (test &body body)
+  `(let ((it ,test))
+     (when it
+       ,@body)))

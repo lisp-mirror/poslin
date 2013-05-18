@@ -96,6 +96,7 @@
      (:file "pstack")
      (:file "path")
      (:file "out")
+     (:file "load")
      ))
    (:module
     "repl"

@@ -7,10 +7,7 @@
       (symbol
        (aif (op-env-def (pstack-op-env (car path))
 			callable)
-	    (binding-val it)
-	    (poserror poslin 'undefined-operation
-		      "No operation ~A"
-		      callable)))
+	    (binding-val it)))
       (pstack
        (stack->thread callable poslin))
       (cons

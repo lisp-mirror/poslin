@@ -9,7 +9,7 @@
   (the string
     (with-pandoric (ntable pc rstack)
 	poslin
-      (format nil "~&POSLIN-~A-ERROR~% ~A~%  PC: ~A~%  RSTACK: ~A"
+      (format nil "~&POSLIN-~A-ERROR~% ~A~%  PC: ~A~%  RSTACK: ~A~%"
 	      error-type (apply #'format
 				nil controlstring
 				(mapcar (lambda (arg)

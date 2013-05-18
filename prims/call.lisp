@@ -3,10 +3,15 @@
 (defprim ! t
     "( callable -- ??? )"
   (args (callable)
-    (if pc
-	(push pc rstack))
-    (setf pc (callable->thread callable this))
-    (interpreter)))
+    (aif (callable->thread callable this)
+	 (progn
+	   (if pc
+	       (push pc rstack))
+	   (setf pc it)
+	   (interpreter))
+	 (poslin-error unknown-op
+		       "~A is not callable"
+		       callable))))
 
 (defprim & t
     "( callable -- thread )"
