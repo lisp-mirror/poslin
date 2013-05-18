@@ -102,6 +102,7 @@
      (:file "conditional")
      (:file "imported")
      (:file "rstack")
+     (:file "folder")
      ))
    (:module
     "repl"

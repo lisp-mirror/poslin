@@ -8,6 +8,9 @@
      (function
       (format nil "OP{~S}"
 	      (gethash val ntable)))
+     (string
+      (format nil "~S"
+	      val))
      (symbol
       (format nil "~S"
 	      val))
