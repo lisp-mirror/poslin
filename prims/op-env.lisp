@@ -72,7 +72,7 @@
                        ~A to ~A"
 		      sym op-env bool))))
 
-(defprim i_ nil
+(defprim @i_ nil
     "( op-env sym -- )"
   (args (op-env sym)
     (if (op-env-p op-env)
