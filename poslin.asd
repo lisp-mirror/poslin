@@ -95,11 +95,12 @@
      (:file "var-env")
      (:file "pstack")
      (:file "path")
+     (:file "out")
      ))
    (:module
     "repl"
     :depends-on ("package" "source" "prims" "startup")
     :components
-    (
+    ((:file "repl")
      ))
    ))

@@ -12,5 +12,4 @@
 	      (poslin-error undefined-operation
 			    "No operation ~A"
 			    v))
-	 (ppush (car path)
-		v))))
+	 (push v (pstack-content (car path))))))

@@ -11,7 +11,6 @@
 		  (aif (thread-next pc)
 		       (push it rstack))
 		  (setf pc curr))
-		 (t (ppush (car path)
-			   curr)
+		 (t (push curr (pstack-content (car path)))
 		    (advance pc))))
 	     (setf pc (pop rstack)))))

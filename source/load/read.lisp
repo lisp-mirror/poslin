@@ -10,7 +10,8 @@
       (do ((word (read stream nil eof)
 		 (read stream nil eof)))
 	  ((or (eq word eof)
-	       (symbol= word 'exit)))
+	       (and (symbolp word)
+		    (symbol= word 'exit))))
 	(if (and (symbolp word)
 		 (op-env-imm (pstack-op-env (car path))
 			     word))
@@ -19,9 +20,10 @@
 					   word)))
 	    (setf (thread-curr prep)
 		  word))
-	(if begin
+	(if thread
 	    (setf (thread-next thread)
-		  prep)
+		  prep))
+	(if (not begin)
 	    (setf begin prep))
 	(setf thread prep)
 	(setf prep (make-thread)))
