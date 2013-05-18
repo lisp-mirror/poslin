@@ -4,4 +4,5 @@
   '("define"
     "define-imm"
     "local-env"
+    "path"
     ))

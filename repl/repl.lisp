@@ -10,7 +10,8 @@
 				    path))
 		   (reverse (mapcar (lambda (val)
 				      (posprint val ntable))
-				    (pstack-content (car path))))))
+				    (pstack-content (car path)))))
+	   (finish-output))
 	 (aif (pos-read-line t poslin)
 	      (pos-eval it poslin)
 	      (return-from repl
