@@ -31,18 +31,20 @@
   (args (op-env sym binding)
     (if (op-env-p op-env)
 	(if (symbolp sym)
-	    (if (or (binding-p binding)
-		    (null binding))
+	    (if (binding-p binding)
 		(progn
 		  (setf (binding-val binding)
 			(callable->thread (binding-val binding)
 					  this))
 		  (setf (op-env-def op-env sym)
 			binding))
-		(poslin-error malformed-binding
-			      "Attempt to set binding of ~A in ~A to ~
-                               ~A"
-			      sym op-env binding))
+		(if (null binding)
+		    (setf (op-env-def op-env sym)
+			  binding)
+		    (poslin-error malformed-binding
+				  "Attempt to set binding of ~A in ~A to ~
+                                   ~A"
+				  sym op-env binding)))
 	    (poslin-error malformed-op-name
 			  "Attempt to set binding of ~A in ~A to ~A"
 			  sym op-env binding))
