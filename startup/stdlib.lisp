@@ -7,4 +7,5 @@
     "path"
     "op-env"
     "var-env"
+    "loc-def"
     ))

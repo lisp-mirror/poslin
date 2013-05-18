@@ -30,7 +30,7 @@ b* !
 @bo !
 
 ?~eo !
-@o      ; ( op-env name op -- )
+@o*     ; ( op-env name op -- )
 b* !
 ~§ !
 [ r<- & ; op-env name
@@ -46,16 +46,52 @@ b* !
 ~<>
 [ ~ &
   <> &
-] @o !
+] @o* !
 
 ?~eo !
+@~o*     ; ( name op -- )
+[ r<- &  ; name ; op
+  ?~eo & ; name op-env ; op
+  ~<> &  ; op-env name ; op
+  r-> &  ; op-env name op
+  @o* &  ;
+] @o* !
+
+@o ; ( op-env name op -- )
+[ r<- &   ; op-env name ; op
+  r<- &   ; op-env ; name op
+  ~§ &    ; op-env op-env ; name op
+  r-> &   ; op-env op-env name ; op
+  ~§ &    ; op-env op-env name name ; op
+  r<- &   ; op-env op-env name ; name op
+  ?bo &   ; op-env binding ; name op
+  ~§ &    ; op-env binding binding ; name op
+     	  ;<?> op-env binding ; name op
+  [ r-> & ; op-env binding name ; op
+    ~ &   ; op-env binding name [] ; op
+    _ &   ; op-env binding ; op
+    r-> & ; op-env binding op
+    @b &  ; op-env
+    ~ &   ; op-env []
+    _ &   ;
+  ]
+  [ ~ &   ; op-env binding [] ; name op
+    _ &   ; op-env ; name op
+    r-> & ; op-env name ; op
+    r-> & ; op-env name op
+    @o* & ;
+  ]
+  <?> &
+  '! &
+] @~o* !
+
 @~o      ; ( name op -- )
 [ r<- &  ; name
   ?~eo & ; name op-env
   ~<> &  ; op-env name
   r-> &  ; op-env name op
   @o &   ;
-] @o !
+] @~o* !
 
 ]@      ; ( name [ ... -- )
 [ '] &  ; name []
