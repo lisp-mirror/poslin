@@ -72,6 +72,19 @@
                        ~A to ~A"
 		      sym op-env bool))))
 
+(defprim i_ nil
+    "( op-env sym -- )"
+  (args (op-env sym)
+    (if (op-env-p op-env)
+	(if (symbolp sym)
+	    (op-env-remimm op-env sym)
+	    (poslin-error malformed-op-name
+			  "Attempt to remove immediateness of ~A in ~A"
+			  sym op-env))
+	(poslin-error malformed-op-env
+		      "Attempt to remove immediateness of ~A in ~A"
+		      sym op-env))))
+
 (defprim eo* nil
     "( -- op-env )"
   (push-curr (make-op-env)))

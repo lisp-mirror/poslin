@@ -132,3 +132,16 @@
 	(poslin-error malformed-pstack
 		      "Attempt to swap on ~A"
 		      pstack))))
+
+(defprim _ nil
+    "( stack -- )"
+  (args (pstack)
+    (if (pstack-p pstack)
+	(if (pstack-content pstack)
+	    (pop (pstack-content pstack))
+	    (poslin-error bottom
+			  "Attempt to drop bottom of ~A"
+			  pstack))
+	(poslin-error malformed-pstack
+		      "Attempt to drop top of ~A"
+		      pstack))))

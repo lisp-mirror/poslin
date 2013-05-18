@@ -16,7 +16,7 @@
 	     (op-env-def (op-env-par op-env)
 			 name)))))
 
-(defmethod (setf op-env-def)
+(defun (setf op-env-def)
     (binding op-env name)
   (declare (type (or binding null)
 		 binding)
@@ -44,7 +44,7 @@
 			     name))
 	   (values nil nil))))
 
-(defmethod (setf op-env-imm)
+(defun (setf op-env-imm)
     (immediate? op-env name)
   (declare (type boolean immediate?)
 	   (type op-env op-env)
@@ -57,3 +57,15 @@
 		 (if (symbol= sym name)
 		     (values immediate? t)
 		     (funcall old sym)))))))
+
+(defun op-env-remimm (op-env name)
+  (declare (type op-env op-env)
+	   (type symbol name))
+  (let ((old (op-env-imms op-env)))
+    (setf (op-env-imms op-env)
+	  (lambda (sym)
+	    (declare (type symbol sym))
+	    (the (values boolean boolean &optional)
+	      (if (symbol= sym name)
+		  (values nil nil)
+		  (funcall old sym)))))))

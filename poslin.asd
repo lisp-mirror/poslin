@@ -94,6 +94,7 @@
      (:file "op-env")
      (:file "var-env")
      (:file "pstack")
+     (:file "path")
      ))
    (:module
     "repl"

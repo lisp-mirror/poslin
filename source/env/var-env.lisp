@@ -15,7 +15,7 @@
 	     (var-env-def (var-env-par var-env)
 			  name)))))
 
-(defmethod (setf var-env-def)
+(defun (setf var-env-def)
     (binding var-env name)
   (declare (type binding binding)
 	   (type var-env var-env)
