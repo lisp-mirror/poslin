@@ -7,7 +7,7 @@
 	 (progn
 	   (if pc
 	       (push pc rstack))
-	   (setf pc it)
+	   (setf pc (make-thread :curr it))
 	   (interpreter))
 	 (poslin-error unknown-op
 		       "~A is not callable"

@@ -1,3 +1,7 @@
 (in-package #:poslin)
 
-(defparameter *stdlib* '())
+(defparameter *stdlib*
+  '("define"
+    "define-imm"
+    "local-env"
+    ))

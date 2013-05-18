@@ -4,10 +4,9 @@
 
 (defmacro install-prims ()
   `(progn
-     ,@(mapcar #`(let ((thread (make-thread :curr
-					    (lambda ()
-					      (block prim
-						,@(nthcdr 3 a1))))))
+     ,@(mapcar #`(let ((thread (lambda ()
+				 (block prim
+				   ,@(nthcdr 3 a1)))))
 		   (setf (op-env-def (pstack-op-env (car path))
 				     ',(first a1))
 			 (make-binding :val thread
@@ -31,7 +30,7 @@
 				 (namestring (ql:where-is-system
 					      "poslin"))
 				 "poslin/")
-	   path (list (make-pstack :name 'root)))
+	     path (list (make-pstack :name 'root)))
        (install-prims)
        (mapcar (lambda (filename)
 		 (poslin-load filename))

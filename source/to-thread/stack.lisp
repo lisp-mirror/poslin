@@ -5,7 +5,7 @@
       poslin
     (let ((thread))
       (loop for obj
-	 in (reverse list)
+	 in list
 	 do (setf thread
 		  (make-thread
 		   :curr
@@ -21,7 +21,8 @@
 				   "No operation ~A"
 				   obj))
 		       obj)
-		   :next thread))))))
+		   :next thread)))
+      thread)))
 
 (defun stack->thread (pstack poslin)
   (list->thread (pstack-content pstack)

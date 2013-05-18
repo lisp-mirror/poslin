@@ -26,6 +26,7 @@
 	    :depends-on ("plambda-help" "dlambda"))
      (:file "symbol=")
      (:file "if-not")
+     (:file "group")
      ))
    (:module
     "source"
@@ -89,7 +90,8 @@
     "prims"
     :depends-on ("package" "source" "startup")
     :components
-    ((:file "call")
+    ((:file "nop")
+     (:file "call")
      (:file "binding")
      (:file "op-env")
      (:file "var-env")
@@ -97,6 +99,9 @@
      (:file "path")
      (:file "out")
      (:file "load")
+     (:file "conditional")
+     (:file "imported")
+     (:file "rstack")
      ))
    (:module
     "repl"

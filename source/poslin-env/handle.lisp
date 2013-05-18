@@ -12,4 +12,9 @@
 	      (poslin-error undefined-operation
 			    "No operation ~A"
 			    v))
-	 (push v (pstack-content (car path))))))
+	 (if (and (consp v)
+		  (symbol= (car v)
+			   'quote))
+	     (push (cadr v)
+		   (pstack-content (car path)))
+	     (push v (pstack-content (car path)))))))

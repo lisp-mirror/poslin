@@ -18,8 +18,13 @@
 	    (setf (thread-curr prep)
 		  (binding-val (op-env-def (pstack-op-env (car path))
 					   word)))
-	    (setf (thread-curr prep)
-		  word))
+	    (if (and (consp word)
+		     (symbol= (car word)
+			      'quote))
+		(setf (thread-curr prep)
+		      (cadr word))
+		(setf (thread-curr prep)
+		      word)))
 	(if thread
 	    (setf (thread-next thread)
 		  prep))
@@ -57,10 +62,7 @@
 						     (subseq line 0
 							     it)
 						     line))))
-	      (pos-read-string file-content poslin))
-	    (poserror poslin 'file-not-found
-		      "File ~A could not be found in ~A"
-		      filename folder))))))
+	      (pos-read-string file-content poslin)))))))
 
 (defmacro poslin-read (stream)
   `(pos-read ,stream this))
