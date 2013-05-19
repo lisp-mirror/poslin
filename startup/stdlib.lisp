@@ -9,4 +9,5 @@
     "var-env"
     "loc-def"
     "clean"
+    "stack"
     ))
