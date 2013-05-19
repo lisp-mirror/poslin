@@ -196,3 +196,210 @@ The first element in the thread is the thread that w have just seen -
 the one giving back the current stack. The second element in the
 thread is the operator that duplicates the top of the given
 stack.
+
+
+4. ENVIRONMENTS AND BINDINGS
+
+Poslin stores operations and variables in bindings. A binding is a
+structure that holds a value and a documentation string. Those
+bindings are first class values. That means, you can operate on them
+directly, like on numbers, stacks or threads.
+To get the value of a binding you can use '?b', to get its
+documentation string use '?d'. Setting is done with '@b' and '@d'
+respectively.
+Bindings alone aren't that useful. To make them useful you also need
+environments.
+An environment can be understood as a container or a map that
+associates symbols with bindings.
+A lexical environment is an environment that also has a parent
+environment. If you can't associate some symbol in the environment
+itself, look it up in the parent environment!
+Poslin uses 2 types of lexical environments: one for storing the
+values of variables, one for storing the threads associated with
+operation names. The first type is called a 'variable environment',
+the second one an 'operation environment'. Operation environments
+*also* keep track whether a certain symbol is taken to be immediate or
+delayed.
+Any stack is associated with exactly one operation and one variable
+environment. '!' and '&' look up operations, when given a symbol, in
+the operation environment of the current stack (the current operation
+environment). '?eo' and '?ev' return the respective environment of a
+given stack while '@eo' and '@ev' set it.
+To get a binding out of an environment, use '?bo' and '?bv'
+respectively. The setting operations are '@bo' and '@bv'. '@bo' is a
+bit special, as it automatically converts the value of the binding it
+is storing to a thread.
+To make a child operation environment of an existing environment you
+can use 'eo+' and 'ev+'
+
+What is all of this good for?
+Having environments as first class objects is quite handy.
+In several high level languages one has some kind of word like 'let'.
+For example in Common Lisp one can say
+(let ((la 4)
+      (di 6)
+      (da 8))
+  ...)
+and that opens up a new lexical environment in which the variables
+'la', 'di' and 'da' are defined. Poslin has no let, but when we have
+control over environments either way, we can define it ourselves (and
+we will do just that).
+We can also define operations in a way so that operation environments
+can act as packages (which are just collections of operations, which
+is the sole purpose of an operation environment either way).
+
+The standard library defines a few more operators that handle
+operations. Normally, to get to the value of a variable, one would
+have to do the following things while keeping everything in the right
+order:
+- Get the current stack
+- Get its variable environment
+- Get the binding associated with the given name
+- Get the value out of that binding
+This is really too much for the given task. That's why '?~v' and '?~o'
+exist.
+Setting is a bit more complex, as with lexical environments when
+setting something you have two choices: Set in the current environment
+without affecting parent environments or set in a way so that the
+currently defined place changes. The first is necessary when opening
+up a local environment to have local definitions, the second (for
+example) when setting a value in a closure.
+'@~o*' and '@~v*' always create a new binding while '@~o' and '@~v'
+use an existing binding when there is one.
+
+Suppose you want a function that counts how often it has been
+called. In Common Lisp you would write
+(let ((count 0))   ; open a new lexical environment containing the
+     	     	   ; variable COUNT initialized to =
+  (defun count ()  ; define the function COUNT
+    (incf count))) ; COUNT increases COUNT by one and returns the new
+    	  	   ; value
+A version in poslin could be defined like this:
+First, open up a new stack that has it's own operation environment.
+> v[
+
+Define the local variable count to be 0. We use '@~v*' so we won't
+change some existing binding by accident.
+> count 0 @~v* !
+
+Open up the definition for the operation.
+> count {
+
+We now need to get the variable 'count' and increase it by one.
+> count count &v 1 + & @~v &
+Now, let's break that apart. If poslin had a way of grouping visually
+(we can actually implement that) we would group it like this:
+; > count ( count &v 1 + & ) @~v &
+The inner group is where we get the value and increase it by one. The
+outer call (occuring later because '@~v' is encountered after the
+inner group) then sets the already defined 'count' to count+1.
+
+Finally we need to return the newly achieved value.
+> count &v ^<- &
+
+Define the operation. We need to use '}@' for that so the operation
+will use a stack that carries the local variable environment where our
+count is defined! If we used ']@' the local environment opened with
+'v[' would be lost as soon as we closed it and our operator wouldn't
+have any knowledge of it.
+> }@
+
+Now that we have defined the operation we don't need our stack with
+it's local variable environment anymore, so we can close and discard
+it.
+> ]_
+
+It should work like this:
+> count !
+[ROOT: 1]
+> count !
+[ROOT: 1 2]
+> __ !
+> count !
+[ROOT: 3]
+> __ !
+
+
+5. IF AND RECURSION
+
+Forth uses 'branch-if' to implement 'if' in a way that looks more like
+a usual 'if'. This has the downside that 'if' only works in a
+thread. Poslin basically can do the same, but having no conditional
+available in the REPL would be quite inconvenient.
+That's why poslin has '<?>'. This operation takes 3 arguments off the
+stack. If the leftmost is 'nil' the rightmost argument is put back
+onto the stack, if it is something else the middle argument is put
+back.
+> nil a b <?> !
+[ROOT: B]
+> __ !
+> t a b <?> !
+[ROOT: A]
+> __ !
+
+This alone doesn't look all that useful. Normally one would like to
+execute some code after branching.
+You can do it like this:
+> 3 t [ 2 * & ] [ 2 + & ] <?> ! !
+[ROOT: 6]
+> __ !
+> 3 nil [ 2 * & ] [ 2 + & ] <?> ! !
+[ROOT: 5]
+> __ !
+
+Basically you put the code to execute on it's own stack and then
+choose which stack to call.
+
+There is one other problem in poslin. Poslin doesn't have recursion or
+looping built in. When an operation is defined we cannot put it's own
+thread on itself because that thread is not known at the time.
+Thus, when we want recursion, we need to look up the definition of the
+operation at runtime. This we can do by putting the thread of '!' on
+the stack instead of putting the thread of what we want to call on the
+stack.
+Now, when you want the thread of an immediate operation you can't just
+write it like you usually would because then poslin would try to call
+the immediate operation and that might have unforeseen consequences.
+To prevent something from being looked up, quote it like this:
+> '!
+[ROOT: !]
+Note that, when doing that with a delayed symbol, this is equivalent
+with just writing the symbol itself.
+We now can get the thread of '!'
+> &
+[ROOT: OP{!}]
+> __ !
+Because this is something we need to do more often there is an
+immediate operator that returns the thread of '!'. It is called '!&'.
+In the same way when recursing we will often need 'OP{<?>} OP{!}' on
+our stack, so there is an immediate operator for that, too: '<?>!'.
+
+We will now define the factorial function.
+> fact
+> { n arg
+>   n &v 1 <= &  ; n<=1
+>   1 	      	 ;    1
+>   [ n &v 1 - & ;    n-1
+>     fact !&    ;    (n-1)! ; a recursive call with !&
+>     n &v * &	 ;    (n-1)!*n
+>   ]
+>   <?>!	 ; if n<=1 then 1 else (n-1)!*n and then calculate!
+>   ^<- &	 ; return the result
+> }@
+
+
+6. THAT'S IT - FOR NOW
+
+This part of the poslin tutorial covered:
+- postfix notation
+- the basics of defining operations in poslin
+- what threads in poslin are
+- what environments and bindings in poslin are
+- how to use conditionals and do recursion
+
+In the next part all of the standard library will be thrown out and I
+will show you how to implement it from scratch.
+The first few definitions will be quite hard to understand as there
+will be no syntactic sugar at all. Hopefully this helps you understand
+poslin better and give you some idea on how to extend it beyond what I
+could think of.
