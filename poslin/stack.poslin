@@ -1,0 +1,45 @@
+<>>     ; ( [ ... val ] -- val [ ... ] )
+[ ~§ &  ; [ ... val ] [ ... val ]
+  -> &  ; [ ... ] val
+  ~<> & ; val [ ... ]
+]@
+
+<<> ; ( val1 [ ... ] val2 -- [ ... val2 ] val1 )
+[ r<- & ; val1 [ ... ] ; val2
+  ~§ &  ; val1 [ ... ] [ ... ] ; val2
+  r-> & ; val1 [ ... ] [ ... ] val2
+  <- &  ; val1 [ ... val2 ]
+  ~<> & ; [ ... val2 ] val1
+]@
+
+?o>     ; ( [] name -- thread )
+[ r<- & ; []
+  ?eo & ; op-env
+  r-> & ; op-env name
+  ?o &  ; thread
+]@
+
+?v>     ; ( [] name -- val )
+[ r<- & ; []
+  ?ev & ; var-env
+  r-> & ; var-env name
+  ?v &  ; val
+]@
+
+@o>     ; ( [] name -- )
+[ ~§ &  ; [] name name
+  r<- & ; [] name ; name
+  ?o> & ; op ; name
+  r-> & ; op name
+  ~<> & ; name op
+  @~o & ;
+]@
+
+@v> ; ( [] name -- )
+[ ~§ & ; [] name name
+  r<- & ; [] name ; name
+  ?v> & ; val ; name
+  r-> & ; val name
+  ~<> & ; name val
+  @~v & ;
+]@

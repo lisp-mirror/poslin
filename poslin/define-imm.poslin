@@ -1,0 +1,33 @@
+@i+ ; ( op-env name -- )
+[ t @i &
+]@
+
+@i- ; ( op-env name -- )
+[ nil @i &
+]@
+
+@~i      ; ( name bool -- )
+[ r<- &  ; name
+  ?~eo & ; name op-env
+  ~<> &  ; op-env name
+  r-> &  ; op-env name bool
+  @i &   ;
+]@
+
+@~i+ ; ( name -- )
+[ t @~i &
+]@
+
+@~i- ; ( name -- )
+[ nil @~i &
+]@
+
+]i       ; ( name [ ... -- )
+[ '] &   ; name []
+  r<- &  ; name
+  ~§ &   ; name name
+  r-> &  ; name name []
+  @~o &  ; name
+  @~i+ & ;
+]@
+]i @~i+ !

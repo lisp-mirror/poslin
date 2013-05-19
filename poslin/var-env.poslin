@@ -1,0 +1,76 @@
+?~bv
+[ ?~ev &
+  ~<> &
+  ?bv &
+]@
+
+@~bv
+[ ?~ev &
+  ~<> &
+  @bv &
+]@
+
+?v
+[ ?bv &
+  ?b &
+]@
+
+?~v
+[ ?~ev &
+  ~<> &
+  ?v &
+]@
+
+@v*     ; ( var-env name val -- )
+[ r<- & ; var-env name
+  b* &  ; var-env name binding
+  ~§ &  ; var-env name binding binding
+  r-> & ; var-env name binding binding val
+  @b &  ; var-env name binding
+  @bv & ;
+]@
+
+@~v*     ; ( name val -- )
+[ r<- &  ; name
+  ?~ev & ; name var-env
+  ~<> &  ; var-env name
+  r-> &  ; var-env name val
+  @v* &  ;
+]@
+
+@v        ; ( var-env name val -- )
+[ r<- &   ; var-env name ; val
+  r<- &   ; var-env ; name val
+  ~§ &	  ; var-env var-env ; name val
+  r-> &   ; var-env var-env name ; val
+  ~§ &    ; var-env var-env name name ; val
+  r<- &   ; var-env var-env name ; name val
+  ?bv &   ; var-env binding ; name val
+  ~§ &	  ; var-env binding binding ; name val
+      	  ;<?> var-env binding ; name val
+  [ ~<> & ; binding var-env ; name val
+    ~ &   ; binding var-env [] ; name val
+    _ &   ; binding ; name val
+    r-> & ; binding name ; val
+    ~ &   ; binding name [] ; val
+    _ &   ; binding ; val
+    r-> & ; binding val
+    @b &  ;
+  ]
+  [ ~ &   ; var-env binding [] ; name val
+    _ &   ; var-env ; name val
+    r-> & ; var-env name ; val
+    r-> & ; var-env name val
+    @v*	& ;
+  ]
+  <?> &
+  '! &
+]@
+
+@~v ; ( name val -- )
+[ r<- & ; name ; val
+  ?~ev & ; name var-env ; val
+  ~<> &  ; var-env name ; val
+  r-> &  ; var-env name val
+  @v &	 ;
+]@
