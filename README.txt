@@ -5,22 +5,19 @@
    Known problems
 
 1. INSTALLATION
-   You need asdf and either quicklisp or alexandria and osicat to run
-   poslin. Put the poslin sources into a directory where asdf can find
-   them. Set the environment variable POSLIN_HOME to
-   "[source-dir]/poslin/" where [source-dir] is the path of the source
-   directory. This is necessary so poslin can find it's standard
-   library and load it.
+   You need quicklisp installed. Put the poslin folder somewhere where
+   quicklisp will be able to find it, then load it in your preferred
+   Common Lisp REPL via
+   (ql:quickload "poslin")
 
 2. USAGE
-   Start your Common Lisp REPL, load poslin and enter the poslin
-   package.
+   Start your Common Lisp REPL and load poslin.
 
    You can either run poslin in a REPL or feed a defined poslin
    environment a list of commands.
 
    To run the REPL just run
-   > (poslin-repl)
+   > (poslin:repl)
    If poslin has been set up right you will see the following:
    [ROOT:]
    >
@@ -37,13 +34,10 @@
    parameter and a &REST parameter for the commands to execute in that
    poslin environment.
    If you want to use a throwaway environment, just type
-   > (poslin-run (poslin-env)
+   > (run-poslin (poslin)
    enter the poslin code and close the lisp form. POSLIN-ENV might
    take a moment to run.
 
 3. KNOWN PROBLEMS
-   Trying to compile POSLIN-REPL into an executable via
-   (sb-ext:save-lisp-and-die "poslin" :executable t :toplevel
-   			     #'poslin-repl)
-   seems to work at first, but the resulting REPL never executes any
-   operators and just fills up the root stack with anything fed to it.
+   Poslins error handling is crude to say the least. All kinds of
+   stupid errors and typos can crash a running poslin session.

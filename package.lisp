@@ -2,4 +2,4 @@
 
 (defpackage #:poslin
   (:use #:cl #:alexandria #:split-sequence)
-  (:export))
+  (:export #:repl #:run-poslin #:poslin))
