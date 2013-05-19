@@ -4,7 +4,7 @@
   :description "Describe poslin here"
   :author "Thomas Bartscher <thomas.bartscher@gmail.com>"
   :license "EUPL V1.1"
-  :depends-on ("alexandria")
+  :depends-on ("alexandria" "split-sequence")
   :components
   ((:file "package")
    (:module

@@ -1,5 +1,5 @@
 ;;;; package.lisp
 
 (defpackage #:poslin
-  (:use #:cl #:alexandria)
+  (:use #:cl #:alexandria #:split-sequence)
   (:export))
