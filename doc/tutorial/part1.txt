@@ -1,0 +1,198 @@
+1. INTRODUCTION
+
+Poslin is short for "Postfiksa Lingvo" which is Esperanto and means
+"postfix language". As is to be expected, poslin uses postfix
+notation.
+
+If you aren't familiar with the term: Postfix notation means that the
+operator is written after the operands he is operating on. So, if you
+want to translate 1+2 (which is written in infix notation) to postfix
+notation you write
+1 2 +
+
+Why would that be useful?
+Well, postfix notation is pretty easy to process for a
+computer. Actually everything one needs for processing postfix is a
+stack and knowledge of what an operator is. That means in postfix
+notation you do the following: If you encounter something but an
+operator, put it on the stack. If you encounter an operator, take as
+much off the stack as the operation processes, call the operation on
+the things you took off the stack and then put the result back onto
+the stack.
+
+Poslin has two kinds of operators: Those, which "know" they are
+operators and act accordingly when they are encountered by poslin and
+those which need to explicitely told that they are opartors by an
+operation. The first kind is called "immediate", the second "delayed".
+
+Immediate operators are intended to be used as part of the
+syntax. They define how poslin code behaves.
+Probably the most important immediate primary (meaning they are not
+defined in terms of poslin code) operators are '!', '&', '[' and ']'.
+'!' tells a delayed operator to get to work. So, to add two numbers
+you have to write (ignoring the opening '>' as this is just a symbol
+to indicate a prompt)
+> 1 2 + !
+because '+' is delayed and won't do anything by itself.
+'&' takes an operator and returns it's thread. A thread in poslin has
+got nothing to do with multithreading or processes but is the internal
+representation of something that can be executed in poslin. A primary
+operator is like an atomic thread, while operations defined in poslin
+are more complex ones.
+'&' is useful for defining new operators as those new operators need
+to know which other operators to call at which point. We can't use '!'
+for that purpose as we don't want to call those operators right now
+but only later.
+'[' and ']' are another specialty of poslin. Poslin doesn't work with
+just one stack but with a whole stack of stacks. So, that stack of
+stacks is called the "path". Anything that happens on a stack always
+happens to the stack that is on top of the path. '[' creates a new
+stack and pushes it onto the path, ']' pops off the top of the path
+and then pushes it anto the new top of the path (that is, onto the top
+of the stack that now is on top of the path).
+
+
+2. A FIRST IMPRESSION
+
+To give you an impression on how to write a program in poslin I will
+give you an expample.
+To follow the example, start up your poslin REPL.
+
+First let's define an operation that takes one argument and squares
+it.
+
+> square {
+[ROOT:SQUARE:]
+This is how we start the definition of an operation: First the name,
+then a '{', which is an immediate operator that does some bookkeeping
+stuff. One thing it does is giving the newly opened stack the name
+that is on top of the old current stack. That's why you see the
+'SQUARE:' behind the 'ROOT:'.
+Later in the tutorial you will define that operator yourself, just
+like all the other non-primary operators used here.
+
+> a arg
+This tells the operator to take one argument named 'a'.
+After typing this, you REPL might answer you like this:
+[ROOT:SQUARE: A TH{ TH{ 1 OP{^} } OP{->} }
+ TH{ OP{R<-} TH{ TH{ 0 OP{^} } OP{?EV} } TH{ TH{ 0 OP{^} } OP{<>} }
+  OP{R->}
+  TH{ OP{R<-} OP{B*} TH{ TH{ 0 OP{^} } OP{§} } OP{R->} OP{@B} OP{@BV}
+  } }]
+This is because 'arg' is an immediate operator that puts a few threads
+on the current stack. Those threads are doing all the stuff necessary
+to get a parameter off the stack and then save it locally under the
+supplied name. This is what I meant when I said that immediate
+operators are there for defining syntax.
+
+> a &v
+Gives code that will look for the value of 'a'.
+
+> a &v * &
+Get that code again and then put some code there to multiply the
+numbers you will just have got.
+
+> ^<- &
+Nothing left but to return the value we just will have
+calculated. This does what is necessary.
+
+> }@
+And with this the operation is defined.
+Try it!
+> 5 square !
+[ROOT: 25]
+
+Now enter
+> __ !
+To clean the current stack.
+
+
+3. UNDERSTANDING THREADS
+
+The stack you built up when defining 'square' probably looked very
+intimidating. Still, being able to interpret threads can e quite
+helpful, when debugging for example.
+Now, something as big as 'square' is probably a bit much, so let's
+start with something else instead.
+> foo [ 2 + & ]@
+This defines an operation foo without any extra bookkepping. One of
+the tasks of '}@' is to wrap the compiled thread in code that will
+open and close a new stack. ']@' does no such thing, so it operates on
+the same stack it was called on. Conversely this means we cannot use
+'args', or at least we cannot use it in the same way we used it in
+'square'.
+
+Let's try 'foo'.
+> 4 foo !
+[ROOT: 6]
+What happens is this: Foo puts a 2 on the stack and then calls the
+'+'. On the stack now are the numbers 4 and 2 and so the two are added
+and the result 6 is put back onto the stack.
+Now clean up, because threads are probably easier to read when there's
+nothing else blocking our view.
+> __ !
+Now, get the thread of 'foo'.
+> foo &
+[ROOT: TH{ 2 OP{+} }]
+That doesn't look too bad. The basic rule for interpreting a thread is
+this: If you encounter a primary operator (of the form 'OP{...}'),
+execute it's code. If you encounter a thread (of the form 'TH{ ... }')
+put it onto the program counter while everything following it get's
+pushed onto the return stack. How that works and how it is useful we
+will see later. Anything else get's just pushed onto the current
+stack.
+So, the thread TH{ 2 OP{+} } first pushes 2 on the current stack and
+then executes '+'. That was easy.
+
+Now, let's look at another example.
+> __ !
+For this we redefine square to be a bit less daunting.
+> square [ ~§ & * & ]@
+> 3 square !
+[ROOT: 9]
+> __ !
+Now, look at the thread of 'square':
+> square &
+[ROOT: TH{ TH{ TH{ 0 OP{^} } OP{§} } OP{*} }]
+Now, this is a bit more complex and has three levels of threads.
+Now, in the following table I will go through the thread step by
+step. As anything on the program counter is surrounded by TH{ } I will
+just skip that part in the table.
+
+Current Stack		Program counter		        Return stack
+4			TH{ TH{ 0 OP{^} } OP{§} } OP{*}
+4			TH{ 0 OP{^} } OP{§}		OP{*}
+4			0 OP{^}	      			OP{*} OP{§}
+4 0			OP{^}				OP{*} OP{§}
+The '^' primary operator takes one number off the current stack and
+returns the nth stack on the path. So, the zeroe's stack on the path
+is the current stack.
+4 [ ]							OP{*} OP{§}
+Now the Program counter is empty, so we pop the top of the return
+stack and put it into the Program counter.
+4 [ ] 	      	      	OP{§}				OP{*}
+'§' takes a stack as it's argument and duplicates it's top. The [ ] up
+there is our current stack and if '§' consumes one argument and then
+duplicates the top, 4 will be duplicated on the current stack.
+4 4							OP{*}
+4 4			OP{*}
+16
+Both the Program counter and the return stack are empty, so our
+calculation is done and we have seen how 'square' does its work.
+> __ !
+
+Just to give you an idea where the inner threads came from:
+> ~ &
+[ROOT: TH{ 0 OP{^} }]
+'~' pushes the current stack onto itself. This operator exists because
+alle stack manipulating primary operators take a stack as an argument
+from the current stack but we often need to manipulate the current
+stack (especially when writing the standard library).
+> __ !
+
+> ~§ &
+[ROOT: TH{ TH{ 0 OP{^} } OP{§} }]
+The first element in the thread is the thread that w have just seen -
+the one giving back the current stack. The second element in the
+thread is the operator that duplicates the top of the given
+stack.

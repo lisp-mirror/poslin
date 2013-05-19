@@ -71,6 +71,7 @@ b* !
     ~ &   ; op-env binding name [] ; op
     _ &   ; op-env binding ; op
     r-> & ; op-env binding op
+    '& &  ; op-env binding thread
     @b &  ; op-env
     ~ &   ; op-env []
     _ &   ;
