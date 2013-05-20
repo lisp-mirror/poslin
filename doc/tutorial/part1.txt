@@ -92,7 +92,7 @@ Gives code that will look for the value of 'a'.
 Get that code again and then put some code there to multiply the
 numbers you will just have got.
 
-> ^<- &
+> result
 Nothing left but to return the value we just will have
 calculated. This does what is necessary.
 
@@ -197,6 +197,17 @@ the one giving back the current stack. The second element in the
 thread is the operator that duplicates the top of the given
 stack.
 
+Now let's look at some of the words used earlier.
+> result
+[ROOT: TH{ TH{ 1 OP{^} } TH{ TH{ 0 OP{^} } OP{<>} } OP{<-} }]
+'result' obviously is immediate.
+It gets the parent stack (TH{ 1 OP{^} }), then gets swaps on the
+current stack (TH{ TH{ 0 OP{^} } OP{<>} }) and then pushes whatever
+was on top before onto the parent stack (OP{<-}).
+Basically 'result' inserts code that pushes the top of the current
+stack onto the parent stack. So, if we want to use it to return some
+value from an operation, that operation needs to open it's own stack.
+
 
 4. ENVIRONMENTS AND BINDINGS
 
@@ -278,24 +289,33 @@ A version in poslin could be defined like this:
 First, open up a new stack that has it's own operation environment.
 > v[
 
-Define the local variable count to be 0. We use '@~v*' so we won't
-change some existing binding by accident.
-> count 0 @~v* !
+Define the local variable count to be 0. 'let' is an immediate version
+of '@~v*', so it makes sure that no previously existing definition of
+'count' is changed.
+> count 0 let
 
 Open up the definition for the operation.
 > count {
 
 We now need to get the variable 'count' and increase it by one.
-> count count &v 1 + & @~v &
-Now, let's break that apart. If poslin had a way of grouping visually
-(we can actually implement that) we would group it like this:
-; > count ( count &v 1 + & ) @~v &
+'&@v' immediately inserts code for setting a variable (the same way
+that '@~v' does, so we will modify the previously defined 'count'
+here). The brackets '~[' and '~]' are purely cosmetic and don't do
+anything. They just give a visual clou about what belongs to
+what.
+> count ~[ count &v 1 + & ~] &@v
 The inner group is where we get the value and increase it by one. The
 outer call (occuring later because '@~v' is encountered after the
 inner group) then sets the already defined 'count' to count+1.
+NOTE: '~[' and '~]' don't need to be balanced and they don't change
+      how your program works in any way. That means writing something
+      in those brackets doesn't make sure that the operations within
+      don't consume anything from the outside. Like comments they
+      don't do anything at all. They are both immediate symbols whose
+      associated operation doesn't do anything.
 
 Finally we need to return the newly achieved value.
-> count &v ^<- &
+> count &v result
 
 Define the operation. We need to use '}@' for that so the operation
 will use a stack that carries the local variable environment where our
@@ -374,7 +394,8 @@ immediate operator that returns the thread of '!'. It is called '!&'.
 In the same way when recursing we will often need 'OP{<?>} OP{!}' on
 our stack, so there is an immediate operator for that, too: '<?>!'.
 
-We will now define the factorial function.
+The factorial function is a must when writing a tutorial and doing
+recursion, so here it is:
 > fact
 > { n arg
 >   n &v 1 <= &  ; n<=1
@@ -384,11 +405,13 @@ We will now define the factorial function.
 >     n &v * &	 ;    (n-1)!*n
 >   ]
 >   <?>!	 ; if n<=1 then 1 else (n-1)!*n and then calculate!
->   ^<- &	 ; return the result
+>   result	 ; return the result
 > }@
+> 5 fact !
+[ROOT: 120]
 
 
-6. THAT'S IT - FOR NOW
+6. THAT'S IT FOR NOW
 
 This part of the poslin tutorial covered:
 - postfix notation
