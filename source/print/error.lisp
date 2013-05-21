@@ -9,16 +9,19 @@
   (the string
     (with-pandoric (ntable pc rstack)
 	poslin
-      (format nil "~&POSLIN-~A-ERROR~% ~A~%  PC: ~A~%  RSTACK: ~A~%"
-	      error-type (apply #'format
-				nil controlstring
-				(mapcar (lambda (arg)
-					  (posprint arg ntable))
-					args))
-	      (posprint pc ntable)
-	      (mapcar (lambda (arg)
-			(posprint arg ntable))
-		      rstack)))))
+      (prog1
+	  (format nil "~&POSLIN-~A-ERROR~% ~A~%  PC: ~A~%  RSTACK: ~A~%"
+		  error-type (apply #'format
+				    nil controlstring
+				    (mapcar (lambda (arg)
+					      (posprint arg ntable))
+					    args))
+		  (posprint pc ntable)
+		  (mapcar (lambda (arg)
+			    (posprint arg ntable))
+			  rstack))
+	(setf pc nil)
+	(setf rstack nil)))))
 
 (defmacro poslin-error (error-type controlstring &rest args)
   `(progn
