@@ -57,6 +57,13 @@ b* !
   @o* &  ;
 ] @o* !
 
+]@      ; ( name [ ... -- )
+[ '] &  ; name []
+  @~o* & ;
+] @~o* !
+?~eo !
+]@ t @i !
+
 @o ; ( op-env name op -- )
 [ r<- &   ; op-env name ; op
   r<- &   ; op-env ; name op
@@ -93,10 +100,3 @@ b* !
   r-> &  ; op-env name op
   @o &   ;
 ] @~o* !
-
-]@      ; ( name [ ... -- )
-[ '] &  ; name []
-  @~o & ;
-] @~o !
-?~eo !
-]@ t @i !
