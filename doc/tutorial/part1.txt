@@ -77,7 +77,7 @@ After typing this, you REPL might answer you like this:
 [ROOT:SQUARE: A TH{ TH{ 1 OP{^} } OP{->} }
  TH{ OP{R<-} TH{ TH{ 0 OP{^} } OP{?EV} } TH{ TH{ 0 OP{^} } OP{<>} }
   OP{R->}
-  TH{ OP{R<-} OP{B*} TH{ TH{ 0 OP{^} } OP{§} } OP{R->} OP{@B} OP{@BV}
+  TH{ OP{R<-} OP{B*} TH{ TH{ 0 OP{^} } OP{ï¿½} } OP{R->} OP{@B} OP{@BV}
   } }]
 This is because 'arg' is an immediate operator that puts a few threads
 on the current stack. Those threads are doing all the stuff necessary
@@ -110,7 +110,7 @@ To clean the current stack.
 3. UNDERSTANDING THREADS
 
 The stack you built up when defining 'square' probably looked very
-intimidating. Still, being able to interpret threads can e quite
+intimidating. Still, being able to interpret threads can be quite
 helpful, when debugging for example.
 Now, something as big as 'square' is probably a bit much, so let's
 start with something else instead.
@@ -147,32 +147,32 @@ then executes '+'. That was easy.
 Now, let's look at another example.
 > __ !
 For this we redefine square to be a bit less daunting.
-> square [ ~§ & * & ]@
+> square [ ~ï¿½ & * & ]@
 > 3 square !
 [ROOT: 9]
 > __ !
 Now, look at the thread of 'square':
 > square &
-[ROOT: TH{ TH{ TH{ 0 OP{^} } OP{§} } OP{*} }]
+[ROOT: TH{ TH{ TH{ 0 OP{^} } OP{ï¿½} } OP{*} }]
 Now, this is a bit more complex and has three levels of threads.
 Now, in the following table I will go through the thread step by
 step. As anything on the program counter is surrounded by TH{ } I will
 just skip that part in the table.
 
 Current Stack		Program counter		        Return stack
-4			TH{ TH{ 0 OP{^} } OP{§} } OP{*}
-4			TH{ 0 OP{^} } OP{§}		OP{*}
-4			0 OP{^}	      			OP{*} OP{§}
-4 0			OP{^}				OP{*} OP{§}
+4			TH{ TH{ 0 OP{^} } OP{ï¿½} } OP{*}
+4			TH{ 0 OP{^} } OP{ï¿½}		OP{*}
+4			0 OP{^}	      			OP{*} OP{ï¿½}
+4 0			OP{^}				OP{*} OP{ï¿½}
 The '^' primary operator takes one number off the current stack and
 returns the nth stack on the path. So, the zeroe's stack on the path
 is the current stack.
-4 [ ]							OP{*} OP{§}
+4 [ ]							OP{*} OP{ï¿½}
 Now the Program counter is empty, so we pop the top of the return
 stack and put it into the Program counter.
-4 [ ] 	      	      	OP{§}				OP{*}
-'§' takes a stack as it's argument and duplicates it's top. The [ ] up
-there is our current stack and if '§' consumes one argument and then
+4 [ ] 	      	      	OP{ï¿½}				OP{*}
+'ï¿½' takes a stack as it's argument and duplicates it's top. The [ ] up
+there is our current stack and if 'ï¿½' consumes one argument and then
 duplicates the top, 4 will be duplicated on the current stack.
 4 4							OP{*}
 4 4			OP{*}
@@ -190,8 +190,8 @@ from the current stack but we often need to manipulate the current
 stack (especially when writing the standard library).
 > __ !
 
-> ~§ &
-[ROOT: TH{ TH{ 0 OP{^} } OP{§} }]
+> ~ï¿½ &
+[ROOT: TH{ TH{ 0 OP{^} } OP{ï¿½} }]
 The first element in the thread is the thread that w have just seen -
 the one giving back the current stack. The second element in the
 thread is the operator that duplicates the top of the given
