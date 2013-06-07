@@ -24,7 +24,7 @@
 @v*     ; ( var-env name val -- )
 [ r<- & ; var-env name
   b* &  ; var-env name binding
-  ~ง &  ; var-env name binding binding
+  ~ยง &  ; var-env name binding binding
   r-> & ; var-env name binding binding val
   @b &  ; var-env name binding
   @bv & ;
@@ -41,12 +41,12 @@
 @v        ; ( var-env name val -- )
 [ r<- &   ; var-env name ; val
   r<- &   ; var-env ; name val
-  ~ง &	  ; var-env var-env ; name val
+  ~ยง &	  ; var-env var-env ; name val
   r-> &   ; var-env var-env name ; val
-  ~ง &    ; var-env var-env name name ; val
+  ~ยง &    ; var-env var-env name name ; val
   r<- &   ; var-env var-env name ; name val
   ?bv &   ; var-env binding ; name val
-  ~ง &	  ; var-env binding binding ; name val
+  ~ยง &	  ; var-env binding binding ; name val
       	  ;<?> var-env binding ; name val
   [ ~<> & ; binding var-env ; name val
     ~ &   ; binding var-env [] ; name val

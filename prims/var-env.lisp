@@ -73,7 +73,7 @@
                        ~A to ~A"
 		      var-env var-env-par))))
 
-(defprim §ev nil
+(defprim Â§ev nil
     "( var-env -- var-env-copy )"
   (args (var-env)
     (if (var-env-p var-env)

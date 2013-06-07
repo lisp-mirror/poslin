@@ -1,12 +1,12 @@
 <>>     ; ( [ ... val ] -- val [ ... ] )
-[ ~ง &  ; [ ... val ] [ ... val ]
+[ ~ยง &  ; [ ... val ] [ ... val ]
   -> &  ; [ ... ] val
   ~<> & ; val [ ... ]
 ]@
 
 <<> ; ( val1 [ ... ] val2 -- [ ... val2 ] val1 )
 [ r<- & ; val1 [ ... ] ; val2
-  ~ง &  ; val1 [ ... ] [ ... ] ; val2
+  ~ยง &  ; val1 [ ... ] [ ... ] ; val2
   r-> & ; val1 [ ... ] [ ... ] val2
   <- &  ; val1 [ ... val2 ]
   ~<> & ; [ ... val2 ] val1
@@ -27,7 +27,7 @@
 ]@
 
 @o>     ; ( [] name -- )
-[ ~ง &  ; [] name name
+[ ~ยง &  ; [] name name
   r<- & ; [] name ; name
   ?o> & ; op ; name
   r-> & ; op name
@@ -36,7 +36,7 @@
 ]@
 
 @v> ; ( [] name -- )
-[ ~ง & ; [] name name
+[ ~ยง & ; [] name name
   r<- & ; [] name ; name
   ?v> & ; val ; name
   r-> & ; val name

@@ -104,7 +104,7 @@
 		      "Attempt to push ~A onto ~A"
 		      val pstack))))
 
-(defprim ง nil
+(defprim ยง nil
     "( stack -- )"
   (args (pstack)
     (if (pstack-p pstack)

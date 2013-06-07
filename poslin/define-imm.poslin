@@ -25,7 +25,7 @@
 ]i       ; ( name [ ... -- )
 [ '] &   ; name []
   r<- &  ; name
-  ~ง &   ; name name
+  ~ยง &   ; name name
   r-> &  ; name name []
   @~o &  ; name
   @~i+ & ;

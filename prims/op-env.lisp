@@ -125,7 +125,7 @@
                        environment of ~A to ~A"
 		      op-env op-env-par))))
 
-(defprim §eo nil
+(defprim Â§eo nil
     "( op-env -- op-env-copy )"
   (args (op-env)
     (if (op-env-p op-env)

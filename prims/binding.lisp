@@ -46,7 +46,7 @@
     "( -- binding )"
   (push-curr (make-binding)))
 
-(defprim §b nil
+(defprim Â§b nil
     "( binding -- binding-copy )"
   (args (binding)
     (if (binding-p binding)

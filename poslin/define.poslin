@@ -3,7 +3,7 @@
 ~
 b* !
 0 ^ !
-ง !
+ยง !
 [ 0 ^ &
 ] @b !
 @bo !
@@ -13,29 +13,29 @@ b* !
 ?~eo
 b* !
 ~ !
-ง !
+ยง !
 [ ~ &
   ?eo &
 ] @b !
 @bo !
 
 ?~eo !
-~ง
+~ยง
 b* !
 ~ !
-ง !
+ยง !
 [ ~ &
-  ง &
+  ยง &
 ] @b !
 @bo !
 
 ?~eo !
 @o*     ; ( op-env name op -- )
 b* !
-~ง !
+~ยง !
 [ r<- & ; op-env name
   b* &  ; op-env name binding
-  ~ง &  ; op-env name binding binding
+  ~ยง &  ; op-env name binding binding
   r-> & ; op-env name binding binding
   @b &  ; op-env name binding
   @bo & ;
@@ -67,12 +67,12 @@ b* !
 @o ; ( op-env name op -- )
 [ r<- &   ; op-env name ; op
   r<- &   ; op-env ; name op
-  ~ง &    ; op-env op-env ; name op
+  ~ยง &    ; op-env op-env ; name op
   r-> &   ; op-env op-env name ; op
-  ~ง &    ; op-env op-env name name ; op
+  ~ยง &    ; op-env op-env name name ; op
   r<- &   ; op-env op-env name ; name op
   ?bo &   ; op-env binding ; name op
-  ~ง &    ; op-env binding binding ; name op
+  ~ยง &    ; op-env binding binding ; name op
      	  ;<?> op-env binding ; name op
   [ r-> & ; op-env binding name ; op
     ~ &   ; op-env binding name [] ; op

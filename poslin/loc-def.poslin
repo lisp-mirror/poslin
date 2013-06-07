@@ -45,7 +45,7 @@ arg
 ]i
 
 {          ; ( name -- name [name )
-[ ~ง &     ; name name
+[ ~ยง &     ; name name
   '[ &     ; name name [
      ^-> & ; name [ name
      @~n & ; name [name
@@ -62,7 +62,7 @@ arg
 	 eo+ &&
 	 @~eo &&
 	 ^-> &
-	 ~ง &
+	 ~ยง &
 	 ^<- &
 	 ?n &
 	 @~n &&
@@ -85,7 +85,7 @@ arg
 }i
 [ '} &
   r<- &
-  ~ง &
+  ~ยง &
   r-> &
   @~o &
   @~i+ &
