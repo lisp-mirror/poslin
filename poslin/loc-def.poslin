@@ -45,7 +45,7 @@ arg
 ]i
 
 {          ; ( name -- name [name )
-[ ~§ &     ; name name
+[ ~$ &     ; name name
   '[ &     ; name name [
      ^-> & ; name [ name
      @~n & ; name [name
@@ -62,7 +62,7 @@ arg
 	 eo+ &&
 	 @~eo &&
 	 ^-> &
-	 ~§ &
+	 ~$ &
 	 ^<- &
 	 ?n &
 	 @~n &&
@@ -85,7 +85,7 @@ arg
 }i
 [ '} &
   r<- &
-  ~§ &
+  ~$ &
   r-> &
   @~o &
   @~i+ &

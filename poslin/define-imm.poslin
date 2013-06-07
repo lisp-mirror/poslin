@@ -25,7 +25,7 @@
 ]i       ; ( name [ ... -- )
 [ '] &   ; name []
   r<- &  ; name
-  ~§ &   ; name name
+  ~$ &   ; name name
   r-> &  ; name name []
   @~o &  ; name
   @~i+ & ;
