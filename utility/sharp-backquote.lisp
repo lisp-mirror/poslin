@@ -1,6 +1,6 @@
 (in-package #:poslin)
 
-(defun |#-reader| (stream sub-char numarg)
+(defun |#`-reader| (stream sub-char numarg)
   (declare (ignore sub-char))
   (let ((numarg (or numarg 1)))
     `(lambda ,(loop for i
@@ -12,4 +12,4 @@
 
 (set-dispatch-macro-character
  #\# #\`
- #'|#-reader|)
+ #'|#`-reader|)

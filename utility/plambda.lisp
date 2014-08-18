@@ -6,23 +6,28 @@
 		  syms))
      ,@body))
 
-(defmacro plambda (largs pargs &body body)
+(defmacro plambda ((&rest largs)
+		   (&rest pargs)
+		   &body body)
   (let ((pargs (mapcar #'list
 		       pargs)))
     `(let (this self)
-       (setf this (lambda ,largs ,@body)
+       (setf this (lambda (,@largs)
+		    ,@body)
 	     self (dlambda
-		   (:pandoric-get (sym)
-				  ,(pget pargs))
-		   (:pandoric-set (sym val)
-				  ,(pset pargs))
-		   (t (&rest args)
-		      (apply this args)))))))
+		    (:pandoric-get (sym)
+				   ,(pget pargs))
+		    (:pandoric-set (sym val)
+				   ,(pset pargs))
+		    (t (&rest args)
+		       (apply this args)))))))
 
-(defmacro defpan (name args &body body)
+(defmacro defpan (name (&rest args)
+		  &body body)
   `(defun ,name (self)
      ,(if args
-	  `(with-pandoric ,args
+	  `(with-pandoric (,@args)
 	       self
 	     ,@body)
-	  `(progn ,@body))))
+	  `(progn
+	     ,@body))))

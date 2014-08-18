@@ -1,6 +1,6 @@
 (in-package #:poslin)
 
-(defmacro! dlambda (&rest ds)
+(defmacro! dlambda (&body ds)
   `(lambda (&rest ,g!args)
      (case (car ,g!args)
        ,@(mapcar #`(,(if (eq t (car a1))

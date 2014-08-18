@@ -1,11 +1,16 @@
 ;;;; poslin.asd
 
 (asdf:defsystem #:poslin
+  :serial t
   :description "Describe poslin here"
-  :author "Thomas Bartscher <thomas.bartscher@gmail.com>"
+  :author "Thomas Bartscher <thomas.bartscher@weltraumschlangen.de>"
   :license "EUPL V1.1"
-  :version "0.1"
-  :depends-on ("alexandria" "split-sequence")
+  :depends-on ("cl-adt"
+	       "maybe"
+	       "equal"
+	       "split-sequence"
+	       "cl-ppcre"
+	       )
   :components
   ((:file "package")
    (:module
@@ -13,102 +18,98 @@
     :depends-on ("package")
     :components
     ((:file "symb")
+     (:file "flatten")
      (:file "sharp-backquote"
-	    :depends-on ("symb"))
-     (:file "defmacro!help")
-     (:file "defmacro!"
-	    :depends-on ("symb" "defmacro!help" "sharp-backquote"))
-     (:file "anaphora")
+	    :depends-on ("symb"
+			 ))
+     (:file "defmacro-help")
+     (:file "defmacro"
+	    :depends-on ("symb"
+			 "flatten"
+			 "sharp-backquote"
+			 "defmacro-help"
+			 ))
      (:file "dlambda"
-	    :depends-on ("defmacro!" "sharp-backquote"))
+	    :depends-on ("defmacro"
+			 ))
      (:file "plambda-help"
-	    :depends-on ("sharp-backquote"))
+	    :depends-on ("sharp-backquote"
+			 ))
      (:file "plambda"
-	    :depends-on ("plambda-help" "dlambda"))
-     (:file "symbol=")
-     (:file "if-not")
+	    :depends-on ("dlambda"
+			 "plambda-help"
+			 ))
      (:file "group")
+     (:file "anaphora")
      ))
    (:module
     "source"
-    :depends-on ("package" "utility")
+    :depends-on ("package"
+		 "utility"
+		 )
     :components
-    ((:file "registers")
-     (:file "thread")
-     (:module
-      "env"
+    ((:module
+      "structures"
       :components
-      ((:file "binding")
-       (:file "op-env"
-	      :depends-on ("binding"))
-       (:file "var-env"
-	      :depends-on ("binding"))
-       ))
-     (:file "pstack"
-	    :depends-on ("env"))
-     (:file "run-poslin")
-     (:module
-      "print"
-      :components
-      ((:file "print")
-       (:file "error")
+      ((:file "nothing")
+       (:file "binding")
+       (:file "environment"
+	      :depends-on ("binding"
+			   ))
+       (:file "thread")
+       (:file "path"
+	      :depends-on ("environment"
+			   "nothing"
+			   ))
+       (:file "bool")
+       (:file "compare")
+       (:file "quotation")
        ))
      (:module
-      "load"
+      "interaction"
+      :depends-on ("structures"
+		   )
+      :components
+      ((:file "interpreter")
+       (:file "new-poslin"
+	      :depends-on ("interpreter"
+			   ))
+       (:file "run-poslin"
+	      :depends-on ("new-poslin"
+			   ))
+       ))
+     (:module
+      "prims"
+      :depends-on ("structures"
+		   "interaction"
+		   )
+      :components
+      ((:file "macros")
+       (:file "prim"
+	      :depends-on ("macros"
+			   ))
+       ))
+     (:module
+      "repl"
+      :depends-on ("structures"
+		   "interaction"
+		   "prims"
+		   )
       :components
       ((:file "read")
-       (:file "interpreter")
-       (:file "eval"
-	      :depends-on ("interpreter"))
-       (:file "load"
-	      :depends-on ("read" "eval"))
-       ))
-     (:module
-      "poslin-env"
-      :depends-on ("registers" "thread" "pstack" "print" "load")
-      :components
-      ((:file "handle")
-       (:file "install")
-       (:file "poslin")
-       ))
-     (:file "defprim")
-     (:module
-      "to-thread"
-      :components
-      ((:file "stack")
-       (:file "callable"
-	      :depends-on ("stack"))
+       (:file "print")
+       (:file "repl"
+	      :depends-on ("read"
+			   "print"
+			   ))
        ))
      ))
    (:module
-    "startup"
-    :depends-on ("package" "source")
+    "finish"
+    :depends-on ("package"
+		 "source"
+		 )
     :components
-    ((:file "prims")
-     (:file "stdlib")
-     ))
-   (:module
-    "prims"
-    :depends-on ("package" "source" "startup")
-    :components
-    ((:file "nop")
-     (:file "call")
-     (:file "binding")
-     (:file "op-env")
-     (:file "var-env")
-     (:file "pstack")
-     (:file "path")
-     (:file "out")
-     (:file "load")
-     (:file "conditional")
-     (:file "imported")
-     (:file "rstack")
-     (:file "folder")
-     ))
-   (:module
-    "repl"
-    :depends-on ("package" "source" "prims" "startup")
-    :components
-    ((:file "repl")
+    (
      ))
    ))
