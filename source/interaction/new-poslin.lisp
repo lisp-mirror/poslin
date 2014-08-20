@@ -28,6 +28,7 @@
 		    :stack '()
 		    :op (<root-env> (fset:empty-map))
 		    :imm (<root-env> (fset:empty-map))
+		    :features '(:prim)
 		    ))))
 
 (defmacro poslin-install-prims (&rest standards)
@@ -41,22 +42,28 @@
      ,@(loop for standard in standards
 	  append
 	    (mapcar #`(let ((thread (<prim> (lambda ()
-					      ,@(fourth a1)))))
+					      ,@(fourth a1))
+					    ,(first a1))))
 			(setf (op-env path)
 			      (insert (op-env path)
-				      ',(first a1)
+				      ',(intern (first a1)
+						:keyword)
 				      (binding thread ,(third a1)))
 			      (imm-env path)
 			      (insert (imm-env path)
-				      ',(first a1)
-				      (binding ,(second a1)))))
+				      ',(intern (first a1)
+						:keyword)
+				      (binding ,(if (second a1)
+						    '<true>
+						    '<false>)))))
 		    (symbol-value standard)))))
 
 (defun immediate? (v path)
   (if (symbolp v)
       (aif (lookup (imm-env path)
 		   v)
-	   (if ([binding]-value it)
+	   (if (equal? ([binding]-value it)
+		       <true>)
 	       ([binding]-value (lookup (op-env path)
 					v))))))
 

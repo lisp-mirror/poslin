@@ -68,10 +68,14 @@
 ;;;; path
 (defprim *prim* "p->" nil
     "pops the top of the path"
-  (let ((e (path-top path)))
-    (setf path
-	  (path-pop path))
-    (push-stack e)))
+  (let ((e (path-top path))
+	(p (maybe:extract (path-pop path)
+			  nil)))
+    (if p
+	(progn
+	  (setf path p)
+	  (push-stack e))
+	(push-stack 'path-bottom-error))))
 
 (defprim *prim* "p<-" nil
     "pushes onto the path"
@@ -95,7 +99,9 @@
 (defprim *prim* "e->" nil
     "environment lookup"
   (stack-args (e k)
-    (push-stack (lookup e k))))
+    (push-stack (aif (lookup e k)
+		     it
+		     <meta-nothing>))))
 
 (defprim *prim* "e<-" nil
     "environment set"

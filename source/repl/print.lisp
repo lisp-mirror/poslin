@@ -41,15 +41,15 @@
 (defmatch poslin-print ([thread] t)
     (or string null)
   ((<noop> stream)
-   (format stream "p{.}"))
+   (format stream "P{.}"))
   (((<constant> c)
     stream)
    (format stream "#{~A}"
 	   (poslin-print c nil)))
-  (((<prim> f)
+  (((<prim> f n)
     stream)
-   (format stream "p{~A}"
-	   f))
+   (format stream "P{~A}"
+	   n))
   (((<thread> f b)
     stream)
    (format stream "{~A ~A}"

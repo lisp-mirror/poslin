@@ -2,7 +2,7 @@
 
 (defadt [thread]
   <noop>
-  (<prim> function)
+  (<prim> function string)
   (<constant> t)
   (<thread> [thread] [thread]))
 
@@ -19,8 +19,7 @@
   (_ <noop>))
 
 (defmacro defnprim (standard name immediate? docstring &body body)
-  `(push '(,(intern name :keyword)
-	   ,immediate? ,docstring ,body)
+  `(push '(,name ,immediate? ,docstring ,body)
 	 ,standard))
 
 (defmacro defprim (standard name immediate? docstring &body body)
