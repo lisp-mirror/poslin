@@ -1,5 +1,7 @@
 (in-package #:poslin)
 
-(defadt [bool]
-  <true>
-  <false>)
+(defparameter <true>
+  '<true>)
+
+(defparameter <false>
+  '<false>)

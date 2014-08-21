@@ -62,8 +62,9 @@
   (if (symbolp v)
       (aif (lookup (imm-env path)
 		   v)
-	   (if (equal? ([binding]-value it)
-		       <true>)
+	   (if (and (not (eq it <meta-nothing>))
+		    (eq ([binding]-value it)
+			<true>))
 	       ([binding]-value (lookup (op-env path)
 					v))))))
 
@@ -77,11 +78,9 @@
 	 (cond
 	   (thread
 	    (setf pc thread))
-	   ((typep v '[quotation])
-	    (match v
-		t
-	      ((<quotation> s)
-	       (push s (stack path)))))
+	   ((typep v '<quotation>)
+	    (push (<quotation>-val v)
+		  (stack path)))
 	   (t
 	    (push v (stack path)))))
        (interpreter)

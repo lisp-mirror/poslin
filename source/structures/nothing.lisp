@@ -1,4 +1,4 @@
 (in-package #:poslin)
 
-(defadt [nothing]
-  <meta-nothing>)
+(defparameter <meta-nothing>
+  '<meta-nothing>)

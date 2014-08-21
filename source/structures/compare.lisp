@@ -1,7 +1,13 @@
 (in-package #:poslin)
 
-(defadt [comp]
-  <less>
-  <equal>
-  <greater>
-  <unequal>)
+(defparameter <less>
+  '<less>)
+
+(defparameter <equal>
+  '<equal>)
+
+(defparameter <greater>
+  '<greater>)
+
+(defparameter <unequal>
+  '<unequal>)

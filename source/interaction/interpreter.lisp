@@ -7,39 +7,40 @@
   `([binding]-value (path-get ,path :stack)))
 
 (defmacro interpreter ()
-  `(loop while (or (not (equal? pc <noop>))
+  `(loop while (or (not (eq pc <noop>))
 		   rstack)
       do
-	(match pc
-	    t
-	  (<noop>
-	   (setf pc (pop rstack)))
-	  ((<constant> c)
-	   (push c (stack path))
-	   (setf pc (or (pop rstack)
-			<noop>)))
-	  ((<prim> f)
-	   (funcall f))
-	  ((<thread> front back)
-	   (match front
-	       t
-	     (<noop>
-	      (setf pc back))
-	     ((<constant> c)
-	      (push c (stack path))
-	      (setf pc back))
-	     ((<prim> f)
-	      (funcall f))
-	     (_
-	      (push back rstack)
-	      (setf pc front))))
-	  ((<quotation> s)
-	   (format t "~S"
-		   s)
-	   (push s (stack path))
-	   (setf pc (or (pop rstack)
-			<noop>)))
-	  (c
-	   (push c (stack path))
-	   (setf pc (or (pop rstack)
-			<noop>))))))
+	(if (eq pc <noop>)
+	    (setf pc (pop rstack))
+	    (typecase pc
+	      (<constant>
+	       (push (<constant>-val pc)
+		     (stack path))
+	       (setf pc (or (pop rstack)
+			    <noop>)))
+	      (<prim>
+	       (funcall (<prim>-fun pc)))
+	      (<thread>
+	       (let ((front (<thread>-front pc)))
+		 (if (eq front <noop>)
+		     (setf pc (<thread>-back pc))
+		     (typecase front
+		       (<constant>
+			(push (<constant>-val front)
+			      (stack path))
+			(setf pc (<thread>-back pc)))
+		       (<prim>
+			(funcall (<prim>-fun front)))
+		       (t
+			(push (<thread>-back pc)
+			      rstack)
+			(setf pc front))))))
+	      (<quotation>
+	       (push (<quotation>-val pc)
+		     (stack path))
+	       (setf pc (or (pop rstack)
+			    <noop>)))
+	      (t
+	       (push pc (stack path))
+	       (setf pc (or (pop rstack)
+			    <noop>)))))))
