@@ -48,7 +48,7 @@
     k)
    (aif (lookup e k)
 	it
-	(path-get p k))))
+	<meta-nothing>)))
 
 (defmatch path-set ([path] [env])
     [path]
