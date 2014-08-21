@@ -7,6 +7,10 @@
 (defnprim *prim* "!" t
     "sets the program counter"
   (let ((op (pop-stack)))
+    (let ((b (thread-back pc)))
+      (unless (equal? b <noop>)
+	(push (thread-back pc)
+	      rstack)))
     (setf pc (typecase op
 	       (symbol
 		([binding]-value (lookup (op-env path)
