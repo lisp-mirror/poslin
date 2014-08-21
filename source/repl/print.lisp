@@ -46,7 +46,7 @@
     stream)
    (format stream "#{~A}"
 	   (poslin-print c nil)))
-  (((<prim> f n)
+  (((<prim> _ n)
     stream)
    (format stream "P{~A}"
 	   n))
@@ -54,4 +54,12 @@
     stream)
    (format stream "{~A ~A}"
 	   (poslin-print f nil)
-	   (poslin-print b nil))))
+	   (let ((bp (poslin-print b nil)))
+	     (if (typep b '<thread>)
+		 (subseq bp 1 (1- (length bp)))
+		 bp)))))
+
+(defmatch poslin-print ([nothing] t)
+    (or string null)
+  ((<meta-nothing> stream)
+   (format stream "<NOTHING>")))
