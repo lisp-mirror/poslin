@@ -1,60 +1,41 @@
 (in-package #:poslin)
 
-(defadt [path]
-  (<root> [env])
-  (<path> [env] [path]))
+(defstruct [path]
+  (content (<root-env> (fset:map))
+	   :type [env])
+  (parent nil
+	  :type (or [path] null)))
 
-(defmatch path-push ([path] [env])
-    [path]
-  ((p e)
-   (<path> e p)))
+(defun <root> (env)
+  (make-[path] :content env))
 
-(defmatch path-pop ([path])
-    [maybe]
-  ((<path> _ p)
-   (<just> p))
-  (_ <nothing>))
+(defun <path> (env path)
+  (make-[path] :content env
+	       :parent path))
 
-(defmatch path-top ([path])
-    [env]
-  ((<root> e)
-   e)
-  ((<path> e _)
-   e))
+(defun path-push (path env)
+  (<path> env path))
 
-(defmatch path-nth ([path] integer)
-    [env]
-  (((<root> e)
-    0)
-   e)
-  (((<path> e _)
-    0)
-   e)
-  (((<path> _ p)
-    n)
-   (if (> n 0)
-       (path-nth p (1- n))
-       (error "Attempt to get ~Ath of path"
-	      n))))
+(defun path-pop (path)
+  ([path]-parent path))
 
-(defmatch path-get ([path] symbol)
-    t
-  (((<root> e)
-    k)
-   (aif (lookup e k)
-	it
-	<meta-nothing>))
-  (((<path> e p)
-    k)
-   (aif (lookup e k)
-	it
-	<meta-nothing>)))
+(defun path-top (path)
+  ([path]-content path))
 
-(defmatch path-set ([path] [env])
-    [path]
-  (((<root> _)
-    e)
-   (<root> e))
-  (((<path> _ p)
-    e)
-   (<path> e p)))
+(defun path-nth (path integer)
+  (if (< integer 0)
+      'negative-path-access-error
+      (if (= integer 0)
+	  (path-top path)
+	  (aif (path-pop path)
+	       (path-nth it (1- integer))
+	       'path-bottom-error))))
+
+(defun path-get (path symbol)
+  (aif (@ (path-top path)
+	  symbol)
+       it
+       <meta-nothing>))
+
+(defun path-set (path env)
+  (<path> env (path-pop path)))

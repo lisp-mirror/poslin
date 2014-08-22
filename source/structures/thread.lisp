@@ -1,22 +1,56 @@
 (in-package #:poslin)
 
-(defadt [thread]
-  <noop>
-  (<prim> function string)
-  (<constant> t)
-  (<thread> [thread] [thread]))
+(defparameter <noop>
+  '<noop>)
 
-(defmatch thread-front ([thread])
-    [thread]
-  ((<thread> front _)
-   front)
-  (prim prim))
+(defstruct <prim>
+  (fun #'identity
+       :type function)
+  (name ""
+	:type string))
 
-(defmatch thread-back ([thread])
-    [thread]
-  ((<thread> _ back)
-   back)
-  (_ <noop>))
+(defun <prim> (f n)
+  (make-<prim> :fun f
+	       :name n))
+
+(defstruct <constant>
+  (val <meta-nothing>
+       :type t))
+
+(defun <constant> (v)
+  (make-<constant> :val v))
+
+(defstruct <thread>
+  (front <noop>
+	 :type (or (eql <noop>)
+		   <prim> <constant> <thread>))
+  (back <noop>
+	:type (or (eql <noop>)
+		  <prim> <constant> <thread>)))
+
+(defun <thread> (f b)
+  (make-<thread> :front f
+		 :back b))
+
+(defgeneric thread-front (thread)
+  (:method ((thread (eql <noop>)))
+    <noop>)
+  (:method ((thread <prim>))
+    thread)
+  (:method ((thread <constant>))
+    thread)
+  (:method ((thread <thread>))
+    (<thread>-front thread)))
+
+(defgeneric thread-back (thread)
+  (:method ((thread (eql <noop>)))
+    <noop>)
+  (:method ((thread <prim>))
+    <noop>)
+  (:method ((thread <constant>))
+    <noop>)
+  (:method ((thread <thread>))
+    (<thread>-back thread)))
 
 (defmacro defnprim (standard name immediate? docstring &body body)
   `(push '(,name ,immediate? ,docstring ,body)
@@ -26,6 +60,10 @@
   `(defnprim ,standard ,name ,immediate? ,docstring
      ,@body
      (setf pc (thread-back pc))))
+
+(deftype [thread] ()
+  `(or (eql <noop>)
+       <prim> <constant> <thread>))
 
 (defun thread<-stack (stack)
   (labels ((_rec (front back)

@@ -1,41 +1,43 @@
 (in-package #:poslin)
 
-(defadt [env]
-  (<root-env> fset:map)
-  (<env> fset:map [env]))
+(defstruct [env]
+  (content (fset:empty-map)
+	   :type fset:map)
+  (parent nil
+	  :type (or [env] null)))
 
-(defmatch lookup ([env] symbol)
-    (or [binding] null)
-  (((<env> m p)
-    k)
-   (aif (@ m k)
-	it
-	(lookup p k)))
-  (((<root-env> m)
-    k)
-   (aif (@ m k)
-	it)))
+(defun <root-env> (content)
+  (make-[env] :content content))
 
-(defmatch insert ([env] symbol [binding])
-    [env]
-  (((<root-env> m)
-    k v)
-   (<root-env> (with m k v)))
-  (((<env> m p)
-    k v)
-   (<env> (with m k v)
-	  p)))
+(defun <env> (content parent)
+  (make-[env] :content content
+	      :parent parent))
 
-(defmatch get-parent ([env])
-    [env]
-  ((<env> _ p)
-   p))
+(defmethod lookup ((collection [env])
+		   (key symbol))
+  (aif (@ ([env]-content collection)
+	  key)
+       it
+       (aif ([env]-parent collection)
+	    (@ it key)
+	    <meta-nothing>)))
 
-(defmatch set-parent ([env] [env])
-    [env]
-  (((<root-env> m)
-    p)
-   (<env> m p))
-  (((<env> m _)
-    p)
-   (<env> m p)))
+(defgeneric insert (collection key value)
+  (:method ((collection [env])
+	    (key symbol)
+	    (value [binding]))
+    (<env> (with ([env]-content collection)
+		 key value)
+	   ([env]-parent collection))))
+
+(defgeneric get-parent (hierarchical)
+  (:method ((hierarchical [env]))
+    (aif ([env]-parent hierarchical)
+	 it
+	 <meta-nothing>)))
+
+(defgeneric set-parent (hierarchical parent)
+  (:method ((hierarchical [env])
+	    (parent [env]))
+    (<env> ([env]-content hierarchical)
+	   parent)))

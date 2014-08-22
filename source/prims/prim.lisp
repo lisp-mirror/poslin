@@ -8,18 +8,24 @@
     "sets the program counter"
   (let ((op (pop-stack)))
     (let ((b (thread-back pc)))
-      (unless (equal? b <noop>)
+      (unless (eq b <noop>)
 	(push (thread-back pc)
 	      rstack)))
     (setf pc (typecase op
 	       (symbol
-		([binding]-value (lookup (op-env path)
-					 op)))
+		(if (keywordp op)
+		    ([binding]-value (lookup (op-env path)
+					     op))
+		    (<constant> op)))
 	       (null
 		<noop>)
 	       (cons
 		(thread<-stack op))
-	       ([thread]
+	       (<constant>
+		op)
+	       (<prim>
+		op)
+	       (<thread>
 		op)
 	       (t
 		(<constant> op))))))
@@ -29,13 +35,19 @@
   (let ((op (pop-stack)))
     (push-stack (typecase op
 		  (symbol
-		   ([binding]-value (lookup (op-env path)
-					    op)))
+		   (if (keywordp op)
+		       ([binding]-value (lookup (op-env path)
+						op))
+		       (<constant> op)))
 		  (null
 		   <noop>)
 		  (cons
 		   (thread<-stack op))
-		  ([thread]
+		  (<constant>
+		   op)
+		  (<prim>
+		   op)
+		  (<thread>
 		   op)
 		  (t
 		   (<constant> op))))))
@@ -73,8 +85,7 @@
 (defprim *prim* "p->" nil
     "pops the top of the path"
   (let ((e (path-top path))
-	(p (maybe:extract (path-pop path)
-			  nil)))
+	(p (path-pop path)))
     (if p
 	(progn
 	  (setf path p)
@@ -173,7 +184,7 @@
 
 ;;;; nothing
 (defprim *prim* ".." nil
-    "returns the mate-nothing value"
+    "returns the meta-nothing value"
   (push-stack <meta-nothing>))
 
 ;;;; boolean
@@ -188,32 +199,25 @@
 (defprim *prim* "and" nil
     "and"
   (stack-args (b1 b2)
-    (push-stack (match (b1 b2)
-		    [bool]
-		  ((<true> <true>)
-		   <true>)
-		  ((_ _)
-		   <false>)))))
+    (push-stack (if (and (eq b1 <true>)
+			 (eq b2 <true>))
+		    <true>
+		    <false>))))
 
 (defprim *prim* "or" nil
     "or"
   (stack-args (b1 b2)
-    (push-stack (match (b1 b2)
-		    [bool]
-		  ((<true> _)
-		   <true>)
-		  ((_ <true>)
-		   <true>)
-		  ((_ _)
-		   <false>)))))
+    (push-stack (if (or (eq b1 <true>)
+			(eq b2 <true>))
+		    <true>
+		    <false>))))
 
 (defprim *prim* "not" nil
     "not"
   (stack-args (b)
-    (push-stack (match b
-		    [bool]
-		  (<true> <false>)
-		  (<false> <true>)))))
+    (push-stack (if (eq b <true>)
+		    <false>
+		    <true>))))
 
 ;;;; comparison
 (defprim *prim* "==" nil

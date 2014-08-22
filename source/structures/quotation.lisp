@@ -1,4 +1,8 @@
 (in-package #:poslin)
 
-(defadt [quotation]
-  (<quotation> symbol))
+(defstruct <quotation>
+  (val nil
+       :type symbol))
+
+(defun <quotation> (val)
+  (make-<quotation> :val val))
