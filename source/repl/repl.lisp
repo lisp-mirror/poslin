@@ -33,5 +33,5 @@
 
 (defun repl1 ()
   (repl (new-poslin *prim*)
-	"~/src/Poslin/libs/base.poslin"
+	"~/src/Poslin/poslin-specification/libs/base.poslin"
 	))
