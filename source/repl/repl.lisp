@@ -36,3 +36,10 @@
   (repl (new-poslin *prim*)
 	"~/src/Poslin/poslin-specification/libs/base.poslin"
 	))
+
+#+sbcl
+(defun repl-dyn ()
+  (let ((where (or (rest sb-ext:*posix-argv*)
+		   '("~/Poslin/libs/base.poslin"))))
+    (repl (new-poslin *prim*)
+	  where)))
