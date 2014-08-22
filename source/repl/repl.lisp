@@ -19,6 +19,7 @@
       (loop do
 	   (progn
 	     (format t "~%> ")
+	     (finish-output)
 	     (dolist (v (poslin-read-block *standard-input*
 					   *parse-order*))
 	       (if (eq v :quit)
