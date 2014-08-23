@@ -1,11 +1,5 @@
 (in-package #:poslin)
 
-(declaim (optimize #+sbcl
-		   (compilation-speed 0)
-		   (debug 0)
-		   (safety 0)
-		   (speed 3)))
-
 (defun repl (poslin &rest files)
   (let ((*print-circle* t))
     (loop for file in files
