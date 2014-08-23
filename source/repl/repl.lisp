@@ -39,7 +39,6 @@
 
 #+sbcl
 (defun repl-dyn ()
-  (let ((where (rest sb-ext:*posix-argv*)))
-    (apply #'repl
-	   (new-poslin *prim*)
-	   where)))
+  (apply #'repl
+	 (new-poslin *prim*)
+	 (rest sb-ext:*posix-argv*)))
