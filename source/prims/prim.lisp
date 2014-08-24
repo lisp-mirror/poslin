@@ -292,3 +292,23 @@
 (defprim *prim* "ceiling" nil
     "round up"
   (stack-call ceiling))
+
+;;;; arrays
+(defprim *prim* "a*" nil
+    "make array"
+  (push-stack (make-array (pop-stack)
+			  :initial-element <meta-nothing>
+			  :element-type `(or (eql <meta-nothing>)
+					     [binding]))))
+
+(defprim *prim* "a<-" nil
+    "set in array"
+  (stack-args (array n v)
+    (let ((array (copy-seq array)))
+      (push-stack (setf (aref array n)
+			v)))))
+
+(defprim *prim* "a->" nil
+    "get from array"
+  (stack-args (array n)
+    (push-stack (aref array n))))
