@@ -11,7 +11,10 @@
 
 (defmethod poslin-print ((object cons)
 			 stream)
-  (format stream "[..]"))
+  (format stream "[~{ ~A~} ]"
+	  (mapcar (lambda (obj)
+		    (poslin-print obj nil))
+		  (reverse object))))
 
 (defmethod poslin-print ((object symbol)
 			 stream)
@@ -31,9 +34,7 @@
 
 (defmethod poslin-print ((object [binding])
 			 stream)
-  (format stream "b<~A>"
-	  (poslin-print ([binding]-value object)
-			nil)))
+  (format stream "b<..>"))
 
 (defmethod poslin-print ((object (eql <noop>))
 			 stream)
