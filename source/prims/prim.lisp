@@ -9,26 +9,28 @@
   (let ((op (pop-stack)))
     (let ((b (thread-back pc)))
       (unless (eq b <noop>)
-	(push (thread-back pc)
-	      rstack)))
-    (setf pc (typecase op
-	       (symbol
-		(if (keywordp op)
-		    ([binding]-value (lookup (op-env path)
-					     op))
-		    (<constant> op)))
-	       (null
-		<noop>)
-	       (cons
-		(thread<-stack op))
-	       (<constant>
-		op)
-	       (<prim>
-		op)
-	       (<thread>
-		op)
-	       (t
-		(<constant> op))))))
+        (push (thread-back pc)
+              rstack))
+      (setf pc (typecase op
+                 (symbol
+                  (if (keywordp op)
+                      ([binding]-value (lookup (op-env path)
+                                               op))
+                      (if (eq op <noop>)
+                          <noop>
+                          (<constant> op))))
+                 (null
+                  <noop>)
+                 (cons
+                  (thread<-stack op))
+                 (<constant>
+                  op)
+                 (<prim>
+                  op)
+                 (<thread>
+                  op)
+                 (t
+                  (<constant> op)))))))
 
 (defprim *prim* "&" t
     "finds or converts to a thread"

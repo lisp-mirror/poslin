@@ -34,15 +34,14 @@
 	      error)
       (with-pandoric (path pc rstack)
 	  poslin
-	(format t "~%PC:~%~A~%~%RSTACK:~%~A~%~%STACK:~%~A~%"
+	(format t "~%~%PC:~%~A~%~%RSTACK:~%~A~%~%STACK:~%~A~%"
 		(poslin-print pc nil)
 		(poslin-print rstack nil)
 		(poslin-print (stack path)
 			      nil))
 	(setf pc <noop>))
-      (when (y-or-n-p "FATAL ERROR~%Continue?")
+      (when (y-or-n-p "~%Continue?")
 	(repl poslin)))))
-		
 
 (defun repl0 ()
   (repl (new-poslin *prim*)))

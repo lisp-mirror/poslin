@@ -7,7 +7,7 @@
 
 (defmethod poslin-print ((object null)
 			 stream)
-  (format stream "[]"))
+  (format stream "[ ]"))
 
 (defmethod poslin-print ((object cons)
 			 stream)
