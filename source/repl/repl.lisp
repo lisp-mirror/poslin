@@ -8,7 +8,7 @@
 	     (loop for v in (poslin-read-file file *parse-order*)
 		do
 		  (funcall poslin v)))
-	(with-pandoric (path)
+	(with-pandoric (path stepping)
 	    poslin
 	  (format t "[ ")
 	  #1=(loop for obj in (reverse (stack path))
@@ -23,10 +23,16 @@
 		 (finish-output)
 		 (dolist (v (poslin-read-block *standard-input*
 					       *parse-order*))
-		   (if (eq v :quit)
-		       (return-from repl
-			 (stack path))
-		       (funcall poslin v)))
+		   (case v
+                     (:quit
+                      (return-from repl
+                        (stack path)))
+                     (:step
+                      (setf stepping t))
+                     (:unstep
+                      (setf stepping nil))
+                     (t
+                      (funcall poslin v))))
 		 (format t "[ ")
 		 #1# (format t "]")))))
     (t (error)
