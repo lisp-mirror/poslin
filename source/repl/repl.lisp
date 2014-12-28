@@ -1,6 +1,9 @@
 (in-package #:poslin)
 
 (defun repl (poslin &rest files)
+  (declare (optimize (debug 0)
+                     (safety 0)
+                     (speed 3)))
   (handler-case
       (let ((*print-circle* t))
 	(loop for file in files
