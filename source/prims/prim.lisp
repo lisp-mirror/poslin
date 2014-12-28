@@ -81,7 +81,9 @@
 
 (defprim *prim* "r->" nil
     "pop from return stack"
-  (push-stack (pop rstack)))
+  (if rstack
+      (push-stack (pop rstack))
+      (error "Attempt to pop from empty return stack")))
 
 ;;;; path
 (defprim *prim* "p->" nil
@@ -171,18 +173,28 @@
 
 (defprim *prim* ":" nil
     "top"
-  (push-stack (first (pop-stack))))
+  (stack-args (st)
+    (if st
+        (push-stack (first st))
+        (error "Attempt to pop from empty stack"))))
 
 (defprim *prim* "_" nil
     "drop"
-  (push-stack (rest (pop-stack))))
+  (stack-args (st)
+    (if st
+        (push-stack (rest st))
+        (error "Attempt to drop from empty stack"))))
 
 (defprim *prim* "<>" nil
     "swap"
   (stack-args (s)
-    (push-stack (list* (second s)
-		       (first s)
-		       (cddr s)))))
+    (if (and s (rest s))
+        (push-stack (list* (second s)
+                           (first s)
+                           (cddr s)))
+        (if s
+            (error "Attempt to swap on stack of size one")
+            (error "Attempt to swap on empty stack")))))
 
 ;;;; nothing
 (defprim *prim* ".." nil
