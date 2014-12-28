@@ -12,6 +12,8 @@
         (push (thread-back pc)
               rstack))
       (setf pc (typecase op
+                 (null
+                  <noop>)
                  (symbol
                   (if (keywordp op)
                       ([binding]-value (lookup (op-env path)
@@ -19,8 +21,6 @@
                       (if (eq op <noop>)
                           <noop>
                           (<constant> op))))
-                 (null
-                  <noop>)
                  (cons
                   (thread<-stack op))
                  (<constant>
@@ -36,13 +36,13 @@
     "finds or converts to a thread"
   (let ((op (pop-stack)))
     (push-stack (typecase op
+		  (null
+		   <noop>)
 		  (symbol
 		   (if (keywordp op)
 		       ([binding]-value (lookup (op-env path)
 						op))
 		       (<constant> op)))
-		  (null
-		   <noop>)
 		  (cons
 		   (thread<-stack op))
 		  (<constant>
@@ -70,9 +70,9 @@
 (defprim *prim* "<?>" nil
     "if"
   (stack-args (bool then else)
-    (push-stack (if (eq bool <true>)
-		    then
-		    else))))
+    (push-stack (ecase bool
+                  (<true> then)
+                  (<false> else)))))
 
 (defprim *prim* "r<-" nil
     "push onto return stack"
@@ -314,3 +314,58 @@
     "get from array"
   (stack-args (array n)
     (push-stack (aref array n))))
+
+;;;; type
+(defprim *prim* "type" nil
+    "returns the type of an object"
+  (stack-args (object)
+    (push-stack (etypecase object
+                  (null '|·EmptyStack|)
+                  (cons '|·Stack|)
+                  (symbol
+                   (cond
+                     ((keywordp object)
+                      '|·Symbol|)
+                     ((eq <noop> object)
+                      '|·Prim|)
+                     ((or (eq <true> object)
+                          (eq <false> object))
+                      '|·Boolean|)
+                     ((or (eq <less> object)
+                          (eq <equal> object)
+                          (eq <greater> object)
+                          (eq <unequal> object))
+                      '|·Comparison|)
+                     ((eq <meta-nothing> object)
+                      '|·Nothing|)
+                     ((or (eq object '|·EmptyStack|)
+                          (eq object '|·Stack|)
+                          (eq object '|·Symbol|)
+                          (eq object '|·Prim|)
+                          (eq object '|·Boolean|)
+                          (eq object '|·Comparison|)
+                          (eq object '|·Nothing|)
+                          (eq object '|·ConstantThread|)
+                          (eq object '|·Thread|)
+                          (eq object '|·Binding|)
+                          (eq object '|·Environment|)
+                          (eq object '|·Type|)
+                          (eq object '|·Array|)
+                          )
+                      '|·Type|)
+                     (t
+                      (error "Malformed lisp symbol found: ~S"
+                             object))))
+                  (<prim>
+                   '|·Prim|)
+                  (<constant>
+                   '|·ConstantThread|)
+                  (<thread>
+                   '|·Thread|)
+                  ([binding]
+                   '|·Binding|)
+                  ([env]
+                   '|·Environment|)
+                  (array
+                   '|·Array|)
+                  ))))

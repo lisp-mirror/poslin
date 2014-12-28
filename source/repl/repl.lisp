@@ -35,9 +35,9 @@
                       (funcall poslin v))))
 		 (format t "[ ")
 		 #1# (format t "]")))))
-    (t (error)
+    (t (err)
       (format t "~A"
-	      error)
+	      err)
       (with-pandoric (path pc rstack)
 	  poslin
 	(format t "~%~%PC:~%~A~%~%RSTACK:~%~A~%~%STACK:~%~A~%"

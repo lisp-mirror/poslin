@@ -4,7 +4,9 @@
   `(push ,value (stack path)))
 
 (defmacro pop-stack ()
-  `(pop (stack path)))
+  `(if (stack path)
+       (pop (stack path))
+       (error "Bottom of stack popped")))
 
 (defmacro stack-call (fn)
   `(push-stack (,fn (pop-stack))))
