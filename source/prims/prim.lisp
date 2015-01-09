@@ -16,8 +16,13 @@
                   <noop>)
                  (symbol
                   (if (keywordp op)
-                      ([binding]-value (lookup (op-env path)
-                                               op))
+                      (let ((binding (lookup (op-env path)
+                                             op)))
+                        (if (eq binding <meta-nothing>)
+                            (error "Attempt to call undefined operation `~A`"
+                                   op)
+                            ([binding]-value (lookup (op-env path)
+                                                     op))))
                       (if (eq op <noop>)
                           <noop>
                           (<constant> op))))
@@ -40,8 +45,12 @@
 		   <noop>)
 		  (symbol
 		   (if (keywordp op)
-		       ([binding]-value (lookup (op-env path)
-						op))
+                       (let ((binding (lookup (op-env path)
+                                              op)))
+                         (if (eq <meta-nothing> binding)
+                             (error "Attempt to inline undefined operation `~A`"
+                                    op)
+                             ([binding]-value binding)))
 		       (<constant> op)))
 		  (cons
 		   (thread<-stack op))
@@ -94,7 +103,7 @@
 	(progn
 	  (setf path p)
 	  (push-stack e))
-	(push-stack 'path-bottom-error))))
+        (error "Attempt to pop bottom of stack"))))
 
 (defprim *prim* "p<-" nil
     "pushes onto the path"
