@@ -51,7 +51,9 @@
                              (error "Attempt to inline undefined operation `~A`"
                                     op)
                              ([binding]-value binding)))
-		       (<constant> op)))
+                       (if (eq op <noop>)
+                           <noop>
+                           (<constant> op))))
 		  (cons
 		   (thread<-stack op))
 		  (<constant>
