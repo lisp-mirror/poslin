@@ -16,7 +16,8 @@
                        RSTACK:~%~A~%~%~
                        STACK:~%~A~%~%~%"
                     (poslin-print pc nil)
-                    (poslin-print rstack nil)
+                    (poslin-print (reverse rstack)
+                                  nil)
                     (poslin-print (stack path)
                                   nil))
             (read-line))
