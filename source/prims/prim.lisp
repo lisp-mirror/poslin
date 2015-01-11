@@ -392,3 +392,9 @@
                   (array
                    '|·Array|)
                   ))))
+
+;;;; errors
+(defprim *prim* "error" nil
+    "raises an error"
+  (stack-args (error-string)
+    (error error-string)))
