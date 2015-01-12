@@ -15,7 +15,7 @@
                  (null
                   <noop>)
                  (symbol
-                  (if (keywordp op)
+                  (if (poslin-symbol? op)
                       (let ((binding (lookup (op-env path)
                                              op)))
                         (if (eq binding <meta-nothing>)
@@ -44,7 +44,7 @@
 		  (null
 		   <noop>)
 		  (symbol
-		   (if (keywordp op)
+		   (if (poslin-symbol? op)
                        (let ((binding (lookup (op-env path)
                                               op)))
                          (if (eq <meta-nothing> binding)
@@ -397,4 +397,12 @@
 (defprim *prim* "error" nil
     "raises an error"
   (stack-args (error-string)
-    (error error-string)))
+    (if (stringp error-string)
+        (error error-string)
+        (error "Attempt to call an error on non-string object ~A"
+               (poslin-print error-string nil)))))
+
+;;;; symbols
+(defprim *prim* "s*" nil
+    "returns a unique symbol"
+  (push-stack (gensym "×unique×")))

@@ -50,6 +50,7 @@
       "structures"
       :components
       ((:file "nothing")
+       (:file "symbol")
        (:file "binding")
        (:file "environment"
               :depends-on ("binding"
