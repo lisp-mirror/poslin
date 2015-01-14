@@ -3,7 +3,8 @@
 (defun repl (poslin &rest files)
   (declare (optimize (debug 0)
                      (safety 0)
-                     (speed 3)))
+                     (speed 3))
+           (type function poslin))
   (handler-case
       (let ((*print-circle* t))
         (loop for file in files
@@ -49,7 +50,8 @@
                               nil)
                 (poslin-print (stack path)
                               nil))
-        (setf pc <noop>))
+        (setf pc <noop>)
+        (setf rstack nil))
       (when (y-or-n-p "~%Continue?")
         (repl poslin)))))
 

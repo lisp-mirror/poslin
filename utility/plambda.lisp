@@ -11,16 +11,17 @@
 		   &body body)
   (let ((pargs (mapcar #'list
 		       pargs)))
-    `(let (this self)
-       (setf this (lambda (,@largs)
-		    ,@body)
-	     self (dlambda
-		    (:pandoric-get (sym)
-				   ,(pget pargs))
-		    (:pandoric-set (sym val)
-				   ,(pset pargs))
-		    (t (&rest args)
-		       (apply this args)))))))
+    `(the function
+          (let (this self)
+            (setf this (lambda (,@largs)
+                         ,@body)
+                  self (dlambda
+                         (:pandoric-get (sym)
+                                        ,(pget pargs))
+                         (:pandoric-set (sym val)
+                                        ,(pset pargs))
+                         (t (&rest args)
+                            (apply this args))))))))
 
 (defmacro defpan (name (&rest args)
 		  &body body)

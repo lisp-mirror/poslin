@@ -69,20 +69,21 @@
 					v))))))
 
 (defmacro new-poslin (&rest standards)
-  `(let (pc rstack path
-            (stepping nil))
-     (poslin-setup-registers)
-     (poslin-install-prims ,@standards)
-     (plambda (v)
-	 (pc path rstack stepping)
-       (let ((thread (immediate? v path)))
-	 (cond
-	   (thread
-	    (setf pc thread))
-	   ((typep v '<quotation>)
-	    (push (<quotation>-val v)
-		  (stack path)))
-	   (t
-	    (push v (stack path)))))
-       (interpreter)
-       path)))
+  `(the function
+        (let (pc rstack path
+                 (stepping nil))
+          (poslin-setup-registers)
+          (poslin-install-prims ,@standards)
+          (plambda (v)
+              (pc path rstack stepping)
+            (let ((thread (immediate? v path)))
+              (cond
+                (thread
+                 (setf pc thread))
+                ((typep v '<quotation>)
+                 (push (<quotation>-val v)
+                       (stack path)))
+                (t
+                 (push v (stack path)))))
+            (interpreter)
+            path))))

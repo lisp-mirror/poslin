@@ -19,6 +19,8 @@
 
 (declaim (inline get-pandoric))
 (defun get-pandoric (box sym)
+  (declare (type function box)
+           (type symbol sym))
   (funcall box
 	   :pandoric-get sym))
 
