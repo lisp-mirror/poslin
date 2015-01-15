@@ -398,7 +398,8 @@
     "raises an error"
   (stack-args (error-string)
     (if (stringp error-string)
-        (error error-string)
+        (error "~A"
+               error-string)
         (error "Attempt to call an error on non-string object ~A"
                (poslin-print error-string nil)))))
 
