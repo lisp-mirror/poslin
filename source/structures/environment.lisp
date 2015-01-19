@@ -41,3 +41,10 @@
 	    (parent [env]))
     (<env> ([env]-content hierarchical)
 	   parent)))
+
+(defgeneric drop (collection key)
+  (:method ((collection [env])
+            (key symbol))
+    (<env> (less ([env]-content collection)
+                 key)
+           ([env]-parent collection))))

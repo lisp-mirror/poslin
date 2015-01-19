@@ -147,6 +147,11 @@
   (stack-args (e p)
     (push-stack (set-parent e p))))
 
+(defprim *prim* "e_" nil
+    "delete from environment"
+  (stack-args (e k)
+    (push-stack (drop e k))))
+
 ;;;; binding
 (defprim *prim* "b*" nil
     "create fresh binding"

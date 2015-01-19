@@ -5,6 +5,6 @@
 	)
   (:shadowing-import-from
    #:fset
-   #:compare #:lookup #:@ #:with
+   #:compare #:lookup #:@ #:with #:less
    )
   )
