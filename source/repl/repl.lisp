@@ -5,6 +5,33 @@
                      (safety 0)
                      (speed 3))
            (type function poslin))
+  (format t "
+*******      ****       ****   ****        **** ***  ****
+********    ******     **  **  ****        **** ***  ****
+ **   ***  ***  ***   **    **  **          **   ***  **
+ **    ** ***    *** **    **   **          **   ***  **
+ **   *** **      ** ***        **          **   **** **
+ *******  **      **  *****     **          **   *******
+ ******   **      **    *****   **          **   *******
+ **       **      **       ***  **          **   ** ****
+ **       ***    ***  **    **  **      **  **   **  ***
+ **        ***  ***  **    **   **      **  **   **  ***
+****        ******    ******   *********** **** ****  ***
+****         ****      ****    *********** **** ****  ***
+=========================================================
+=========================================================
+
+© 2015 Thomas Bartscher
+0.1.0pr2
+")
+  (setf *random-state* (make-random-state t))
+  (format t "~A~%"
+          (case (random 4)
+            (0 "Everyting is possible. Watch out!")
+            (1 "Contains parts for a screw factory. Screws not included.")
+            (2 "Forget scope. Then invent it yourself.")
+            (3 "Yell if you want something.")
+            ))
   (handler-case
       (let ((*print-circle* t))
         (loop for file in files
