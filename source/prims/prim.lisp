@@ -348,6 +348,8 @@
     "returns the type of an object"
   (stack-args (object)
     (push-stack (etypecase object
+                  (rational '|·Precise|)
+                  (float '|·Imprecise|)
                   (null '|·EmptyStack|)
                   (cons '|·Stack|)
                   (symbol
@@ -379,6 +381,8 @@
                           (eq object '|·Environment|)
                           (eq object '|·Type|)
                           (eq object '|·Array|)
+                          (eq object '|·Precise|)
+                          (eq object '|·Imprecise|)
                           )
                       '|·Type|)
                      (t
