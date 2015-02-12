@@ -22,7 +22,7 @@
 =========================================================
 
 © 2015 Thomas Bartscher
-0.1.0pr2
+0.1.0pr4
 ")
   (setf *random-state* (make-random-state t))
   (format t "~A~%"

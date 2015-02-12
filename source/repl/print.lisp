@@ -16,6 +16,18 @@
 		    (poslin-print obj nil))
 		  (reverse object))))
 
+(defmethod poslin-print ((object array)
+                         stream)
+  (format stream "a[~{ ~A~} ]a"
+          (map 'list (lambda (obj)
+                       (poslin-print obj nil))
+               object)))
+
+(defmethod poslin-print ((object string)
+                         stream)
+  (format stream "~S"
+          object))
+
 (defmethod poslin-print ((object symbol)
 			 stream)
   (format stream "~A"

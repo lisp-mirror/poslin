@@ -416,3 +416,15 @@
 (defprim *prim* "s*" nil
     "returns a unique symbol"
   (push-stack (gensym "×unique×")))
+
+;;;; loading
+(defprim *prim* "load" nil
+    "loads a file as poslin code"
+  (stack-args (path)
+    (unless (stringp path)
+      (error "Got ~S as a path, need a string."
+             (poslin-print path nil)))
+    (push (thread-back pc)
+          rstack)
+    (setf pc <noop>)
+    (mapcar this (poslin-read-file path *parse-order*))))

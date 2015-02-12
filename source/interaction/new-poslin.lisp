@@ -70,12 +70,12 @@
 
 (defmacro new-poslin (&rest standards)
   `(the function
-        (let (pc rstack path
-                 (stepping nil))
+        (alet (pc rstack path
+                  (stepping nil))
           (poslin-setup-registers)
           (poslin-install-prims ,@standards)
           (plambda (v)
-              (pc path rstack stepping)
+              (this pc path rstack stepping)
             (let ((thread (immediate? v path)))
               (cond
                 (thread
