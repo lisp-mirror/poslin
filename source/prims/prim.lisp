@@ -335,8 +335,9 @@
     "set in array"
   (stack-args (array n v)
     (let ((array (copy-seq array)))
-      (push-stack (setf (aref array n)
-			v)))))
+      (setf (aref array n)
+            v)
+      (push-stack array))))
 
 (defprim *prim* "a->" nil
     "get from array"
