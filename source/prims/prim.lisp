@@ -418,12 +418,26 @@
     "returns a unique symbol"
   (push-stack (gensym "×unique×")))
 
+(defprim *prim* ">s<" nil
+    "returns a symbol whose name is made up of the names of two other
+symbols"
+  (stack-args (sym1 sym2)
+    (unless (and (symbolp sym1)
+                 (symbolp sym2))
+      (error "Expected two symbols, got ~A and ~A instead"
+             (poslin-print sym1 nil)
+             (poslin-print sym2 nil)))
+    (push-stack (intern (concatenate 'string
+                                     (symbol-name sym1)
+                                     (symbol-name sym2))
+                        :keyword))))
+
 ;;;; loading
 (defprim *prim* "load" nil
     "loads a file as poslin code"
   (stack-args (path)
     (unless (stringp path)
-      (error "Got ~S as a path, need a string."
+      (error "Got ~A as a path, need a string."
              (poslin-print path nil)))
     (push (thread-back pc)
           rstack)
