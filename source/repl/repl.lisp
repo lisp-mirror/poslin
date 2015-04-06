@@ -41,7 +41,8 @@
                   (funcall poslin v)))
         (with-pandoric (path stepping)
             poslin
-          (format t "[ ")
+          (format t "~A [ "
+                  (1- (path-length path)))
           #1=(loop for obj in (reverse (stack path))
                 do
                   (progn
@@ -64,7 +65,8 @@
                       (setf stepping nil))
                      (t
                       (funcall poslin v))))
-                 (format t "[ ")
+                 (format t "~A [ "
+                         (1- (path-length path)))
                  #1# (format t "]")))))
     (t (err)
       (format t "~A"

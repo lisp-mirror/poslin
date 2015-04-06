@@ -39,3 +39,8 @@
 
 (defun path-set (path env)
   (<path> env (path-pop path)))
+
+(defun path-length (path)
+  (if path
+      (1+ (path-length ([path]-parent path)))
+      0))
