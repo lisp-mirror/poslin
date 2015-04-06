@@ -136,6 +136,15 @@
 (defprim *prim* "e<-" nil
     "environment set"
   (stack-args (e k v)
+    (unless ([env]-p e)
+      (error "Got ~A instead of an environment in `e<-`"
+             (poslin-print e nil)))
+    (unless (poslin-symbol? k)
+      (error "Got ~A instead of a symbol in `e<-`"
+             k))
+    (unless ([binding]-p v)
+      (error "Got ~A instead of a binding in `e<-`"
+             v))
     (push-stack (insert e k v))))
 
 (defprim *prim* "e+>" nil
@@ -344,11 +353,47 @@
   (stack-args (array n)
     (push-stack (aref array n))))
 
+(defprim *prim* ">a<" nil
+    "concatenate two arrays"
+  (stack-args (a1 a2)
+    (if (and (vectorp a1)
+             (vectorp a2))
+        (push-stack (concatenate 'vector
+                                 a1 a2))
+        (error "Expected two arrays for `>a<` but got ~A and ~A"
+               (poslin-print a1 nil)
+               (poslin-print a2 nil)))))
+
+;;;; strings
+(defprim *prim* "string<-" nil
+    "convert into a string"
+  (stack-args (obj)
+    (push-stack (poslin-print obj nil))))
+
+(defprim *prim* ">string<" nil
+    "concatenate two strings"
+  (stack-args (s1 s2)
+    (if (and (stringp s1)
+             (stringp s2))
+        (push-stack (concatenate 'string
+                                 s1 s2))
+        (error "Expected two strings for `>string<` but got ~A and ~A"
+               (poslin-print s1 nil)
+               (poslin-print s2 nil)))))
+
+(defprim *prim* "print" nil
+    "prints a string to the standard output"
+  (stack-args (string)
+    (unless (typep string 'string)
+      (error "Tried to print ~A"
+             (poslin-print string nil)))
+    (print string)))
+
 ;;;; type
 (defprim *prim* "type" nil
     "returns the type of an object"
   (stack-args (object)
-    (push-stack (etypecase object
+    (push-stack (typecase object
                   (rational '|·Precise|)
                   (float '|·Imprecise|)
                   (null '|·EmptyStack|)
@@ -369,25 +414,28 @@
                       '|·Comparison|)
                      ((eq <meta-nothing> object)
                       '|·Nothing|)
-                     ((or (eq object '|·EmptyStack|)
-                          (eq object '|·Stack|)
-                          (eq object '|·Symbol|)
-                          (eq object '|·Prim|)
-                          (eq object '|·Boolean|)
-                          (eq object '|·Comparison|)
-                          (eq object '|·Nothing|)
-                          (eq object '|·ConstantThread|)
-                          (eq object '|·Thread|)
-                          (eq object '|·Binding|)
-                          (eq object '|·Environment|)
-                          (eq object '|·Type|)
-                          (eq object '|·Array|)
-                          (eq object '|·Precise|)
-                          (eq object '|·Imprecise|)
-                          )
+                     ((or
+                       (eq object '|·Nothing|)
+                       (eq object '|·Symbol|)
+                       (eq object '|·Boolean|)
+                       (eq object '|·Comparison|)
+                       (eq object '|·Type|)
+                       (eq object '|·ConstantThread|)
+                       (eq object '|·Prim|)
+                       (eq object '|·Thread|)
+                       (eq object '|·Precise|)
+                       (eq object '|·Imprecise|)
+                       (eq object '|·EmptyStack|)
+                       (eq object '|·Stack|)
+                       (eq object '|·Binding|)
+                       (eq object '|·Environment|)
+                       (eq object '|·Array|)
+                       )
                       '|·Type|)
                      (t
-                      (error "Malformed lisp symbol found: ~S"
+                      (error "Malformed lisp symbol found: ~S
+This is an error in the implementation.
+Please report this bug to thomas.bartscher@weltraumschlangen.de"
                              object))))
                   (<prim>
                    '|·Prim|)
@@ -401,6 +449,11 @@
                    '|·Environment|)
                   (array
                    '|·Array|)
+                  (t
+                   (error "Unknown lisp object found: ~S
+This is an error in the implementation.
+Please report this bug to thomas.bartscher@weltraumschlangen.de"
+                          object))
                   ))))
 
 ;;;; errors

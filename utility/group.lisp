@@ -13,3 +13,20 @@
 	(if source
 	    (_rec source '())
 	    '()))))
+
+(labels ((group-check (group n)
+           (if group
+               (aif (rest group)
+                    (and (= (length (first group))
+                            n)
+                         (group-check it n))
+                    (<= (length (first group))
+                        n))
+               t)))
+  (for-all
+      ((size an-index)
+       (list (a-list 'a-char)))
+    (let ((size (1+ size)))
+      (labels ((check (group)
+                 (group-check group size)))
+        (is check (group list size))))))

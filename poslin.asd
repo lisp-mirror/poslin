@@ -8,6 +8,7 @@
   :depends-on ("split-sequence"
                "cl-ppcre"
 	       "fset"
+               "cl-quickcheck"
                )
   :components
   ((:file "package")
@@ -102,13 +103,5 @@
                            "print"
                            ))
        ))
-     ))
-   (:module
-    "finish"
-    :depends-on ("package"
-                 "source"
-                 )
-    :components
-    (
      ))
    ))
