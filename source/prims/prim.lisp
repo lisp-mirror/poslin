@@ -78,6 +78,11 @@
     "pushes the back of a thread"
   (stack-call thread-back))
 
+(defprim *prim* ">t<" nil
+    "combines two threads into one"
+  (stack-args (front back)
+    (push-stack (<thread> front back))))
+
 (defprim *prim* "<?>" nil
     "if"
   (stack-args (bool then else)
