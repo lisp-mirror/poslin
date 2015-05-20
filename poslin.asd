@@ -38,8 +38,9 @@
             :depends-on ("dlambda"
                          "plambda-help"
                          ))
-     (:file "group")
      (:file "anaphora")
+     (:file "group"
+            :depends-on ("anaphora"))
      ))
    (:module
     "source"
