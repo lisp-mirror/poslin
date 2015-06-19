@@ -10,3 +10,9 @@
 		  :doc (if docstring
 			   docstring
 			   "")))
+
+(defmethod compare ((x [binding])
+                    (y [binding]))
+  (if (eq x y)
+      :equal
+      :unequal))

@@ -77,3 +77,49 @@
 (defmethod poslin-print ((object (eql <meta-nothing>))
 			 stream)
   (format stream "<NOTHING>"))
+
+(defun show-env (env &optional (envmap (fset:empty-map)))
+  (let ((found (lookup envmap env)))
+    (if found
+        (aif ([env]-parent env)
+             (multiple-value-bind (n m)
+                 (show-env it envmap)
+               (values (format nil "e~A:~A"
+                               found n)
+                       m))
+             (values (format nil "e~A"
+                             found)
+                     envmap))
+        (let* ((envnum (fset:size envmap))
+               (nenvmap (with envmap env envnum)))
+          (aif ([env]-parent env)
+               (multiple-value-bind (n m)
+                   (show-env it nenvmap)
+                 (values (format nil "e~A:~A"
+                                 envnum n)
+                         m))
+               (values (format nil "e~A"
+                               envnum)
+                       nenvmap))))))
+
+(defun show-path ([path] &optional (envmap (fset:empty-map)))
+  (aif ([path]-parent [path])
+       (multiple-value-bind (en em)
+           (show-env ([path]-content [path])
+                     envmap)
+         (concatenate 'string
+                      en " " (show-path it em)))
+       (show-env ([path]-content [path])
+                 envmap)))
+
+(defmacro print-status ()
+  `(progn
+     (format t "Return Stack:~%~A~%
+Path:~%~A~%
+Program Counter:~%~A~%
+Stack:~%~A~%"
+             (poslin-print rstack nil)
+             (show-path path)
+             (poslin-print pc nil)
+             (poslin-print (stack path)
+                           nil))))

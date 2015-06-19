@@ -12,14 +12,7 @@
       do
         (progn
           (when stepping
-            (format t "PC:~%~A~%~%~
-                       RSTACK:~%~A~%~%~
-                       STACK:~%~A~%~%~%"
-                    (poslin-print pc nil)
-                    (poslin-print (reverse rstack)
-                                  nil)
-                    (poslin-print (stack path)
-                                  nil))
+            (print-status)
             (read-line))
           (if (eq pc <noop>)
               (setf pc (or (pop rstack)

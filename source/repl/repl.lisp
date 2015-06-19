@@ -14,14 +14,8 @@
                   (funcall poslin v)))
         (with-pandoric (path stepping)
             poslin
-          (format t "~A [ "
-                  (1- (path-length path)))
-          #1=(loop for obj in (reverse (stack path))
-                do
-                  (progn
-                    (poslin-print obj *standard-output*)
-                    (format t " ")))
-          (format t "]")
+          (poslin-print (stack path)
+                        t)
           (loop do
                (progn
                  (format t "~%> ")
@@ -38,20 +32,14 @@
                       (setf stepping nil))
                      (t
                       (funcall poslin v))))
-                 (format t "~A [ "
-                         (1- (path-length path)))
-                 #1# (format t "]")))))
+                 (poslin-print (stack path)
+                               t)))))
     (t (err)
       (format t "~A"
               err)
       (with-pandoric (path pc rstack)
           poslin
-        (format t "~%~%PC:~%~A~%~%RSTACK:~%~A~%~%STACK:~%~A~%"
-                (poslin-print pc nil)
-                (poslin-print (reverse rstack)
-                              nil)
-                (poslin-print (stack path)
-                              nil))
+        (print-status)
         (setf pc <noop>)
         (setf rstack nil))
       (when (y-or-n-p "~%Continue?")
@@ -62,7 +50,7 @@
 
 (defun repl1 ()
   (repl (new-poslin *prim*)
-        "~/src/Poslin/poslin-specification/libs/base.poslin"
+        "~/src/Poslin/libs/base.poslin"
         ))
 
 #+sbcl

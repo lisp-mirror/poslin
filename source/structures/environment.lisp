@@ -22,6 +22,15 @@
 	    (@ it key)
 	    <meta-nothing>)))
 
+(defmethod compare ((x [env])
+                    (y [env]))
+  (if (and (fset:equal? ([env]-content x)
+                        ([env]-content y))
+           (fset:equal? ([env]-parent x)
+                        ([env]-parent y)))
+      :equal
+      :unequal))
+
 (defgeneric insert (collection key value)
   (:method ((collection [env])
 	    (key symbol)
