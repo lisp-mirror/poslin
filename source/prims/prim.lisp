@@ -127,9 +127,10 @@
 	(path-set path (pop-stack))))
 
 ;;;; environment
-(defprim *prim* "new-env" nil
+(defparameter *empty-env* (<root-env> (fset:empty-map)))
+(defprim *prim* ".empty-env" nil
     "returns a fresh environment"
-  (push-stack (<root-env> (fset:empty-map))))
+  (push-stack *empty-env*))
 
 (defprim *prim* "env-lookup" nil
     "environment lookup"
