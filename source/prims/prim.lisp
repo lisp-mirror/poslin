@@ -196,26 +196,26 @@
     "create a fresh stack"
   (push-stack '()))
 
-(defprim *prim* "<-" nil
+(defprim *prim* "push" nil
     "push"
   (stack-args (s v)
     (push-stack (cons v s))))
 
-(defprim *prim* ":" nil
+(defprim *prim* "top" nil
     "top"
   (stack-args (st)
     (if st
         (push-stack (first st))
         (error "Attempt to pop from empty stack"))))
 
-(defprim *prim* "_" nil
+(defprim *prim* "drop" nil
     "drop"
   (stack-args (st)
     (if st
         (push-stack (rest st))
         (error "Attempt to drop from empty stack"))))
 
-(defprim *prim* "<>" nil
+(defprim *prim* "swap" nil
     "swap"
   (stack-args (s)
     (if (and s (rest s))
