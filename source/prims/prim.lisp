@@ -166,6 +166,12 @@
   (stack-args (e k)
     (push-stack (drop e k))))
 
+(defprim *prim* "env-symbols" nil
+    "returns a stack containing all symbols defined in the given environment"
+  (stack-args (e)
+    (push-stack (fset:convert 'list
+                              (fset:domain ([env]-content e))))))
+
 ;;;; binding
 (defprim *prim* "new-binding" nil
     "create fresh binding"
@@ -192,7 +198,7 @@
 	  d)))
 
 ;;;; stack
-(defprim *prim* "[]" nil
+(defprim *prim* ".empty-stack" nil
     "create a fresh stack"
   (push-stack '()))
 
