@@ -83,6 +83,18 @@
   (stack-args (front back)
     (push-stack (<thread> front back))))
 
+(defprim *prim* "prim<-" nil
+    "converts an object into a primary thread"
+  (stack-args (string obj)
+    (if (stringp string)
+        (push-stack (<prim> (lambda ()
+                              (with-pandoric (pc)
+                                  this
+                                (setf pc obj)))
+                            string))
+        (error "expected a string in `prim<-`, got ~A instead"
+               (poslin-print string nil)))))
+
 (defprim *prim* "<?>" nil
     "if"
   (stack-args (bool then else)
@@ -102,7 +114,7 @@
       (error "Attempt to pop from empty return stack")))
 
 ;;;; path
-(defprim *prim* "pop-path" nil
+(defprim *prim* "path-pop" nil
     "pops the top of the path"
   (let ((e (path-top path))
 	(p (path-pop path)))
@@ -112,7 +124,7 @@
 	  (push-stack e))
         (error "Attempt to pop bottom of stack"))))
 
-(defprim *prim* "push-path" nil
+(defprim *prim* "path-push" nil
     "pushes onto the path"
   (setf path
 	(path-push path (pop-stack))))
