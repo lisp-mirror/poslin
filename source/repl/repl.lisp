@@ -77,7 +77,7 @@
   (setf *random-state* (make-random-state t))
   (format t "~A~%"
           (case (random 5)
-            (0 "Everyting is possible. Watch out!")
+            (0 "Everything is possible. Watch out!")
             (1 "Contains parts for a screw factory. Screws not included.")
             (2 "Forget scope. Then invent it yourself.")
             (3 "Yell if you want something.")
