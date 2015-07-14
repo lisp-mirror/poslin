@@ -50,7 +50,7 @@
 
 (defun repl1 ()
   (repl (new-poslin *prim*)
-        "~/src/Poslin/libs/base.poslin"
+        "~/src/Poslin/lib/base.poslin"
         ))
 
 #+sbcl

@@ -70,18 +70,30 @@
   (push-stack (let ((val (pop-stack)))
 		(<constant> val))))
 
-(defprim *prim* "t:" nil
+(defprim *prim* "thread-front" nil
     "pushes the front of a thread"
   (stack-call thread-front))
 
-(defprim *prim* "t::" nil
+(defprim *prim* "thread-back" nil
     "pushes the back of a thread"
   (stack-call thread-back))
 
-(defprim *prim* ">t<" nil
+(defprim *prim* "thread-concat" nil
     "combines two threads into one"
   (stack-args (front back)
     (push-stack (<thread> front back))))
+
+(defprim *prim* "prim<-" nil
+    "converts an object into a primary thread"
+  (stack-args (string obj)
+    (if (stringp string)
+        (push-stack (<prim> (lambda ()
+                              (with-pandoric (pc)
+                                  this
+                                (setf pc obj)))
+                            string))
+        (error "expected a string in `prim<-`, got ~A instead"
+               (poslin-print string nil)))))
 
 (defprim *prim* "<?>" nil
     "if"
@@ -102,7 +114,7 @@
       (error "Attempt to pop from empty return stack")))
 
 ;;;; path
-(defprim *prim* "p->" nil
+(defprim *prim* "path-pop" nil
     "pops the top of the path"
   (let ((e (path-top path))
 	(p (path-pop path)))
@@ -112,33 +124,34 @@
 	  (push-stack e))
         (error "Attempt to pop bottom of stack"))))
 
-(defprim *prim* "p<-" nil
+(defprim *prim* "path-push" nil
     "pushes onto the path"
   (setf path
 	(path-push path (pop-stack))))
 
-(defprim *prim* "p:" nil
+(defprim *prim* "path-access" nil
     "returns nth environment on path"
   (push-stack (path-nth path (pop-stack))))
 
-(defprim *prim* "p!" nil
+(defprim *prim* "path-set" nil
     "set current environment"
   (setf path
 	(path-set path (pop-stack))))
 
 ;;;; environment
-(defprim *prim* "e*" nil
+(defparameter *empty-env* (<root-env> (fset:empty-map)))
+(defprim *prim* ".empty-env" nil
     "returns a fresh environment"
-  (push-stack (<root-env> (fset:empty-map))))
+  (push-stack *empty-env*))
 
-(defprim *prim* "e->" nil
+(defprim *prim* "env-lookup" nil
     "environment lookup"
   (stack-args (e k)
     (push-stack (aif (lookup e k)
 		     it
 		     <meta-nothing>))))
 
-(defprim *prim* "e<-" nil
+(defprim *prim* "env-set" nil
     "environment set"
   (stack-args (e k v)
     (unless ([env]-p e)
@@ -152,70 +165,76 @@
              v))
     (push-stack (insert e k v))))
 
-(defprim *prim* "e+>" nil
+(defprim *prim* "env-parent" nil
     "parent of environment"
   (push-stack (get-parent (pop-stack))))
 
-(defprim *prim* "e<+" nil
+(defprim *prim* "env-parent-set" nil
     "set parent of environment"
   (stack-args (e p)
     (push-stack (set-parent e p))))
 
-(defprim *prim* "e_" nil
+(defprim *prim* "env-drop" nil
     "delete from environment"
   (stack-args (e k)
     (push-stack (drop e k))))
 
+(defprim *prim* "env-symbols" nil
+    "returns a stack containing all symbols defined in the given environment"
+  (stack-args (e)
+    (push-stack (fset:convert 'list
+                              (fset:domain ([env]-content e))))))
+
 ;;;; binding
-(defprim *prim* "b*" nil
+(defprim *prim* "new-binding" nil
     "create fresh binding"
   (push-stack (binding <meta-nothing>)))
 
-(defprim *prim* "b->" nil
+(defprim *prim* "retrieve" nil
     "read binding"
   (push-stack ([binding]-value (pop-stack))))
 
-(defprim *prim* "b<-" nil
+(defprim *prim* "store" nil
     "set binding"
   (stack-args (b v)
     (setf ([binding]-value b)
 	  v)))
 
-(defprim *prim* "b+>" nil
+(defprim *prim* "binding-doc" nil
     "binding doc"
   (push-stack ([binding]-doc (pop-stack))))
 
-(defprim *prim* "b<+" nil
+(defprim *prim* "binding-doc-set" nil
     "set binding doc"
   (stack-args (b d)
     (setf ([binding]-doc b)
 	  d)))
 
 ;;;; stack
-(defprim *prim* "[]" nil
+(defprim *prim* ".empty-stack" nil
     "create a fresh stack"
   (push-stack '()))
 
-(defprim *prim* "<-" nil
+(defprim *prim* "push" nil
     "push"
   (stack-args (s v)
     (push-stack (cons v s))))
 
-(defprim *prim* ":" nil
+(defprim *prim* "top" nil
     "top"
   (stack-args (st)
     (if st
         (push-stack (first st))
         (error "Attempt to pop from empty stack"))))
 
-(defprim *prim* "_" nil
+(defprim *prim* "drop" nil
     "drop"
   (stack-args (st)
     (if st
         (push-stack (rest st))
         (error "Attempt to drop from empty stack"))))
 
-(defprim *prim* "<>" nil
+(defprim *prim* "swap" nil
     "swap"
   (stack-args (s)
     (if (and s (rest s))
@@ -227,16 +246,16 @@
             (error "Attempt to swap on empty stack")))))
 
 ;;;; nothing
-(defprim *prim* ".." nil
+(defprim *prim* ".nothing" nil
     "returns the meta-nothing value"
   (push-stack <meta-nothing>))
 
 ;;;; boolean
-(defprim *prim* "true" nil
+(defprim *prim* ".true" nil
     "returns true value"
   (push-stack <true>))
 
-(defprim *prim* "false" nil
+(defprim *prim* ".false" nil
     "returns false value"
   (push-stack <false>))
 
@@ -264,14 +283,14 @@
 		    <true>))))
 
 ;;;; comparison
-(defprim *prim* "==" nil
+(defprim *prim* "same?" nil
     "identity comparison"
   (stack-args (x y)
     (push-stack (if (eq x y)
 		    <true>
 		    <false>))))
 
-(defprim *prim* "=?" nil
+(defprim *prim* "compare" nil
     "comparison operator"
   (stack-args (x y)
     (push-stack (case (compare x y)
@@ -280,19 +299,19 @@
 		  (:greater <greater>)
 		  (:unequal <unequal>)))))
 
-(defprim *prim* ".<" nil
+(defprim *prim* ".less" nil
     "returns value vor 'less'"
   (push-stack <less>))
 
-(defprim *prim* ".>" nil
+(defprim *prim* ".greater" nil
     "returns value vor 'greater'"
   (push-stack <greater>))
 
-(defprim *prim* ".=" nil
+(defprim *prim* ".equal" nil
     "returns value vor 'equal'"
   (push-stack <equal>))
 
-(defprim *prim* "./=" nil
+(defprim *prim* ".unequal" nil
     "returns value vor 'unequal'"
   (push-stack <unequal>))
 
@@ -307,11 +326,11 @@
   (stack-args (x y)
     (push-stack (* x y))))
 
-(defprim *prim* ".-" nil
+(defprim *prim* "negation" nil
     "negation"
   (stack-call -))
 
-(defprim *prim* "./" nil
+(defprim *prim* "reciprocal" nil
     "reciprocal"
   (stack-call /))
 
@@ -338,14 +357,14 @@
   (stack-call ceiling))
 
 ;;;; arrays
-(defprim *prim* "a*" nil
+(defprim *prim* "new-array" nil
     "make array"
   (push-stack (make-array (pop-stack)
 			  :initial-element <meta-nothing>
 			  :element-type `(or (eql <meta-nothing>)
 					     [binding]))))
 
-(defprim *prim* "a<-" nil
+(defprim *prim* "array-set" nil
     "set in array"
   (stack-args (array n v)
     (let ((array (copy-seq array)))
@@ -353,12 +372,12 @@
             v)
       (push-stack array))))
 
-(defprim *prim* "a->" nil
+(defprim *prim* "array-lookup" nil
     "get from array"
   (stack-args (array n)
     (push-stack (aref array n))))
 
-(defprim *prim* ">a<" nil
+(defprim *prim* "array-concat" nil
     "concatenate two arrays"
   (stack-args (a1 a2)
     (if (and (vectorp a1)
@@ -375,7 +394,7 @@
   (stack-args (obj)
     (push-stack (poslin-print obj nil))))
 
-(defprim *prim* ">string<" nil
+(defprim *prim* "string-concat" nil
     "concatenate two strings"
   (stack-args (s1 s2)
     (if (and (stringp s1)
@@ -472,11 +491,11 @@ Please report this bug to thomas.bartscher@weltraumschlangen.de"
                (poslin-print error-string nil)))))
 
 ;;;; symbols
-(defprim *prim* "s*" nil
+(defprim *prim* "unique-symbol" nil
     "returns a unique symbol"
   (push-stack (gensym "×unique×")))
 
-(defprim *prim* ">s<" nil
+(defprim *prim* "symbol-concat" nil
     "returns a symbol whose name is made up of the names of two other
 symbols"
   (stack-args (sym1 sym2)
