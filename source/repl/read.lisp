@@ -46,7 +46,7 @@
 
 (define-parse-tree-synonym string
     (:sequence
-     begin-word #\"
+     begin-word #\$
      (:named-register "delimiter"
 		      (:greedy-repetition 1 nil :everything))
      #\Newline (:non-greedy-repetition 0 nil anything)
@@ -55,7 +55,7 @@
 
 (define-parse-tree-synonym faulty-string
     (:sequence
-     begin-word #\" (:greedy-repetition 0 nil anything)
+     begin-word #\$ (:greedy-repetition 0 nil anything)
      :end-anchor))
 
 (defparameter *parse-order*
@@ -130,7 +130,7 @@
 	   (length
 	    (first
 	     (extract-matches
-	      `(:sequence #\"
+	      `(:sequence #\$
 			  (:non-greedy-repetition 1 nil :everything)
 			  #\Newline)
 	      token)))))
