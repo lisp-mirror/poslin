@@ -44,7 +44,7 @@
 				       :non-whitespace-char-class)
 	       end-word))
 
-(define-parse-tree-synonym string
+(define-parse-tree-synonym long-string
     (:sequence
      begin-word #\$
      (:named-register "delimiter"
@@ -53,13 +53,24 @@
      (:back-reference "delimiter")
      end-word))
 
+(define-parse-tree-synonym short-string
+    (:sequence
+     begin-word #\"
+     (:non-greedy-repetition 0 nil anything)
+     #\" end-word))
+
+(define-parse-tree-synonym infinite-string
+    (:sequence
+     begin-word #\$ #\Newline))
+
 (define-parse-tree-synonym faulty-string
     (:sequence
      begin-word #\$ (:greedy-repetition 0 nil anything)
      :end-anchor))
 
 (defparameter *parse-order*
-  '(string faulty-string integer float ratio quotation symbol))
+  '(infinite-string long-string short-string faulty-string integer
+    float ratio quotation symbol))
 
 (defun extract-matches (parse-tree string)
   (let ((finds (all-matches parse-tree string)))
@@ -121,10 +132,13 @@
   (:method ((type (eql 'integer))
 	    (token string))
     (parse-integer token))
+  (:method ((type (eql 'infinite-string))
+            (token string))
+    'infinite-string-error)
   (:method ((type (eql 'faulty-string))
 	    (token string))
     'open-string-error)
-  (:method ((type (eql 'string))
+  (:method ((type (eql 'long-string))
 	    (token string))
     (let ((delimiter-length
 	   (length
@@ -135,7 +149,10 @@
 			  #\Newline)
 	      token)))))
       (subseq token delimiter-length (- (length token)
-					delimiter-length -2)))))
+					delimiter-length -2))))
+  (:method ((type (eql 'short-string))
+            (token string))
+    (subseq token 1 (1- (length token)))))
 
 (defun poslin-read-from-string (string parse-trees)
   (mapcar (lambda (tk)
@@ -147,16 +164,17 @@
   (let ((string ""))
     (do ((curr (read-line stream)
 	       (read-line stream)))
-	((not (scan 'faulty-string
-		    (cut-matches 'string #1=(concatenate 'string
-							 string
-							 #(#\Newline)
-							 curr))))
-	 (poslin-read-from-string #1# parse-trees))
+	((or (not (scan 'faulty-string
+                         (cut-matches 'long-string
+                                      #1=(concatenate 'string
+                                                      string curr
+                                                      #(#\Newline)))))
+             (scan 'infinite-string
+                   #1#))
+         (poslin-read-from-string #1# parse-trees))
       (setf string
 	    (concatenate 'string
-			 string #(#\Newline)
-			 curr)))))
+			 string curr #(#\Newline))))))
 
 (defun poslin-read (stream parse-trees)
   (let ((eof (gensym "eof"))

@@ -30,12 +30,14 @@
                       (setf stepping t))
                      (:unstep
                       (setf stepping nil))
+                     (infinite-string-error
+                      (format t "Read error: infinite string~%"))
                      (t
                       (funcall poslin v))))
                  (poslin-print (stack path)
                                t)))))
     (t (err)
-      (format t "~A"
+      (format t "~%~%~A~%~%"
               err)
       (with-pandoric (path pc rstack)
           poslin
