@@ -83,7 +83,7 @@
   (stack-args (front back)
     (push-stack (<thread> front back))))
 
-(defprim *prim* "->prim" nil
+(defprim *prim* "->elem-thread" nil
     "converts an object into a primary thread"
   (stack-args (string obj)
     (if (stringp string)
@@ -414,7 +414,8 @@
     (unless (typep string 'string)
       (error "Tried to print ~A"
              (poslin-print string nil)))
-    (print string)))
+    (format t "~A"
+            string)))
 
 ;;;; type
 (defprim *prim* "type" nil
@@ -430,7 +431,7 @@
                      ((keywordp object)
                       '|·Symbol|)
                      ((eq <noop> object)
-                      '|·Prim|)
+                      '|·ElementaryThread|)
                      ((or (eq <true> object)
                           (eq <false> object))
                       '|·Boolean|)
@@ -448,7 +449,7 @@
                        (eq object '|·Comparison|)
                        (eq object '|·Type|)
                        (eq object '|·ConstantThread|)
-                       (eq object '|·Prim|)
+                       (eq object '|·ElementaryThread|)
                        (eq object '|·Thread|)
                        (eq object '|·Precise|)
                        (eq object '|·Imprecise|)
@@ -465,7 +466,7 @@ This is an error in the implementation.
 Please report this bug to thomas.bartscher@weltraumschlangen.de"
                              object))))
                   (<prim>
-                   '|·Prim|)
+                   '|·ElmentaryThread|)
                   (<constant>
                    '|·ConstantThread|)
                   (<thread>

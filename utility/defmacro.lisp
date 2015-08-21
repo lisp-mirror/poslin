@@ -13,6 +13,8 @@
 		     syms)
 	 ,@body))))
 
+#+sbcl ; thanks to Christophe Rhodes for this corrected version.
+       ; http://christophe.rhodes.io/notes/blog/posts/2014/naive_vs_proper_code-walking/
 (defmacro defmacro/g! (name (&rest args)
                        &body body)
   (let (g!symbols)
