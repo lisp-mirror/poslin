@@ -6,6 +6,12 @@
   (parent nil
 	  :type (or [env] null)))
 
+(defmethod print-object ((object [env])
+                         stream)
+  (format stream "#<[env] ~A ~A>"
+          (fset:size ([env]-content object))
+          ([env]-parent object)))
+
 (defun <root-env> (content)
   (make-[env] :content content))
 

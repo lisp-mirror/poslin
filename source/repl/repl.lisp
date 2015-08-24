@@ -37,13 +37,13 @@
                  (poslin-print (stack path)
                                t)))))
     (t (err)
-      (format t "~%~%~A~%~%"
-              err)
       (with-pandoric (path pc rstack)
           poslin
         (print-status)
         (setf pc <noop>)
         (setf rstack nil))
+      (format t "~%~%~A~%~%"
+              err)
       (when (y-or-n-p "~%Continue?")
         (repl poslin)))))
 
@@ -55,7 +55,6 @@
         "~/src/Poslin/lib/base.poslin"
         ))
 
-#+sbcl
 (defun repl-dyn ()
   (format t "
 *******      ****       ****   ****        **** ***  ****
@@ -74,7 +73,7 @@
 =========================================================
 
 © 2015 Thomas Bartscher
-0.1.0pr5
+0.1.0pr6
 ")
   (setf *random-state* (make-random-state t))
   (format t "~A~%"
@@ -83,8 +82,14 @@
             (1 "Contains parts for a screw factory. Screws not included.")
             (2 "Forget scope. Then invent it yourself.")
             (3 "Yell if you want something.")
-            (4 "The interactive compiler.")
+            (4 "An interactive compiler.")
             ))
   (apply #'repl
          (new-poslin *prim*)
-         (rest sb-ext:*posix-argv*)))
+         #+sbcl (rest sb-ext:*posix-argv*)
+         #+lispworks system:*line-arguments*
+         #+cmu extensions:*command-line-words*
+         #+clisp ext:*args*
+         #+clozure ccl:*unprocessed-command-line-arguments*
+         #-(or sbcl lispworks cmu clisp clozure)
+         '()))

@@ -83,7 +83,7 @@
   (stack-args (front back)
     (push-stack (<thread> front back))))
 
-(defprim *prim* "prim<-" nil
+(defprim *prim* "->elem-thread" nil
     "converts an object into a primary thread"
   (stack-args (string obj)
     (if (stringp string)
@@ -92,7 +92,7 @@
                                   this
                                 (setf pc obj)))
                             string))
-        (error "expected a string in `prim<-`, got ~A instead"
+        (error "expected a string in `->prim`, got ~A instead"
                (poslin-print string nil)))))
 
 (defprim *prim* "<?>" nil
@@ -182,8 +182,11 @@
 (defprim *prim* "env-symbols" nil
     "returns a stack containing all symbols defined in the given environment"
   (stack-args (e)
-    (push-stack (fset:convert 'list
-                              (fset:domain ([env]-content e))))))
+    (push-stack (sort (fset:convert 'list
+                                    (fset:domain ([env]-content e)))
+                      (lambda (a b)
+                        (string> (symbol-name a)
+                                 (symbol-name b)))))))
 
 ;;;; binding
 (defprim *prim* "new-binding" nil
@@ -389,7 +392,7 @@
                (poslin-print a2 nil)))))
 
 ;;;; strings
-(defprim *prim* "string<-" nil
+(defprim *prim* "->string" nil
     "convert into a string"
   (stack-args (obj)
     (push-stack (poslin-print obj nil))))
@@ -411,7 +414,8 @@
     (unless (typep string 'string)
       (error "Tried to print ~A"
              (poslin-print string nil)))
-    (print string)))
+    (format t "~A"
+            string)))
 
 ;;;; type
 (defprim *prim* "type" nil
@@ -427,7 +431,7 @@
                      ((keywordp object)
                       '|·Symbol|)
                      ((eq <noop> object)
-                      '|·Prim|)
+                      '|·ElementaryThread|)
                      ((or (eq <true> object)
                           (eq <false> object))
                       '|·Boolean|)
@@ -445,7 +449,7 @@
                        (eq object '|·Comparison|)
                        (eq object '|·Type|)
                        (eq object '|·ConstantThread|)
-                       (eq object '|·Prim|)
+                       (eq object '|·ElementaryThread|)
                        (eq object '|·Thread|)
                        (eq object '|·Precise|)
                        (eq object '|·Imprecise|)
@@ -462,7 +466,7 @@ This is an error in the implementation.
 Please report this bug to thomas.bartscher@weltraumschlangen.de"
                              object))))
                   (<prim>
-                   '|·Prim|)
+                   '|·ElmentaryThread|)
                   (<constant>
                    '|·ConstantThread|)
                   (<thread>

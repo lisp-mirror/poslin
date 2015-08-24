@@ -11,7 +11,11 @@
                    rstack)
       do
         (progn
-          (when stepping
+          (when (and stepping (if (typep pc '<thread>)
+                                  (let ((front (<thread>-front pc)))
+                                    (or (typep front '<constant>)
+                                        (typep front '<prim>)))
+                                  (not (eq pc <noop>))))
             (print-status)
             (read-line))
           (if (eq pc <noop>)
