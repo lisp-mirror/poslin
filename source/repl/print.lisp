@@ -23,10 +23,26 @@
                        (poslin-print obj nil))
                object)))
 
+(defun make-delimiter-string (string)
+  (labels ((_rec (acc)
+             (let* ((char (code-char (+ (random (- (char-code #\z)
+                                                   (char-code #\a)))
+                                        (char-code #\a))))
+                    (nstring (concatenate 'string
+                                          acc (string char))))
+               (if (search nstring string)
+                   (_rec nstring)
+                   nstring))))
+    (_rec " :")))
+
 (defmethod poslin-print ((object string)
                          stream)
-  (format stream "~S"
-          object))
+  (if (search "\" " object)
+      (let ((delim (make-delimiter-string object)))
+        (format stream "$~A~%~A~A"
+                delim object delim))
+      (format stream "\"~A\""
+              object)))
 
 (defmethod poslin-print ((object symbol)
 			 stream)
