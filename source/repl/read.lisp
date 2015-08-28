@@ -68,9 +68,15 @@
      begin-word #\$ (:greedy-repetition 0 nil anything)
      :end-anchor))
 
+(define-parse-tree-synonym character
+    (:sequence
+     begin-word #\<
+     (:greedy-repetition 1 nil :non-whitespace-char-class)
+     #\> end-word))
+
 (defparameter *parse-order*
   '(infinite-string long-string short-string faulty-string integer
-    float ratio quotation symbol))
+    float ratio quotation character symbol))
 
 (defun extract-matches (parse-tree string)
   (let ((finds (all-matches parse-tree string)))
@@ -117,6 +123,16 @@
   (:method ((type (eql 'symbol))
 	    (token string))
     (intern token :keyword))
+  (:method ((type (eql 'character))
+            (token string))
+    (let ((length (length token)))
+      (if (= length 3)
+          (elt token 1)
+          (aif (cl-unicode:character-named
+                (subseq token 1 (1- (length token))))
+               it
+               (error "Invalid character ~A"
+                      token)))))
   (:method ((type (eql 'quotation))
 	    (token string))
     (<quotation> (intern (subseq token 1)
@@ -134,10 +150,10 @@
     (parse-integer token))
   (:method ((type (eql 'infinite-string))
             (token string))
-    'infinite-string-error)
+    (error "Infinite string found"))
   (:method ((type (eql 'faulty-string))
 	    (token string))
-    'open-string-error)
+    (error "faulty string read"))
   (:method ((type (eql 'long-string))
 	    (token string))
     (let ((delimiter-length

@@ -95,7 +95,7 @@
         (error "expected a string in `->prim`, got ~A instead"
                (poslin-print string nil)))))
 
-(defprim *prim* "<?>" nil
+(defprim *prim* "?" nil
     "if"
   (stack-args (bool then else)
     (push-stack (ecase bool
@@ -370,21 +370,36 @@
 (defprim *prim* "array-set" nil
     "set in array"
   (stack-args (array n v)
-    (let ((array (copy-seq array)))
-      (setf (aref array n)
-            v)
-      (push-stack array))))
+    (if (and (arrayp array)
+             (typep n '(integer 0))
+             (not (stringp array)))
+        (let ((array (copy-seq array)))
+          (setf (aref array n)
+                v)
+          (push-stack array))
+        (error "got arguments ~A, ~A and ~A for array-set"
+               (poslin-print array nil)
+               (poslin-print n nil)
+               (poslin-print v nil)))))
 
 (defprim *prim* "array-lookup" nil
     "get from array"
   (stack-args (array n)
-    (push-stack (aref array n))))
+    (if (and (arrayp array)
+             (typep n '(integer 0))
+             (not (stringp array)))
+        (push-stack (aref array n))
+        (error "got arguments ~A and ~A for array-lookup"
+               (poslin-print array nil)
+               (poslin-print n nil)))))
 
 (defprim *prim* "array-concat" nil
     "concatenate two arrays"
   (stack-args (a1 a2)
     (if (and (vectorp a1)
-             (vectorp a2))
+             (vectorp a2)
+             (not (stringp a1))
+             (not (stringp a2)))
         (push-stack (concatenate 'vector
                                  a1 a2))
         (error "Expected two arrays for `>a<` but got ~A and ~A"
@@ -408,6 +423,31 @@
                (poslin-print s1 nil)
                (poslin-print s2 nil)))))
 
+(defprim *prim* "string-set" nil
+    "set in string"
+  (stack-args (string n v)
+    (if (and (stringp string)
+             (typep n '(integer 0))
+             (characterp v))
+        (let ((string (copy-seq string)))
+          (setf (elt string n)
+                v)
+          (push-stack string))
+        (error "got arguments ~A, ~A and ~A for string-set"
+               (poslin-print string nil)
+               (poslin-print n nil)
+               (poslin-print v nil)))))
+
+(defprim *prim* "string-lookup" nil
+    "get from string"
+  (stack-args (string n)
+    (if (and (stringp string)
+             (typep n '(integer 0)))
+        (push-stack (elt string n))
+        (error "got arguments ~A and ~A for string-lookup"
+               (poslin-print string nil)
+               (poslin-print n nil)))))
+
 (defprim *prim* "print" nil
     "prints a string to the standard output"
   (stack-args (string)
@@ -417,66 +457,85 @@
     (format t "~A"
             string)))
 
+;;;; characters
+(defprim *prim* "int->char" nil
+    "converts an integer into a character"
+  (stack-args (int)
+    (unless (typep int '(integer 0))
+      (error "Expected an integer for int->char, got ~A"
+             (poslin-print int nil)))
+    (push-stack (code-char int))))
+
+(defprim *prim* "char->int" nil
+    "converts a character into an integer"
+  (stack-args (char)
+    (unless (typep char 'character)
+      (error "Expected a character for char->int, got ~A"
+             (poslin-print char nil)))
+    (push-stack (char-code char))))
+
 ;;;; type
 (defprim *prim* "type" nil
     "returns the type of an object"
   (stack-args (object)
     (push-stack (typecase object
-                  (rational '|·Precise|)
-                  (float '|·Imprecise|)
-                  (null '|·EmptyStack|)
-                  (cons '|·Stack|)
+                  (rational '|:Precise|)
+                  (float '|:Imprecise|)
+                  (character '|:Character|)
+                  (null '|:EmptyStack|)
+                  (cons '|:Stack|)
                   (symbol
                    (cond
                      ((keywordp object)
-                      '|·Symbol|)
+                      '|:Symbol|)
                      ((eq <noop> object)
-                      '|·ElementaryThread|)
+                      '|:ElementaryThread|)
                      ((or (eq <true> object)
                           (eq <false> object))
-                      '|·Boolean|)
+                      '|:Boolean|)
                      ((or (eq <less> object)
                           (eq <equal> object)
                           (eq <greater> object)
                           (eq <unequal> object))
-                      '|·Comparison|)
+                      '|:Comparison|)
                      ((eq <meta-nothing> object)
-                      '|·Nothing|)
+                      '|:Nothing|)
                      ((or
-                       (eq object '|·Nothing|)
-                       (eq object '|·Symbol|)
-                       (eq object '|·Boolean|)
-                       (eq object '|·Comparison|)
-                       (eq object '|·Type|)
-                       (eq object '|·ConstantThread|)
-                       (eq object '|·ElementaryThread|)
-                       (eq object '|·Thread|)
-                       (eq object '|·Precise|)
-                       (eq object '|·Imprecise|)
-                       (eq object '|·EmptyStack|)
-                       (eq object '|·Stack|)
-                       (eq object '|·Binding|)
-                       (eq object '|·Environment|)
-                       (eq object '|·Array|)
+                       (eq object '|:Nothing|)
+                       (eq object '|:Symbol|)
+                       (eq object '|:Boolean|)
+                       (eq object '|:Comparison|)
+                       (eq object '|:Type|)
+                       (eq object '|:ConstantThread|)
+                       (eq object '|:ElementaryThread|)
+                       (eq object '|:Thread|)
+                       (eq object '|:Precise|)
+                       (eq object '|:Imprecise|)
+                       (eq object '|:EmptyStack|)
+                       (eq object '|:Stack|)
+                       (eq object '|:Binding|)
+                       (eq object '|:Environment|)
+                       (eq object '|:Array|)
+                       (eq object '|:Character|)
                        )
-                      '|·Type|)
+                      '|:Type|)
                      (t
                       (error "Malformed lisp symbol found: ~S
 This is an error in the implementation.
 Please report this bug to thomas.bartscher@weltraumschlangen.de"
                              object))))
                   (<prim>
-                   '|·ElmentaryThread|)
+                   '|:ElmentaryThread|)
                   (<constant>
-                   '|·ConstantThread|)
+                   '|:ConstantThread|)
                   (<thread>
-                   '|·Thread|)
+                   '|:Thread|)
                   ([binding]
-                   '|·Binding|)
+                   '|:Binding|)
                   ([env]
-                   '|·Environment|)
+                   '|:Environment|)
                   (array
-                   '|·Array|)
+                   '|:Array|)
                   (t
                    (error "Unknown lisp object found: ~S
 This is an error in the implementation.

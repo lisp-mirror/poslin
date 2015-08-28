@@ -9,6 +9,7 @@
                "cl-ppcre"
 	       "fset"
                "cl-quickcheck"
+               "cl-unicode"
                )
   :components
   ((:file "package")
