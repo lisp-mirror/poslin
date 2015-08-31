@@ -525,7 +525,7 @@ This is an error in the implementation.
 Please report this bug to thomas.bartscher@weltraumschlangen.de"
                              object))))
                   (<prim>
-                   '|:ElmentaryThread|)
+                   '|:ElementaryThread|)
                   (<constant>
                    '|:ConstantThread|)
                   (<thread>
