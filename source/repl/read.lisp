@@ -65,7 +65,11 @@
 
 (define-parse-tree-synonym faulty-string
     (:sequence
-     begin-word #\$ (:greedy-repetition 0 nil anything)
+     begin-word
+     (:alternation
+      (:sequence #\$ (:greedy-repetition 0 nil anything))
+      (:sequence #\" (:non-greedy-repetition 0 nil anything))
+      )
      :end-anchor))
 
 (define-parse-tree-synonym character
@@ -78,6 +82,7 @@
   '(infinite-string long-string short-string faulty-string integer
     float ratio quotation character symbol))
 
+#|
 (defun extract-matches (parse-tree string)
   (let ((finds (all-matches parse-tree string)))
     (loop for (start end)
@@ -118,6 +123,7 @@
 	    (sort (_rec string parse-trees '())
 		  #'<
 		  :key #'first))))
+|#
 
 (defgeneric convert-token (type token)
   (:method ((type (eql 'symbol))
@@ -126,13 +132,21 @@
   (:method ((type (eql 'character))
             (token string))
     (let ((length (length token)))
+      (assert (>= length 3))
       (if (= length 3)
           (elt token 1)
           (aif (cl-unicode:character-named
                 (subseq token 1 (1- (length token))))
                it
-               (error "Invalid character ~A"
-                      token)))))
+               (let ((name (subseq token 1 (1- (length token)))))
+                 (cond
+                   ((string-equal name "tab")
+                    #\Tab)
+                   ((string-equal name "newline")
+                    #\Newline)
+                   (t
+                    (error "Invalid character ~A"
+                           token))))))))
   (:method ((type (eql 'quotation))
 	    (token string))
     (<quotation> (intern (subseq token 1)
@@ -156,41 +170,79 @@
     (error "faulty string read"))
   (:method ((type (eql 'long-string))
 	    (token string))
-    (let ((delimiter-length
-	   (length
-	    (first
-	     (extract-matches
-	      `(:sequence #\$
-			  (:non-greedy-repetition 1 nil :everything)
-			  #\Newline)
-	      token)))))
+    (let ((delimiter-length (1+ (position #\Newline token
+                                          :test #'char=))))
       (subseq token delimiter-length (- (length token)
 					delimiter-length -2))))
   (:method ((type (eql 'short-string))
             (token string))
     (subseq token 1 (1- (length token)))))
 
+(defun retrieve-token (string parse-order)
+  (let ((tokens (stable-sort
+                 (remove-if-not #'second
+                                (mapcar (lambda (parse-tree)
+                                          (multiple-value-bind (begin end)
+                                              (scan parse-tree string)
+                                            (list parse-tree begin end)))
+                                        parse-order))
+                 #'<
+                 :key #'second)))
+    (apply #'values
+           (first tokens))))
+
+(defun next-token (string parse-order)
+  (multiple-value-bind (token-type begin end)
+      (retrieve-token string parse-order)
+    (when begin
+      (values (convert-token token-type (subseq string begin end))
+              (subseq string (1+ end))))))
+
 (defun poslin-read-from-string (string parse-trees)
-  (mapcar (lambda (tk)
-	    (apply #'convert-token
-		   tk))
-	  (all-tokens string parse-trees)))
+  (let ((rest string)
+        (result '()))
+    (loop
+       (multiple-value-bind (token unread)
+           (next-token rest parse-trees)
+         (if unread
+             (progn
+               (push token result)
+               (setf rest unread))
+             (return))))
+    (nreverse result)))
 
 (defun poslin-read-block (stream parse-trees)
-  (let ((string ""))
-    (do ((curr (read-line stream)
-	       (read-line stream)))
-	((or (not (scan 'faulty-string
-                         (cut-matches 'long-string
-                                      #1=(concatenate 'string
-                                                      string curr
-                                                      #(#\Newline)))))
-             (scan 'infinite-string
-                   #1#))
-         (poslin-read-from-string #1# parse-trees))
-      (setf string
-	    (concatenate 'string
-			 string curr #(#\Newline))))))
+  (let ((line (read-line stream))
+        (tokens '())
+        (in-string? nil))
+    (loop
+       (progn
+         (when in-string?
+           (setf line (read-line stream)))
+         (multiple-value-bind (token-type begin end)
+             (retrieve-token line parse-trees)
+           (if in-string?
+               (progn
+                 (setf in-string?
+                       (concatenate 'string
+                                    in-string? #(#\Newline)
+                                    line))
+                 (multiple-value-bind (token-type begin end)
+                     (retrieve-token in-string? parse-trees)
+                   (unless (eq token-type 'faulty-string)
+                     (progn
+                       (push (convert-token token-type (subseq in-string? begin end))
+                             tokens)
+                       (setf line (subseq in-string? end)
+                             in-string? nil)))))
+               (if token-type
+                   (if (eq token-type 'faulty-string)
+                       (setf in-string? line)
+                       (progn
+                         (push (convert-token token-type (subseq line begin end))
+                               tokens)
+                         (setf line (subseq line end))))
+                   (return (nreverse tokens)))))))))
 
 (defun poslin-read (stream parse-trees)
   (let ((eof (gensym "eof"))
