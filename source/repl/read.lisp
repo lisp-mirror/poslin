@@ -82,49 +82,6 @@
   '(infinite-string long-string short-string faulty-string integer
     float ratio quotation character symbol))
 
-#|
-(defun extract-matches (parse-tree string)
-  (let ((finds (all-matches parse-tree string)))
-    (loop for (start end)
-       on finds by #'cddr
-       collect
-	 (subseq string start end))))
-
-(defun cut-matches (parse-tree string)
-  (let ((finds (all-matches parse-tree string))
-	(nstring (copy-seq string)))
-    (loop for (start end)
-       on finds by #'cddr
-       do (setf nstring
-		(substitute-if #\Space (constantly t)
-			       nstring
-			       :start start
-			       :end end)))
-    nstring))
-
-(defun all-tokens (string parse-trees)
-  (labels ((_rec (string pts acc)
-	     (if pts
-		 (let ((curr (first pts))
-		       (rest (rest pts)))
-		   (let ((found (extract-matches curr string))
-			 (firsts (mapcar #'first
-					 (group (all-matches curr
-							     string)
-						2)))
-			 (nstring (cut-matches curr string)))
-		     (_rec nstring rest (append (mapcar (lambda (a b)
-							  (list a curr
-								b))
-							firsts found)
-						acc))))
-		 acc)))
-    (mapcar #'rest
-	    (sort (_rec string parse-trees '())
-		  #'<
-		  :key #'first))))
-|#
-
 (defgeneric convert-token (type token)
   (:method ((type (eql 'symbol))
 	    (token string))
@@ -178,6 +135,20 @@
             (token string))
     (subseq token 1 (1- (length token)))))
 
+(defun first-tokens (string parse-order)
+  (let ((tokens (mapcar (lambda (parse-tree)
+                          (multiple-value-bind (begin end)
+                              (scan parse-tree string)
+                            (list parse-tree begin end)))
+                        parse-order)))
+    (values (stable-sort (remove-if-not #'second
+                                        tokens)
+                         #'<
+                         :key #'second)
+            (mapcar #'first
+                    (remove-if #'second
+                               tokens)))))
+
 (defun retrieve-token (string parse-order)
   (let ((tokens (stable-sort
                  (remove-if-not #'second
@@ -191,25 +162,90 @@
     (apply #'values
            (first tokens))))
 
-(defun next-token (string parse-order)
-  (multiple-value-bind (token-type begin end)
-      (retrieve-token string parse-order)
-    (when begin
-      (values (convert-token token-type (subseq string begin end))
-              (subseq string (1+ end))))))
-
-(defun poslin-read-from-string (string parse-trees)
-  (let ((rest string)
-        (result '()))
-    (loop
-       (multiple-value-bind (token unread)
-           (next-token rest parse-trees)
-         (if unread
-             (progn
-               (push token result)
-               (setf rest unread))
-             (return))))
-    (nreverse result)))
+(defun poslin-read-from-string (string parse-order)
+  (labels ((_token< (t1 t2)
+             (let ((tb1 (second t1))
+                   (tb2 (second t2)))
+               (cond
+                 ((< tb1 tb2)
+                  t)
+                 ((> tb1 tb2)
+                  nil)
+                 ((= tb1 tb2)
+                  (labels ((_rec (t1 t2 parse-order)
+                             (let ((curr (first parse-order)))
+                               (if curr
+                                   (cond
+                                     ((eq t1 curr)
+                                      t)
+                                     ((eq t2 curr)
+                                      nil)
+                                     (t
+                                      (_rec t1 t2 (rest parse-order))))
+                                   (error "unknown token types ~S ~S"
+                                          t1 t2)))))
+                    (_rec (first t1)
+                          (first t2)
+                          parse-order))))))
+           (_insert (token found acc)
+             (if found
+                 (let ((curr (first found)))
+                   (if (_token< token curr)
+                       (nconc (nreverse (cons token acc))
+                              found)
+                       (_insert token (rest found)
+                                (cons curr acc))))
+                 (nreverse (cons token acc))))
+           (_first-ones (found n acc)
+             (if found
+                 (let ((curr (first found)))
+                   (if n
+                       (if (= (second curr)
+                              n)
+                           (_first-ones (rest found)
+                                        n (cons curr acc))
+                           (values (first (last acc))
+                                   (mapcar #'first
+                                           acc)))
+                       (_first-ones (rest found)
+                                    (second curr)
+                                    (list curr))))
+                 (values (first (last acc))
+                         (mapcar #'first
+                                 acc))))
+           (_rec (string found tokens)
+             (multiple-value-bind (token recompute)
+                 (_first-ones found nil '())
+               (if token
+                   (let* ((token-type (first token))
+                          (begin (second token))
+                          (end (third token))
+                          (nstring (subseq string end))
+                          (found (mapcar (lambda (tok)
+                                           (list (first tok)
+                                                 (- (second tok)
+                                                    end)
+                                                 (- (third tok)
+                                                    end)))
+                                         (remove-if (lambda (a)
+                                                      (member (first a)
+                                                              recompute))
+                                                    found))))
+                     (_rec nstring (reduce (lambda (found recomp)
+                                             (multiple-value-bind (b e)
+                                                 (scan recomp nstring)
+                                               (if b
+                                                   (_insert (list recomp b e)
+                                                            found '())
+                                                   found)))
+                                           recompute
+                                           :initial-value found)
+                           (cons (convert-token token-type
+                                                (subseq string begin end))
+                                 tokens)))
+                   (nreverse tokens)))))
+    (_rec string (first-tokens string parse-order)
+          '())))
 
 (defun poslin-read-block (stream parse-trees)
   (let ((line (read-line stream))
