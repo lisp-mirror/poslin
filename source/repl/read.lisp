@@ -200,15 +200,15 @@
              (if found
                  (let ((curr (first found)))
                    (if n
-                       (if (= (second curr)
-                              n)
+                       (if (<= (second curr)
+                               n)
                            (_first-ones (rest found)
                                         n (cons curr acc))
                            (values (first (last acc))
                                    (mapcar #'first
                                            acc)))
                        (_first-ones (rest found)
-                                    (second curr)
+                                    (third curr)
                                     (list curr))))
                  (values (first (last acc))
                          (mapcar #'first
