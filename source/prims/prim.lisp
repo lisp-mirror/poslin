@@ -516,6 +516,7 @@
                        (eq object '|:Binding|)
                        (eq object '|:Environment|)
                        (eq object '|:Array|)
+                       (eq object '|:String|)
                        (eq object '|:Character|)
                        )
                       '|:Type|)
@@ -535,7 +536,9 @@ Please report this bug to thomas.bartscher@weltraumschlangen.de"
                   ([env]
                    '|:Environment|)
                   (array
-                   '|:Array|)
+                   (if (stringp object)
+                       '|:String|
+                       '|:Array|))
                   (t
                    (error "Unknown lisp object found: ~S
 This is an error in the implementation.
