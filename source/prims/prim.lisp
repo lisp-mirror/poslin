@@ -486,7 +486,8 @@
                   (cons '|:Stack|)
                   (symbol
                    (cond
-                     ((keywordp object)
+                     ((or (keywordp object)
+                          (not (symbol-package object)))
                       '|:Symbol|)
                      ((eq <noop> object)
                       '|:ElementaryThread|)
