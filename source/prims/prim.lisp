@@ -559,7 +559,7 @@ Please report this bug to thomas.bartscher@weltraumschlangen.de"
 ;;;; symbols
 (defprim *prim* "unique-symbol" nil
     "returns a unique symbol"
-  (push-stack (gensym "×unique×")))
+  (push-stack (gensym "|unique")))
 
 (defprim *prim* "symbol-concat" nil
     "returns a symbol whose name is made up of the names of two other
