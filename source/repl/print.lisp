@@ -46,9 +46,15 @@
 
 (defmethod poslin-print ((object character)
                          stream)
-  (format stream "<~A>"
-          (substitute #\- #\Space
-                      (string-downcase (cl-unicode:unicode-name object)))))
+  (cond
+    ((char= object #\Newline)
+     (format stream "<newline>"))
+    ((char= object #\Tab)
+     (format stream "<tab>"))
+    (t
+     (format stream "<~A>"
+             (substitute #\- #\Space
+                         (string-downcase (cl-unicode:unicode-name object)))))))
 
 (defmethod poslin-print ((object symbol)
 			 stream)
