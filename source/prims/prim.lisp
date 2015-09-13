@@ -362,10 +362,12 @@
 ;;;; arrays
 (defprim *prim* "new-array" nil
     "make array"
-  (push-stack (make-array (pop-stack)
-			  :initial-element <meta-nothing>
-			  :element-type `(or (eql <meta-nothing>)
-					     [binding]))))
+  (stack-args (size)
+    (if (typep size '(integer 0))
+        (push-stack (make-array size
+                                :initial-element <meta-nothing>))
+        (error "Expected an integer for `new-array` but got ~A"
+               (poslin-print size nil)))))
 
 (defprim *prim* "array-set" nil
     "set in array"
@@ -402,9 +404,18 @@
              (not (stringp a2)))
         (push-stack (concatenate 'vector
                                  a1 a2))
-        (error "Expected two arrays for `>a<` but got ~A and ~A"
+        (error "Expected two arrays for `array-concat` but got ~A and ~A"
                (poslin-print a1 nil)
                (poslin-print a2 nil)))))
+
+(defprim *prim* "array-size" nil
+    "returns the size of the array"
+  (stack-args (array)
+    (if (and (arrayp array)
+             (not (stringp array)))
+        (push-stack (array-total-size array))
+        (error "Expected an array for `array-size` but got ~A"
+               (poslin-print array nil)))))
 
 ;;;; strings
 (defprim *prim* "->string" nil
@@ -447,6 +458,14 @@
         (error "got arguments ~A and ~A for string-lookup"
                (poslin-print string nil)
                (poslin-print n nil)))))
+
+(defprim *prim* "string-size" nil
+    "returns the size of the array"
+  (stack-args (string)
+    (if (stringp string)
+        (push-stack (length string))
+        (error "Expected an string for `string-size` but got ~A"
+               (poslin-print string nil)))))
 
 (defprim *prim* "print" nil
     "prints a string to the standard output"
