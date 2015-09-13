@@ -7,7 +7,7 @@
 
 (defmethod poslin-print ((object null)
 			 stream)
-  (format stream "[ ]"))
+  (format stream "[]"))
 
 (defmethod poslin-print ((object cons)
 			 stream)
@@ -18,7 +18,7 @@
 
 (defmethod poslin-print ((object array)
                          stream)
-  (format stream "a[~{ ~A~} ]a"
+  (format stream "[~{ ~A~} ]array"
           (map 'list (lambda (obj)
                        (poslin-print obj nil))
                object)))
