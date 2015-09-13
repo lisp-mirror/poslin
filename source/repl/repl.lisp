@@ -73,7 +73,7 @@
 =========================================================
 
 © 2015 Thomas Bartscher
-version 0.2.1
+version 0.2.4
 ")
   (setf *random-state* (make-random-state t))
   (format t "~A~%"

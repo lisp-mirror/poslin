@@ -5,6 +5,7 @@
   :description "Describe poslin here"
   :author "Thomas Bartscher <thomas.bartscher@weltraumschlangen.de>"
   :license "EUPL V1.1"
+  :version "0.2.4"
   :depends-on ("split-sequence"
                "cl-ppcre"
 	       "fset"
