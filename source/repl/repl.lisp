@@ -73,8 +73,8 @@
 =========================================================
 
 © 2015 Thomas Bartscher
-version 0.2.4
-")
+version ~A~%"
+          (asdf:component-version (asdf:find-system "poslin")))
   (setf *random-state* (make-random-state t))
   (format t "~A~%"
           (case (random 5)
