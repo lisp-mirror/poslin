@@ -606,3 +606,42 @@ symbols"
           rstack)
     (setf pc <noop>)
     (mapcar this (poslin-read-file path *parse-order*))))
+
+;;;; streams
+(defprim *prim* "open" nil
+    "makes a file handle"
+  (stack-args (filename direction)
+    (if (stringp filename)
+        (push-stack (open filename
+                          :direction (case direction
+                                       (:|write| :output)
+                                       (:|read| :input)
+                                       (:|rw| :io)
+                                       (t
+                                        (error "Unknown stream mode ~A"
+                                               (poslin-print direction nil))))))
+        (error "Expected string as file name in `new-file-handle`, got ~A instead"
+               (poslin-print filename nil)))))
+
+(defprim *prim* ".stdin" nil
+    "leaves the standard input stream"
+  (push-stack *standard-input*))
+
+(defprim *prim* ".stdout" nil
+    "leaves the standard output stream"
+  (push-stack *standard-output*))
+
+(defprim *prim* "close" nil
+    "closes a stream"
+  (stack-args (stream)
+    (close stream)))
+
+(defprim *prim* "read-char" nil
+    "read a character from a stream"
+  (stack-args (stream)
+    (push-stack (read-char stream nil <meta-nothing>))))
+
+(defprim *prim* "write-char" nil
+    "write a character to a stream"
+  (stack-args (stream char)
+    (push-stack (write-char char stream))))
