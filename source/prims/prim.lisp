@@ -644,4 +644,4 @@ symbols"
 (defprim *prim* "write-char" nil
     "write a character to a stream"
   (stack-args (stream char)
-    (push-stack (write-char char stream))))
+    (write-char char stream)))
