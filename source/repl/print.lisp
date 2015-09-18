@@ -106,6 +106,10 @@
 			 stream)
   (format stream "<NOTHING>"))
 
+(defmethod poslin-print ((object stream)
+                         stream)
+  (format stream "<<stream>>"))
+
 (defun show-env (env &optional (envmap (fset:empty-map)))
   (let ((found (lookup envmap env)))
     (if found
