@@ -467,6 +467,7 @@
         (error "Expected an string for `string-size` but got ~A"
                (poslin-print string nil)))))
 
+#+nil ; Removed as it is now implemented in the standard library.
 (defprim *prim* "print" nil
     "prints a string to the standard output"
   (stack-args (string)
