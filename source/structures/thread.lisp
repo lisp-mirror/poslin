@@ -56,7 +56,7 @@
            (complex-thread? (<handled>-thread th)))))
 
 (deftype thread ()
-  '(or <prim> <constant> <thread> <handled> (member <noop>)))
+  '(or <prim> <constant> <thread> <handled> (eql <noop>)))
 
 (defgeneric thread-front (thread)
   (:method ((thread (eql <noop>)))
@@ -94,7 +94,7 @@
 
 (deftype [thread] ()
   `(or (eql <noop>)
-       <prim> <constant> <thread>))
+       <prim> <constant> <thread> <handled>))
 
 (defun thread<-stack (stack)
   (labels ((_rec (front back)
