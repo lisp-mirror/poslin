@@ -36,24 +36,23 @@
                       (funcall poslin v))))
                  (poslin-print (stack path)
                                t)))))
+    (unhandled-poslin-exception ()
+      (with-pandoric (path)
+          poslin
+        (let ((ex (first (stack path))))
+          (format t "~%~%~A~%~%"
+                  ([exception]-string ex))))
+      (repl poslin))
     (t (err)
       (with-pandoric (path pc rstack)
           poslin
         (print-status)
         (setf pc <noop>)
         (setf rstack nil))
-      (format t "~%~%~A~%~%"
+      (format t "~%~%Implementation error~%~A~%~%"
               err)
       (when (y-or-n-p "~%Continue?")
         (repl poslin)))))
-
-(defun repl0 ()
-  (repl (new-poslin *prim*)))
-
-(defun repl1 ()
-  (repl (new-poslin *prim*)
-        "~/src/Poslin/lib/base.poslin"
-        ))
 
 (defun repl-dyn ()
   (format t "
@@ -75,15 +74,15 @@
 © 2015 Thomas Bartscher
 version ~A~%"
           (asdf:component-version (asdf:find-system "poslin")))
-  (setf *random-state* (make-random-state t))
-  (format t "~A~%"
-          (case (random 5)
-            (0 "Everything is possible. Watch out!")
-            (1 "Contains parts for a screw factory. Screws not included.")
-            (2 "Forget scope. Then invent it yourself.")
-            (3 "Yell if you want something.")
-            (4 "An interactive compiler.")
-            ))
+  (let ((*random-state* (make-random-state t)))
+    (format t "~A~%"
+            (case (random 5)
+              (0 "Everything is possible. Watch out!")
+              (1 "Contains parts for a screw factory. Screws not included.")
+              (2 "Forget scope. Then invent it yourself.")
+              (3 "Yell if you want something.")
+              (4 "An interactive compiler.")
+              )))
   (apply #'repl
          (new-poslin *prim*)
          #+sbcl (rest sb-ext:*posix-argv*)

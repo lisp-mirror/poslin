@@ -23,14 +23,40 @@
 (defstruct <thread>
   (front <noop>
 	 :type (or (eql <noop>)
-		   <prim> <constant> <thread>))
+		   <prim> <constant> <thread> <handled>))
   (back <noop>
 	:type (or (eql <noop>)
-		  <prim> <constant> <thread>)))
+		  <prim> <constant> <thread> <handled>)))
 
 (defun <thread> (f b)
   (make-<thread> :front f
 		 :back b))
+
+(defstruct <handled>
+  (thread <noop>
+          :type (or (eql <noop>)
+                    <prim> <thread> <handled>))
+  (handle <noop>
+          :type (or (eql <noop>)
+                    <prim> <constant> <thread> <handled>)))
+
+(defun <handled> (th h)
+  (make-<handled> :thread th
+                  :handle h))
+
+(defun elementary? (th)
+  (or (eq th <noop>)
+      (typep th '(or <prim> <constant>))
+      (and (typep th '<handled>)
+           (elementary? (<handled>-thread th)))))
+
+(defun complex-thread? (th)
+  (or (typep th '<thread>)
+      (and (typep th '<handled>)
+           (complex-thread? (<handled>-thread th)))))
+
+(deftype thread ()
+  '(or <prim> <constant> <thread> <handled> (member <noop>)))
 
 (defgeneric thread-front (thread)
   (:method ((thread (eql <noop>)))
@@ -40,7 +66,9 @@
   (:method ((thread <constant>))
     thread)
   (:method ((thread <thread>))
-    (<thread>-front thread)))
+    (<thread>-front thread))
+  (:method ((thread <handled>))
+    (thread-front (<handled>-thread thread))))
 
 (defgeneric thread-back (thread)
   (:method ((thread (eql <noop>)))
@@ -50,7 +78,10 @@
   (:method ((thread <constant>))
     <noop>)
   (:method ((thread <thread>))
-    (<thread>-back thread)))
+    (<thread>-back thread))
+  (:method ((thread <handled>))
+    (<handled> (thread-back (<handled>-thread thread))
+               (<handled>-handle thread))))
 
 (defmacro defnprim (standard name immediate? docstring &body body)
   `(push '(,name ,immediate? ,docstring ,body)

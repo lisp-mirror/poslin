@@ -5,3 +5,6 @@
 
 (defparameter <false>
   '<false>)
+
+(deftype [bool] ()
+  `(member <true> <false>))

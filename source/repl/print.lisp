@@ -102,6 +102,25 @@
 		(subseq bp 1 (1- (length bp)))
 		bp))))
 
+(defmethod poslin-print ((object <handled>)
+                         stream)
+  (format stream "~A>>~A"
+          (poslin-print (<handled>-thread object)
+                        nil)
+          (poslin-print (<handled>-handle object)
+                        nil)))
+
+(defmethod poslin-print ((object [exception])
+                         stream)
+  (format stream "[[EXCEPTION ~A ~A+~D ~A]]"
+          (poslin-print ([exception]-data object)
+                        nil)
+          (poslin-print (first (last ([exception]-stack object)))
+                        nil)
+          (1- (length ([exception]-stack object)))
+          (poslin-print ([exception]-string object)
+                        nil)))
+
 (defmethod poslin-print ((object (eql <meta-nothing>))
 			 stream)
   (format stream "<NOTHING>"))

@@ -19,8 +19,9 @@
                       (let ((binding (lookup (op-env path)
                                              op)))
                         (if (eq binding <meta-nothing>)
-                            (error "Attempt to call undefined operation `~A`"
-                                   op)
+                            (unwind (format nil "Attempt to call undefined operation `~A`"
+                                            op)
+                                    :undefined-operation-error)
                             ([binding]-value (lookup (op-env path)
                                                      op))))
                       (if (eq op <noop>)
@@ -33,6 +34,8 @@
                  (<prim>
                   op)
                  (<thread>
+                  op)
+                 (<handled>
                   op)
                  (t
                   (<constant> op)))))))
@@ -48,8 +51,9 @@
                        (let ((binding (lookup (op-env path)
                                               op)))
                          (if (eq <meta-nothing> binding)
-                             (error "Attempt to inline undefined operation `~A`"
-                                    op)
+                             (unwind (format nil "Attempt to inline undefined operation `~A`"
+                                             op)
+                                     :undefined-operation-error)
                              ([binding]-value binding)))
                        (if (eq op <noop>)
                            <noop>
@@ -62,6 +66,8 @@
 		   op)
 		  (<thread>
 		   op)
+                  (<handled>
+                   op)
 		  (t
 		   (<constant> op))))))
 
@@ -80,25 +86,25 @@
 
 (defprim *prim* "thread-concat" nil
     "combines two threads into one"
-  (stack-args (front back)
+  (stack-args ((front thread)
+               (back thread))
     (push-stack (<thread> front back))))
 
 (defprim *prim* "->elem-thread" nil
     "converts an object into a primary thread"
-  (stack-args (string obj)
-    (if (stringp string)
-        (push-stack (<prim> (lambda ()
-                              (with-pandoric (pc)
-                                  this
-                                (setf pc obj)))
-                            string))
-        (error "expected a string in `->prim`, got ~A instead"
-               (poslin-print string nil)))))
+  (stack-args ((string string)
+               obj)
+    (push-stack (<prim> (lambda ()
+                          (with-pandoric (pc)
+                              this
+                            (setf pc obj)))
+                        string))))
 
 (defprim *prim* "?" nil
     "if"
-  (stack-args (bool then else)
-    (push-stack (ecase bool
+  (stack-args ((bool [bool])
+               then else)
+    (push-stack (case bool
                   (<true> then)
                   (<false> else)))))
 
@@ -111,7 +117,8 @@
     "pop from return stack"
   (if rstack
       (push-stack (pop rstack))
-      (error "Attempt to pop from empty return stack")))
+      (unwind "Attempt to pop from empty return stack"
+              :rstack-bottom-error)))
 
 ;;;; path
 (defprim *prim* "path-pop" nil
@@ -122,12 +129,14 @@
 	(progn
 	  (setf path p)
 	  (push-stack e))
-        (error "Attempt to pop bottom of stack"))))
+        (unwind "Attempt to pop path bottom"
+                :path-bottom-error))))
 
 (defprim *prim* "path-push" nil
     "pushes onto the path"
-  (setf path
-	(path-push path (pop-stack))))
+  (stack-args ((env [env]))
+    (setf path
+          (path-push path env))))
 
 (defprim *prim* "path-access" nil
     "returns nth environment on path"
@@ -135,8 +144,9 @@
 
 (defprim *prim* "path-set" nil
     "set current environment"
-  (setf path
-	(path-set path (pop-stack))))
+  (stack-args ((env [env]))
+    (setf path
+          (path-set path env))))
 
 ;;;; environment
 (defparameter *empty-env* (<root-env> (fset:empty-map)))
@@ -146,42 +156,39 @@
 
 (defprim *prim* "env-lookup" nil
     "environment lookup"
-  (stack-args (e k)
+  (stack-args ((e [env])
+               (k symbol))
     (push-stack (aif (lookup e k)
 		     it
 		     <meta-nothing>))))
 
 (defprim *prim* "env-set" nil
     "environment set"
-  (stack-args (e k v)
-    (unless ([env]-p e)
-      (error "Got ~A instead of an environment in `e<-`"
-             (poslin-print e nil)))
-    (unless (poslin-symbol? k)
-      (error "Got ~A instead of a symbol in `e<-`"
-             k))
-    (unless ([binding]-p v)
-      (error "Got ~A instead of a binding in `e<-`"
-             v))
+  (stack-args ((e [env])
+               (k symbol)
+               (v [binding]))
     (push-stack (insert e k v))))
 
 (defprim *prim* "env-parent" nil
     "parent of environment"
-  (push-stack (get-parent (pop-stack))))
+  (stack-args ((env [env]))
+    (push-stack (get-parent env))))
 
 (defprim *prim* "env-parent-set" nil
     "set parent of environment"
-  (stack-args (e p)
+  (stack-args ((e [env])
+               (p [env]))
     (push-stack (set-parent e p))))
 
 (defprim *prim* "env-drop" nil
     "delete from environment"
-  (stack-args (e k)
+  (stack-args ((e [env])
+               (k symbol))
     (push-stack (drop e k))))
 
 (defprim *prim* "env-symbols" nil
     "returns a stack containing all symbols defined in the given environment"
-  (stack-args (e)
+  (stack-args ((e [env]))
     (push-stack (sort (fset:convert 'list
                                     (fset:domain ([env]-content e)))
                       (lambda (a b)
@@ -195,21 +202,25 @@
 
 (defprim *prim* "retrieve" nil
     "read binding"
-  (push-stack ([binding]-value (pop-stack))))
+  (stack-args ((binding [binding]))
+    (push-stack ([binding]-value binding))))
 
 (defprim *prim* "store" nil
     "set binding"
-  (stack-args (b v)
+  (stack-args ((b [binding])
+               v)
     (setf ([binding]-value b)
 	  v)))
 
 (defprim *prim* "binding-doc" nil
     "binding doc"
-  (push-stack ([binding]-doc (pop-stack))))
+  (stack-args ((binding [binding]))
+    (push-stack ([binding]-doc binding))))
 
 (defprim *prim* "binding-doc-set" nil
     "set binding doc"
-  (stack-args (b d)
+  (stack-args ((b [binding])
+               (d string))
     (setf ([binding]-doc b)
 	  d)))
 
@@ -220,33 +231,37 @@
 
 (defprim *prim* "push" nil
     "push"
-  (stack-args (s v)
+  (stack-args ((s (or cons null))
+               v)
     (push-stack (cons v s))))
 
 (defprim *prim* "top" nil
     "top"
-  (stack-args (st)
+  (stack-args ((st (or cons null)))
     (if st
         (push-stack (first st))
-        (error "Attempt to pop from empty stack"))))
+        (unwind "Attempt to pop from empty stack"
+                :stack-bottom-error))))
 
 (defprim *prim* "drop" nil
     "drop"
-  (stack-args (st)
+  (stack-args ((st (or cons null)))
     (if st
         (push-stack (rest st))
-        (error "Attempt to drop from empty stack"))))
+        (unwind "Attempt to drop from empty stack"
+                :stack-bottom-error))))
 
 (defprim *prim* "swap" nil
     "swap"
-  (stack-args (s)
+  (stack-args ((s (or cons null)))
     (if (and s (rest s))
         (push-stack (list* (second s)
                            (first s)
                            (cddr s)))
-        (if s
-            (error "Attempt to swap on stack of size one")
-            (error "Attempt to swap on empty stack")))))
+        (unwind (if s
+                    "Attempt to swap on stack of size one"
+                    "Attempt to swap on empty stack")
+                :stack-botttom-error))))
 
 ;;;; nothing
 (defprim *prim* ".nothing" nil
@@ -264,7 +279,8 @@
 
 (defprim *prim* "and" nil
     "and"
-  (stack-args (b1 b2)
+  (stack-args ((b1 [bool])
+               (b2 [bool]))
     (push-stack (if (and (eq b1 <true>)
 			 (eq b2 <true>))
 		    <true>
@@ -272,7 +288,8 @@
 
 (defprim *prim* "or" nil
     "or"
-  (stack-args (b1 b2)
+  (stack-args ((b1 [bool])
+               (b2 [bool]))
     (push-stack (if (or (eq b1 <true>)
 			(eq b2 <true>))
 		    <true>
@@ -280,7 +297,7 @@
 
 (defprim *prim* "not" nil
     "not"
-  (stack-args (b)
+  (stack-args ((b [bool]))
     (push-stack (if (eq b <true>)
 		    <false>
 		    <true>))))
@@ -321,101 +338,98 @@
 ;;;; arithmetic
 (defprim *prim* "+" nil
     "addition"
-  (stack-args (x y)
+  (stack-args ((x number)
+               (y number))
     (push-stack (+ x y))))
 
 (defprim *prim* "*" nil
     "multiplication"
-  (stack-args (x y)
+  (stack-args ((x number)
+               (y number))
     (push-stack (* x y))))
 
 (defprim *prim* "negation" nil
     "negation"
-  (stack-call -))
+  (stack-args ((x number))
+    (push-stack (- x))))
 
 (defprim *prim* "reciprocal" nil
     "reciprocal"
-  (stack-call /))
+  (stack-args ((x number))
+    (if (zerop x)
+        (unwind "Division by zero"
+                :zero-division-error)
+        (push-stack (/ x)))))
 
 (defprim *prim* "log" nil
     "logarithm"
-  (stack-args (exponent base)
+  (stack-args ((exponent number)
+               (base number))
     (push-stack (log exponent base))))
 
 (defprim *prim* "pow" nil
     "exponentiation"
-  (stack-args (base power)
+  (stack-args ((base number)
+               (power number))
     (expt base power)))
 
 (defprim *prim* "round" nil
     "correct rounding"
-  (stack-call round))
+  (stack-args ((x real))
+    (push-stack (round x))))
 
 (defprim *prim* "floor" nil
     "round down"
-  (stack-call floor))
+  (stack-args ((x real))
+    (push-stack (round x))))
 
 (defprim *prim* "ceiling" nil
     "round up"
-  (stack-call ceiling))
+  (stack-args ((x real))
+    (push-stack (ceiling x))))
 
 ;;;; arrays
 (defprim *prim* "new-array" nil
     "make array"
-  (stack-args (size)
-    (if (typep size '(integer 0))
-        (push-stack (make-array size
-                                :initial-element <meta-nothing>))
-        (error "Expected an integer for `new-array` but got ~A"
-               (poslin-print size nil)))))
+  (stack-args ((size (integer 0)))
+    (push-stack (make-array size
+                            :initial-element <meta-nothing>))))
 
 (defprim *prim* "array-set" nil
     "set in array"
-  (stack-args (array n v)
-    (if (and (arrayp array)
-             (typep n '(integer 0))
-             (not (stringp array)))
+  (stack-args ((array (and vector (not string)))
+               (n (integer 0))
+               v)
+    (if (<= (length array)
+            n)
+        (unwind "Tried to index array out of bounds"
+                :array-index-error)
         (let ((array (copy-seq array)))
           (setf (aref array n)
                 v)
-          (push-stack array))
-        (error "got arguments ~A, ~A and ~A for array-set"
-               (poslin-print array nil)
-               (poslin-print n nil)
-               (poslin-print v nil)))))
+          (push-stack array)))))
 
 (defprim *prim* "array-lookup" nil
     "get from array"
-  (stack-args (array n)
-    (if (and (arrayp array)
-             (typep n '(integer 0))
-             (not (stringp array)))
-        (push-stack (aref array n))
-        (error "got arguments ~A and ~A for array-lookup"
-               (poslin-print array nil)
-               (poslin-print n nil)))))
+  (stack-args ((array (and vector (not string)))
+               (n (integer 0)))
+    (if (<= (length array)
+            n)
+        (unwind "Tried to index array out of bounds"
+                :array-index-error)
+        (push-stack (aref array n)))))
 
 (defprim *prim* "array-concat" nil
     "concatenate two arrays"
-  (stack-args (a1 a2)
-    (if (and (vectorp a1)
-             (vectorp a2)
-             (not (stringp a1))
-             (not (stringp a2)))
-        (push-stack (concatenate 'vector
-                                 a1 a2))
-        (error "Expected two arrays for `array-concat` but got ~A and ~A"
-               (poslin-print a1 nil)
-               (poslin-print a2 nil)))))
+  (stack-args ((a1 (and vector (not string)))
+               (a2 (and vector (not string))))
+    (push-stack (concatenate 'vector
+                             a1 a2))))
 
 (defprim *prim* "array-size" nil
     "returns the size of the array"
-  (stack-args (array)
-    (if (and (arrayp array)
-             (not (stringp array)))
-        (push-stack (array-total-size array))
-        (error "Expected an array for `array-size` but got ~A"
-               (poslin-print array nil)))))
+  (stack-args ((array (and vector (not string))))
+    (push-stack (array-total-size array))))
 
 ;;;; strings
 (defprim *prim* "->string" nil
@@ -425,73 +439,49 @@
 
 (defprim *prim* "string-concat" nil
     "concatenate two strings"
-  (stack-args (s1 s2)
-    (if (and (stringp s1)
-             (stringp s2))
-        (push-stack (concatenate 'string
-                                 s1 s2))
-        (error "Expected two strings for `>string<` but got ~A and ~A"
-               (poslin-print s1 nil)
-               (poslin-print s2 nil)))))
+  (stack-args ((s1 string)
+               (s2 string))
+    (push-stack (concatenate 'string
+                             s1 s2))))
 
 (defprim *prim* "string-set" nil
     "set in string"
-  (stack-args (string n v)
-    (if (and (stringp string)
-             (typep n '(integer 0))
-             (characterp v))
+  (stack-args ((string string)
+               (n (integer 0))
+               (v character))
+    (if (<= (length string)
+            n)
+        (unwind "Tried to index string out of bounds"
+                :string-index-error)
         (let ((string (copy-seq string)))
           (setf (elt string n)
                 v)
-          (push-stack string))
-        (error "got arguments ~A, ~A and ~A for string-set"
-               (poslin-print string nil)
-               (poslin-print n nil)
-               (poslin-print v nil)))))
+          (push-stack string)))))
 
 (defprim *prim* "string-lookup" nil
     "get from string"
-  (stack-args (string n)
-    (if (and (stringp string)
-             (typep n '(integer 0)))
-        (push-stack (elt string n))
-        (error "got arguments ~A and ~A for string-lookup"
-               (poslin-print string nil)
-               (poslin-print n nil)))))
+  (stack-args ((string string)
+               (n (integer 0)))
+    (if (<= (length string)
+            n)
+        (unwind "Tried to index string out of bounds"
+                :string-index-error)
+        (push-stack (elt string n)))))
 
 (defprim *prim* "string-size" nil
     "returns the size of the array"
-  (stack-args (string)
-    (if (stringp string)
-        (push-stack (length string))
-        (error "Expected an string for `string-size` but got ~A"
-               (poslin-print string nil)))))
-
-#+nil ; Removed as it is now implemented in the standard library.
-(defprim *prim* "print" nil
-    "prints a string to the standard output"
-  (stack-args (string)
-    (unless (typep string 'string)
-      (error "Tried to print ~A"
-             (poslin-print string nil)))
-    (format t "~A"
-            string)))
+  (stack-args ((string string))
+    (push-stack (length string))))
 
 ;;;; characters
 (defprim *prim* "int->char" nil
     "converts an integer into a character"
-  (stack-args (int)
-    (unless (typep int '(integer 0))
-      (error "Expected an integer for int->char, got ~A"
-             (poslin-print int nil)))
+  (stack-args ((int (integer 0)))
     (push-stack (code-char int))))
 
 (defprim *prim* "char->int" nil
     "converts a character into an integer"
-  (stack-args (char)
-    (unless (typep char 'character)
-      (error "Expected a character for char->int, got ~A"
-             (poslin-print char nil)))
+  (stack-args ((char character))
     (push-stack (char-code char))))
 
 ;;;; type
@@ -530,6 +520,8 @@
                        (eq object '|:ConstantThread|)
                        (eq object '|:ElementaryThread|)
                        (eq object '|:Thread|)
+                       (eq object '|:HandledThread|)
+                       (eq object '|:Exception|)
                        (eq object '|:Precise|)
                        (eq object '|:Imprecise|)
                        (eq object '|:EmptyStack|)
@@ -539,11 +531,11 @@
                        (eq object '|:Array|)
                        (eq object '|:String|)
                        (eq object '|:Character|)
+                       (eq object '|:Stream|)
                        )
                       '|:Type|)
                      (t
                       (error "Malformed lisp symbol found: ~S
-This is an error in the implementation.
 Please report this bug to thomas.bartscher@weltraumschlangen.de"
                              object))))
                   (<prim>
@@ -552,6 +544,10 @@ Please report this bug to thomas.bartscher@weltraumschlangen.de"
                    '|:ConstantThread|)
                   (<thread>
                    '|:Thread|)
+                  (<handled>
+                   '|:HandledThread|)
+                  ([exception]
+                   '|:Exception|)
                   ([binding]
                    '|:Binding|)
                   ([env]
@@ -560,22 +556,48 @@ Please report this bug to thomas.bartscher@weltraumschlangen.de"
                    (if (stringp object)
                        '|:String|
                        '|:Array|))
+                  (stream
+                   '|:Stream|)
                   (t
                    (error "Unknown lisp object found: ~S
-This is an error in the implementation.
 Please report this bug to thomas.bartscher@weltraumschlangen.de"
                           object))
                   ))))
 
-;;;; errors
-(defprim *prim* "error" nil
-    "raises an error"
-  (stack-args (error-string)
-    (if (stringp error-string)
-        (error "~A"
-               error-string)
-        (error "Attempt to call an error on non-string object ~A"
-               (poslin-print error-string nil)))))
+;;;; exceptions
+(defprim *prim* "unwind" nil
+    "throws an exception"
+  (stack-args ((string string)
+               data)
+    (unwind string data)))
+
+(defprim *prim* "handle" nil
+    "constructs a handled thread"
+  (stack-args ((thread thread)
+               (handle thread))
+    (push-stack (if (typep thread '<constant>)
+                    thread
+                    (<handled> thread handle)))))
+
+(defprim *prim* "exception-message" nil
+    "gets the message of an exception"
+  (stack-args ((exception [exception]))
+    (push-stack ([exception]-string exception))))
+
+(defprim *prim* "exception-data" nil
+    "gets the meta data of an exception"
+  (stack-args ((exception [exception]))
+    (push-stack ([exception]-data exception))))
+
+(defprim *prim* "exception-stack" nil
+    "gets the unwound return stack of an exception"
+  (stack-args ((exception [exception]))
+    (push-stack ([exception]-stack exception))))
+
+(defprim *prim* "thread-handle" nil
+    "returns the handle of a handled thread"
+  (stack-args ((thread <handled>))
+    (push-stack (<handled>-thread thread))))
 
 ;;;; symbols
 (defprim *prim* "unique-symbol" nil
@@ -585,12 +607,8 @@ Please report this bug to thomas.bartscher@weltraumschlangen.de"
 (defprim *prim* "symbol-concat" nil
     "returns a symbol whose name is made up of the names of two other
 symbols"
-  (stack-args (sym1 sym2)
-    (unless (and (symbolp sym1)
-                 (symbolp sym2))
-      (error "Expected two symbols, got ~A and ~A instead"
-             (poslin-print sym1 nil)
-             (poslin-print sym2 nil)))
+  (stack-args ((sym1 symbol)
+               (sym2 symbol))
     (push-stack (intern (concatenate 'string
                                      (symbol-name sym1)
                                      (symbol-name sym2))
@@ -599,10 +617,7 @@ symbols"
 ;;;; loading
 (defprim *prim* "load" nil
     "loads a file as poslin code"
-  (stack-args (path)
-    (unless (stringp path)
-      (error "Got ~A as a path, need a string."
-             (poslin-print path nil)))
+  (stack-args ((path string))
     (push (thread-back pc)
           rstack)
     (setf pc <noop>)
@@ -611,18 +626,13 @@ symbols"
 ;;;; streams
 (defprim *prim* "open" nil
     "makes a file handle"
-  (stack-args (filename direction)
-    (if (stringp filename)
-        (push-stack (open filename
-                          :direction (case direction
-                                       (:|write| :output)
-                                       (:|read| :input)
-                                       (:|rw| :io)
-                                       (t
-                                        (error "Unknown stream mode ~A"
-                                               (poslin-print direction nil))))))
-        (error "Expected string as file name in `new-file-handle`, got ~A instead"
-               (poslin-print filename nil)))))
+  (stack-args ((filename string)
+               (direction (member :|write| :|input| :|rw|)))
+    (push-stack (open filename
+                      :direction (case direction
+                                   (:|write| :output)
+                                   (:|read| :input)
+                                   (:|rw| :io))))))
 
 (defprim *prim* ".stdin" nil
     "leaves the standard input stream"
@@ -634,15 +644,16 @@ symbols"
 
 (defprim *prim* "close" nil
     "closes a stream"
-  (stack-args (stream)
+  (stack-args ((stream stream))
     (close stream)))
 
 (defprim *prim* "read-char" nil
     "read a character from a stream"
-  (stack-args (stream)
+  (stack-args ((stream stream))
     (push-stack (read-char stream nil <meta-nothing>))))
 
 (defprim *prim* "write-char" nil
     "write a character to a stream"
-  (stack-args (stream char)
+  (stack-args ((stream stream)
+               (char character))
     (write-char char stream)))
