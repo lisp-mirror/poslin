@@ -565,11 +565,17 @@ Please report this bug to thomas.bartscher@weltraumschlangen.de"
                   ))))
 
 ;;;; exceptions
+#+nil  ; replace with `throw` and `new-exception`
 (defprim *prim* "unwind" nil
     "throws an exception"
   (stack-args ((string string)
                data)
     (unwind string data)))
+
+(defprim *prim* "throw" nil
+    "throws an exception"
+  (stack-args ((exception [exception]))
+    (pthrow exception)))
 
 (defprim *prim* "handle" nil
     "constructs a handled thread"
@@ -578,6 +584,12 @@ Please report this bug to thomas.bartscher@weltraumschlangen.de"
     (push-stack (if (typep thread '<constant>)
                     thread
                     (<handled> thread handle)))))
+
+(defprim *prim* "new-exception" nil
+    "creates a new exception"
+  (stack-args ((message string)
+               data (stack (or cons null)))
+    (push-stack (<exception> message data stack))))
 
 (defprim *prim* "exception-message" nil
     "gets the message of an exception"
