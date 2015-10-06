@@ -26,10 +26,14 @@
                            a1)
                        (pop-stack))
                    (reverse args)))
-     ,@(mapcar #`(unless (typep ,(first a1)
-                                ',(second a1))
-                   (unwind "Type error"
-                           (list :type-error ,(first a1))))
-               (remove-if-not #'consp
-                              (reverse args)))
-     ,@body))
+     (if (not (and ,@(mapcar #`(typep ,(first a1)
+                                      ',(second a1))
+                             (remove-if-not #'consp
+                                            (reverse args)))))
+         (unwind "Type error"
+                 (list :type-error ,@(mapcar #`,(if (consp a1)
+                                                    (car a1)
+                                                    a1)
+                                             args)))
+         (progn
+           ,@body))))
