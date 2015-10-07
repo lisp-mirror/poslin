@@ -38,7 +38,7 @@
 		   :. (binding <noop> "no op"))
 	   (imm-env path)
 	   (insert (imm-env path)
-		   :. (binding nil)))
+		   :. (binding <false>)))
      ,@(loop for standard in standards
 	  append
 	    (mapcar #`(setf (op-env path)
