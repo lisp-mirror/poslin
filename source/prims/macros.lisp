@@ -31,9 +31,10 @@
                              (remove-if-not #'consp
                                             (reverse args)))))
          (unwind "Type error"
-                 (list :type-error ,@(mapcar #`,(if (consp a1)
-                                                    (car a1)
-                                                    a1)
-                                             args)))
+                 (list :type-error
+                       ,@(mapcar #`,(if (consp a1)
+                                        (car a1)
+                                        a1)
+                                 args)))
          (progn
            ,@body))))

@@ -21,7 +21,7 @@
                         (if (eq binding <meta-nothing>)
                             (unwind (format nil "Attempt to call undefined operation `~A`"
                                             op)
-                                    :undefined-operation-error)
+                                    (list :undefined-operation-error op))
                             ([binding]-value (lookup (op-env path)
                                                      op))))
                       (if (eq op <noop>)
@@ -53,7 +53,7 @@
                          (if (eq <meta-nothing> binding)
                              (unwind (format nil "Attempt to inline undefined operation `~A`"
                                              op)
-                                     :undefined-operation-error)
+                                     (list :undefined-operation-error op))
                              ([binding]-value binding)))
                        (if (eq op <noop>)
                            <noop>
@@ -261,7 +261,7 @@
         (unwind (if s
                     "Attempt to swap on stack of size one"
                     "Attempt to swap on empty stack")
-                :stack-botttom-error))))
+                :stack-bottom-error))))
 
 ;;;; nothing
 (defprim *prim* ".nothing" nil
@@ -403,7 +403,7 @@
     (if (<= (length array)
             n)
         (unwind "Tried to index array out of bounds"
-                :array-index-error)
+                (list :array-index-error array n v))
         (let ((array (copy-seq array)))
           (setf (aref array n)
                 v)
@@ -416,7 +416,7 @@
     (if (<= (length array)
             n)
         (unwind "Tried to index array out of bounds"
-                :array-index-error)
+                (list :array-index-error array n))
         (push-stack (aref array n)))))
 
 (defprim *prim* "array-concat" nil
@@ -452,7 +452,7 @@
     (if (<= (length string)
             n)
         (unwind "Tried to index string out of bounds"
-                :string-index-error)
+                (list :string-index-error string n v))
         (let ((string (copy-seq string)))
           (setf (elt string n)
                 v)
@@ -465,7 +465,7 @@
     (if (<= (length string)
             n)
         (unwind "Tried to index string out of bounds"
-                :string-index-error)
+                (list :string-index-error string n))
         (push-stack (elt string n)))))
 
 (defprim *prim* "string-size" nil
