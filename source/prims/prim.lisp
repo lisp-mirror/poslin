@@ -148,6 +148,61 @@
     (setf path
           (path-set path env))))
 
+;;;; sets
+(defparameter *empty-set* (fset:empty-set))
+(defprim *prim* ".empty-set" nil
+    "returns the empty set"
+  (push-stack *empty-set*))
+
+(defprim *prim* "set-lookup" nil
+    "set lookup"
+  (stack-args ((s fset:set)
+               v)
+    (push-stack (if (lookup s v)
+                    <true>
+                    <false>))))
+
+(defprim *prim* "set-insert" nil
+    "insert into set"
+  (stack-args ((s fset:set)
+               v)
+    (push-stack (with s v))))
+
+(defprim *prim* "set-drop" nil
+    "drop from set"
+  (stack-args ((s fset:set)
+               v)
+    (push-stack (less s v))))
+
+;;;; maps
+(defparameter *empty-map* (fset:empty-map <meta-nothing>))
+(defprim *prim* ".empty-map" nil
+    "returns the empty map"
+  (push-stack *empty-map*))
+
+(defprim *prim* "map-lookup" nil
+    "map lookup"
+  (stack-args ((m fset:map)
+               k)
+    (push-stack (lookup m k))))
+
+(defprim *prim* "map-insert" nil
+    "insert into map"
+  (stack-args ((m fset:map)
+               k v)
+    (push-stack (with m k v))))
+
+(defprim *prim* "map-drop" nil
+    "drop from map"
+  (stack-args ((m fset:map)
+               k)
+    (push-stack (less m k))))
+
+(defprim *prim* "map-domain" nil
+    "domain of map"
+  (stack-args ((m fset:map))
+    (push-stack (fset:domain m))))
+
 ;;;; environment
 (defparameter *empty-env* (<root-env> (fset:empty-map)))
 (defprim *prim* ".empty-env" nil
