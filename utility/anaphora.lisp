@@ -13,3 +13,11 @@
      ,@(butlast body)
      (lambda (&rest params)
        (apply this params))))
+
+(defmacro avif (test then &optional else)
+  (let ((g!test (gensym "test")))
+    `(multiple-value-bind (it ,g!test)
+         ,test
+       (if ,g!test
+           ,then
+           ,else))))

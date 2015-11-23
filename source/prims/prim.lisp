@@ -175,7 +175,7 @@
     (push-stack (less s v))))
 
 ;;;; maps
-(defparameter *empty-map* (fset:empty-map <meta-nothing>))
+(defparameter *empty-map* (fset:empty-map))
 (defprim *prim* ".empty-map" nil
     "returns the empty map"
   (push-stack *empty-map*))
@@ -184,7 +184,9 @@
     "map lookup"
   (stack-args ((m fset:map)
                k)
-    (push-stack (lookup m k))))
+    (push-stack (avif (lookup m k)
+                      it
+                      <meta-nothing>))))
 
 (defprim *prim* "map-insert" nil
     "insert into map"
