@@ -134,7 +134,7 @@
 
 (defprim *prim* "path-push" nil
     "pushes onto the path"
-  (stack-args ((env [env]))
+  (stack-args ((env cons))
     (setf path
           (path-push path env))))
 
@@ -144,7 +144,7 @@
 
 (defprim *prim* "path-set" nil
     "set current environment"
-  (stack-args ((env [env]))
+  (stack-args ((env cons))
     (setf path
           (path-set path env))))
 
@@ -213,7 +213,7 @@
 
 (defprim *prim* "env-lookup" nil
     "environment lookup"
-  (stack-args ((e [env])
+  (stack-args ((e cons)
                (k symbol))
     (push-stack (aif (lookup e k)
 		     it
@@ -221,31 +221,31 @@
 
 (defprim *prim* "env-set" nil
     "environment set"
-  (stack-args ((e [env])
+  (stack-args ((e cons)
                (k symbol)
                (v [binding]))
     (push-stack (insert e k v))))
 
 (defprim *prim* "env-parent" nil
     "parent of environment"
-  (stack-args ((env [env]))
+  (stack-args ((env cons))
     (push-stack (get-parent env))))
 
 (defprim *prim* "env-parent-set" nil
     "set parent of environment"
-  (stack-args ((e [env])
-               (p [env]))
+  (stack-args ((e cons)
+               (p cons))
     (push-stack (set-parent e p))))
 
 (defprim *prim* "env-drop" nil
     "delete from environment"
-  (stack-args ((e [env])
+  (stack-args ((e cons)
                (k symbol))
     (push-stack (drop e k))))
 
 (defprim *prim* "env-symbols" nil
     "returns a stack containing all symbols defined in the given environment"
-  (stack-args ((e [env]))
+  (stack-args ((e cons))
     (push-stack (sort (fset:convert 'list
                                     (fset:domain ([env]-content e)))
                       (lambda (a b)

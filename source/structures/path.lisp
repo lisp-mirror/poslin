@@ -2,7 +2,7 @@
 
 (defstruct [path]
   (content (<root-env> (fset:map))
-	   :type [env])
+	   :type cons)
   (parent nil
 	  :type (or [path] null)))
 

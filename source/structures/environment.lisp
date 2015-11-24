@@ -1,65 +1,50 @@
 (in-package #:poslin)
 
-(defstruct [env]
-  (content (fset:empty-map)
-	   :type fset:map)
-  (parent nil
-	  :type (or [env] null)))
-
-(defmethod print-object ((object [env])
-                         stream)
-  (format stream "#<[env] ~A ~A>"
-          (fset:size ([env]-content object))
-          ([env]-parent object)))
-
 (defun <root-env> (content)
-  (make-[env] :content content))
+  (list (fset:empty-map)))
 
 (defun <env> (content parent)
-  (make-[env] :content content
-	      :parent parent))
+  (list* content parent))
 
-(defmethod lookup ((collection [env])
-		   (key symbol))
-  (aif (@ ([env]-content collection)
-	  key)
-       it
-       (aif ([env]-parent collection)
-	    (@ it key)
-	    <meta-nothing>)))
+(defmethod lookup ((collection null)
+                   key)
+  (values nil nil))
 
-(defmethod compare ((x [env])
-                    (y [env]))
-  (if (and (fset:equal? ([env]-content x)
-                        ([env]-content y))
-           (fset:equal? ([env]-parent x)
-                        ([env]-parent y)))
-      :equal
-      :unequal))
+(defmethod lookup ((collection cons)
+                   key)
+  (multiple-value-bind (result found?)
+      (lookup (car collection)
+              key)
+    (if found?
+        result
+        (lookup (cdr collection)
+                key))))
 
 (defgeneric insert (collection key value)
-  (:method ((collection [env])
-	    (key symbol)
-	    (value [binding]))
-    (<env> (with ([env]-content collection)
-		 key value)
-	   ([env]-parent collection))))
+  (:method ((collection cons)
+            key value)
+    (cons (with (car collection)
+                key value)
+          (cdr collection))))
 
 (defgeneric get-parent (hierarchical)
-  (:method ((hierarchical [env]))
-    (aif ([env]-parent hierarchical)
-	 it
-	 <meta-nothing>)))
+  (:method ((hierarchical cons))
+    (aif (cdr hierarchical)
+         it
+         <meta-nothing>)))
 
 (defgeneric set-parent (hierarchical parent)
-  (:method ((hierarchical [env])
-	    (parent [env]))
-    (<env> ([env]-content hierarchical)
-	   parent)))
+  (:method ((hierarchical cons)
+            (parent (eql '<meta-nothing>)))
+    (list (car hierarchical)))
+  (:method ((hierarchical cons)
+            (parent cons))
+    (cons (car hierarchical)
+          parent)))
 
 (defgeneric drop (collection key)
-  (:method ((collection [env])
-            (key symbol))
-    (<env> (less ([env]-content collection)
-                 key)
-           ([env]-parent collection))))
+  (:method ((collection cons)
+            key)
+    (cons (less (car collection)
+                key)
+          (cdr collection))))
