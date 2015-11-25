@@ -16,7 +16,7 @@
       (lookup (car collection)
               key)
     (if found?
-        result
+        (values result t)
         (lookup (cdr collection)
                 key))))
 
