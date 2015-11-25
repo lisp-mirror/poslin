@@ -18,12 +18,12 @@
                   (if (poslin-symbol? op)
                       (let ((binding (lookup (op-env path)
                                              op)))
-                        (if (eq binding <meta-nothing>)
+                        (if binding
+                            ([binding]-value (lookup (op-env path)
+                                                     op))
                             (unwind (format nil "Attempt to call undefined operation `~A`"
                                             op)
-                                    (list :undefined-operation-error op))
-                            ([binding]-value (lookup (op-env path)
-                                                     op))))
+                                    (list :undefined-operation-error op))))
                       (if (eq op <noop>)
                           <noop>
                           (<constant> op))))
@@ -50,11 +50,11 @@
 		   (if (poslin-symbol? op)
                        (let ((binding (lookup (op-env path)
                                               op)))
-                         (if (eq <meta-nothing> binding)
+                         (if binding
+                             ([binding]-value binding)
                              (unwind (format nil "Attempt to inline undefined operation `~A`"
                                              op)
-                                     (list :undefined-operation-error op))
-                             ([binding]-value binding)))
+                                     (list :undefined-operation-error op))))
                        (if (eq op <noop>)
                            <noop>
                            (<constant> op))))
@@ -205,12 +205,8 @@
   (stack-args ((m fset:map))
     (push-stack (fset:domain m))))
 
+#|
 ;;;; environment
-(defparameter *empty-env* (<root-env> (fset:empty-map)))
-(defprim *prim* ".empty-env" nil
-    "returns a fresh environment"
-  (push-stack *empty-env*))
-
 (defprim *prim* "env-lookup" nil
     "environment lookup"
   (stack-args ((e cons)
@@ -218,18 +214,6 @@
     (push-stack (aif (lookup e k)
 		     it
 		     <meta-nothing>))))
-
-(defprim *prim* "env-set" nil
-    "environment set"
-  (stack-args ((e cons)
-               (k symbol)
-               (v [binding]))
-    (push-stack (insert e k v))))
-
-(defprim *prim* "env-parent" nil
-    "parent of environment"
-  (stack-args ((env cons))
-    (push-stack (get-parent env))))
 
 (defprim *prim* "env-parent-set" nil
     "set parent of environment"
@@ -251,6 +235,7 @@
                       (lambda (a b)
                         (string> (symbol-name a)
                                  (symbol-name b)))))))
+|#
 
 ;;;; binding
 (defprim *prim* "new-binding" nil
