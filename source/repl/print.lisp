@@ -16,7 +16,7 @@
 		    (poslin-print obj nil))
 		  (reverse object))))
 
-(defmethod poslin-print ((object fset:set)
+(defmethod poslin-print ((object set)
                          stream)
   (format stream "[~{ ~A~} ]set"
           (mapcar (lambda (obj)
@@ -24,7 +24,7 @@
                   (fset:convert 'list
                                 object))))
 
-(defmethod poslin-print ((object fset:map)
+(defmethod poslin-print ((object map)
                          stream)
   (format stream "[~{ ~A~} ]map"
           (mapcar (lambda (obj)
@@ -39,9 +39,9 @@
 (defmethod poslin-print ((object array)
                          stream)
   (format stream "[~{ ~A~} ]array"
-          (map 'list (lambda (obj)
-                       (poslin-print obj nil))
-               object)))
+          (cl:map 'list (lambda (obj)
+                          (poslin-print obj nil))
+                  object)))
 
 (defun make-delimiter-string (string)
   (labels ((_rec (acc)

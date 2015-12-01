@@ -12,21 +12,22 @@
         (push (thread-back pc)
               rstack))
       (setf pc (typecase op
+                 #+nil  ; same as below with `cons`
                  (null
                   <noop>)
                  (symbol
                   (if (poslin-symbol? op)
-                      (let ((binding (lookup (op-env path)
-                                             op)))
-                        (if binding
-                            ([binding]-value (lookup (op-env path)
-                                                     op))
+                      (avif (lookup (op-env path)
+                                    op)
+                            ([binding]-value it)
                             (unwind (format nil "Attempt to call undefined operation `~A`"
                                             op)
-                                    (list :undefined-operation-error op))))
+                                    (list :undefined-operation-error op)))
                       (if (eq op <noop>)
                           <noop>
                           (<constant> op))))
+                 #+nil  ; this seems like something that should be done
+                                        ; explicitely
                  (cons
                   (thread<-stack op))
                  (<constant>
@@ -48,13 +49,12 @@
 		   <noop>)
 		  (symbol
 		   (if (poslin-symbol? op)
-                       (let ((binding (lookup (op-env path)
-                                              op)))
-                         (if binding
-                             ([binding]-value binding)
+                       (avif (lookup (op-env path)
+                                     op)
+                             ([binding]-value it)
                              (unwind (format nil "Attempt to inline undefined operation `~A`"
                                              op)
-                                     (list :undefined-operation-error op))))
+                                     (list :undefined-operation-error op)))
                        (if (eq op <noop>)
                            <noop>
                            (<constant> op))))
@@ -134,7 +134,7 @@
 
 (defprim *prim* "path-push" nil
     "pushes onto the path"
-  (stack-args ((env cons))
+  (stack-args ((env map))
     (setf path
           (path-push path env))))
 
@@ -144,19 +144,19 @@
 
 (defprim *prim* "path-set" nil
     "set current environment"
-  (stack-args ((env cons))
+  (stack-args ((env map))
     (setf path
           (path-set path env))))
 
 ;;;; sets
-(defparameter *empty-set* (fset:empty-set))
+(defparameter *empty-set* (empty-set))
 (defprim *prim* ".empty-set" nil
     "returns the empty set"
   (push-stack *empty-set*))
 
 (defprim *prim* "set-lookup" nil
     "set lookup"
-  (stack-args ((s fset:set)
+  (stack-args ((s set)
                v)
     (push-stack (if (lookup s v)
                     <true>
@@ -164,29 +164,27 @@
 
 (defprim *prim* "set-insert" nil
     "insert into set"
-  (stack-args ((s fset:set)
+  (stack-args ((s set)
                v)
     (push-stack (with s v))))
 
 (defprim *prim* "set-drop" nil
     "drop from set"
-  (stack-args ((s fset:set)
+  (stack-args ((s set)
                v)
     (push-stack (less s v))))
 
 ;;;; maps
-(defparameter *empty-map* (fset:empty-map))
+(defparameter *empty-map* (empty-map <meta-nothing>))
 (defprim *prim* ".empty-map" nil
     "returns the empty map"
   (push-stack *empty-map*))
 
 (defprim *prim* "map-lookup" nil
     "map lookup"
-  (stack-args ((m fset:map)
+  (stack-args ((m map)
                k)
-    (push-stack (avif (lookup m k)
-                      it
-                      <meta-nothing>))))
+    (push-stack (lookup m k))))
 
 (defprim *prim* "map-insert" nil
     "insert into map"
@@ -196,14 +194,14 @@
 
 (defprim *prim* "map-drop" nil
     "drop from map"
-  (stack-args ((m fset:map)
+  (stack-args ((m map)
                k)
     (push-stack (less m k))))
 
 (defprim *prim* "map-domain" nil
     "domain of map"
-  (stack-args ((m fset:map))
-    (push-stack (fset:domain m))))
+  (stack-args ((m map))
+    (push-stack (domain m))))
 
 #|
 ;;;; environment
