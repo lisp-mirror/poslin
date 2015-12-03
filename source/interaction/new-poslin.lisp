@@ -15,7 +15,7 @@
                (:op (binding (empty-map <meta-nothing>)))
                (:imm (binding (empty-set)))
                (:features (binding (set :prim)))
-               ))))
+               :default <meta-nothing>))))
 
 (defmacro poslin-install-prims (&rest standards)
   `(progn
