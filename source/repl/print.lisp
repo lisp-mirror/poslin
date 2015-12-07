@@ -26,7 +26,7 @@
 
 (defmethod poslin-print ((object map)
                          stream)
-  (format stream "[~{ ~A~} ]map"
+  (format stream "[~{ ~A~} ]dict"
           (mapcar (lambda (obj)
                     (format nil "[ ~A ~A ]"
                             (poslin-print (car obj)

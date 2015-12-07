@@ -174,32 +174,37 @@
                v)
     (push-stack (less s v))))
 
-;;;; maps
-(defparameter *empty-map* (empty-map <meta-nothing>))
-(defprim *prim* ".empty-map" nil
-    "returns the empty map"
-  (push-stack *empty-map*))
+(defprim *prim* "set-arbitrary" nil
+    "return arbitrary element of set"
+  (stack-args ((s set))
+    (push-stack (fset:arb s))))
 
-(defprim *prim* "map-lookup" nil
-    "map lookup"
+;;;; dictionaries
+(defparameter *empty-dict* (empty-map <meta-nothing>))
+(defprim *prim* ".empty-dict" nil
+    "returns the empty dictionary"
+  (push-stack *empty-dict*))
+
+(defprim *prim* "dict-lookup" nil
+    "dictionary lookup"
   (stack-args ((m map)
                k)
     (push-stack (lookup m k))))
 
-(defprim *prim* "map-insert" nil
-    "insert into map"
+(defprim *prim* "dict-insert" nil
+    "insert into dictionary"
   (stack-args ((m fset:map)
                k v)
     (push-stack (with m k v))))
 
-(defprim *prim* "map-drop" nil
-    "drop from map"
+(defprim *prim* "dict-drop" nil
+    "drop from dictionary"
   (stack-args ((m map)
                k)
     (push-stack (less m k))))
 
-(defprim *prim* "map-domain" nil
-    "domain of map"
+(defprim *prim* "dict-domain" nil
+    "domain of dictionary"
   (stack-args ((m map))
     (push-stack (domain m))))
 
