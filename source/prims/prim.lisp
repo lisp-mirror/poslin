@@ -577,6 +577,8 @@
                        (eq object '|:String|)
                        (eq object '|:Character|)
                        (eq object '|:Stream|)
+                       (eq object '|:Dict|)
+                       (eq object '|:Set|)
                        )
                       '|:Type|)
                      (t
@@ -595,8 +597,10 @@ Please report this bug to thomas.bartscher@weltraumschlangen.de"
                    '|:Exception|)
                   ([binding]
                    '|:Binding|)
-                  ([env]
-                   '|:Environment|)
+                  (map
+                   '|:Dict|)
+                  (set
+                   '|:Set|)
                   (array
                    (if (stringp object)
                        '|:String|
