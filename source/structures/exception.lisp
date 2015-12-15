@@ -16,7 +16,7 @@
   ())
 
 (defmacro! pthrow (o!exception)
-  `(progn
+  `(block ,g!throw
      (push-stack ,g!exception)
      (if (typep pc '<handled>)
          (progn
@@ -30,16 +30,16 @@
               (if rstack
                   (let ((,g!ex (pop (stack path)))
                         (,g!el (pop rstack)))
-                    (push-stack
-                     (make-[exception] :string ,g!message
-                                       :data ,g!data
-                                       :stack (cons ,g!el
-                                                    ([exception]-stack ,g!ex))))
                     (when (typep ,g!el '<handled>)
                       (push (<handled>-handle ,g!el)
                             rstack)
                       (setf pc <noop>)
-                      (return)))
+                      (return-from ,g!throw))
+                    (push-stack
+                     (make-[exception] :string ,g!message
+                                       :data ,g!data
+                                       :stack (cons ,g!el
+                                                    ([exception]-stack ,g!ex)))))
                   (signal 'unhandled-poslin-exception)))))))
 
 (defmacro! unwind (o!message o!data)

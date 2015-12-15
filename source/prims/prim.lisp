@@ -6,7 +6,7 @@
 ;;;; control
 (defnprim *prim* "!" t
     "sets the program counter"
-  (let ((op (pop-stack)))
+  (stack-args (op)
     (let ((b (thread-back pc)))
       (unless (eq b <noop>)
         (push (thread-back pc)
@@ -20,9 +20,9 @@
                       (avif (lookup (op-env path)
                                     op)
                             ([binding]-value it)
-                            (unwind (format nil "Attempt to call undefined operation `~A`"
-                                            op)
-                                    (list :undefined-operation-error op)))
+                            (op-fail (format nil "Attempt to call undefined operation `~A`"
+                                             op)
+                                     (list :undefined-operation-error op)))
                       (if (eq op <noop>)
                           <noop>
                           (<constant> op))))
@@ -43,7 +43,7 @@
 
 (defprim *prim* "&" t
     "finds or converts to a thread"
-  (let ((op (pop-stack)))
+  (stack-args (op)
     (push-stack (typecase op
 		  (null
 		   <noop>)
@@ -52,9 +52,9 @@
                        (avif (lookup (op-env path)
                                      op)
                              ([binding]-value it)
-                             (unwind (format nil "Attempt to inline undefined operation `~A`"
-                                             op)
-                                     (list :undefined-operation-error op)))
+                             (op-fail (format nil "Attempt to inline undefined operation `~A`"
+                                              op)
+                                      (list :undefined-operation-error op)))
                        (if (eq op <noop>)
                            <noop>
                            (<constant> op))))
@@ -285,16 +285,16 @@
   (stack-args ((st (or cons null)))
     (if st
         (push-stack (first st))
-        (unwind "Attempt to pop from empty stack"
-                :stack-bottom-error))))
+        (op-fail "Attempt to pop from empty stack"
+                 :stack-bottom-error))))
 
 (defprim *prim* "drop" nil
     "drop"
   (stack-args ((st (or cons null)))
     (if st
         (push-stack (rest st))
-        (unwind "Attempt to drop from empty stack"
-                :stack-bottom-error))))
+        (op-fail "Attempt to drop from empty stack"
+                 :stack-bottom-error))))
 
 (defprim *prim* "swap" nil
     "swap"
@@ -303,10 +303,10 @@
         (push-stack (list* (second s)
                            (first s)
                            (cddr s)))
-        (unwind (if s
-                    "Attempt to swap on stack of size one"
-                    "Attempt to swap on empty stack")
-                :stack-bottom-error))))
+        (op-fail (if s
+                     "Attempt to swap on stack of size one"
+                     "Attempt to swap on empty stack")
+                 :stack-bottom-error))))
 
 ;;;; nothing
 (defprim *prim* ".nothing" nil
@@ -402,8 +402,8 @@
     "reciprocal"
   (stack-args ((x number))
     (if (zerop x)
-        (unwind "Division by zero"
-                :zero-division-error)
+        (op-fail "Division by zero"
+                 :zero-division-error)
         (push-stack (/ x)))))
 
 (defprim *prim* "log" nil
@@ -447,8 +447,8 @@
                v)
     (if (<= (length array)
             n)
-        (unwind "Tried to index array out of bounds"
-                (list :array-index-error array n v))
+        (op-fail "Tried to index array out of bounds"
+                 (list :array-index-error array n v))
         (let ((array (copy-seq array)))
           (setf (aref array n)
                 v)
@@ -460,8 +460,8 @@
                (n (integer 0)))
     (if (<= (length array)
             n)
-        (unwind "Tried to index array out of bounds"
-                (list :array-index-error array n))
+        (op-fail "Tried to index array out of bounds"
+                 (list :array-index-error array n))
         (push-stack (aref array n)))))
 
 (defprim *prim* "array-concat" nil
@@ -496,8 +496,8 @@
                (v character))
     (if (<= (length string)
             n)
-        (unwind "Tried to index string out of bounds"
-                (list :string-index-error string n v))
+        (op-fail "Tried to index string out of bounds"
+                 (list :string-index-error string n v))
         (let ((string (copy-seq string)))
           (setf (elt string n)
                 v)
@@ -509,8 +509,8 @@
                (n (integer 0)))
     (if (<= (length string)
             n)
-        (unwind "Tried to index string out of bounds"
-                (list :string-index-error string n))
+        (op-fail "Tried to index string out of bounds"
+                 (list :string-index-error string n))
         (push-stack (elt string n)))))
 
 (defprim *prim* "string-size" nil
@@ -614,13 +614,6 @@ Please report this bug to thomas.bartscher@weltraumschlangen.de"
                   ))))
 
 ;;;; exceptions
-#+nil  ; replace with `throw` and `new-exception`
-(defprim *prim* "unwind" nil
-    "throws an exception"
-  (stack-args ((string string)
-               data)
-    (unwind string data)))
-
 (defprim *prim* "throw" nil
     "throws an exception"
   (stack-args ((exception [exception]))
