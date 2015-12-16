@@ -12,9 +12,6 @@
         (push (thread-back pc)
               rstack))
       (setf pc (typecase op
-                 #+nil  ; same as below with `cons`
-                 (null
-                  <noop>)
                  (symbol
                   (if (poslin-symbol? op)
                       (avif (lookup (op-env path)
@@ -26,10 +23,6 @@
                       (if (eq op <noop>)
                           <noop>
                           (<constant> op))))
-                 #+nil  ; this seems like something that should be done
-                                        ; explicitely
-                 (cons
-                  (thread<-stack op))
                  (<constant>
                   op)
                  (<prim>
@@ -73,8 +66,8 @@
 
 (defprim *prim* "#" t
     "makes a constant thread of value"
-  (push-stack (let ((val (pop-stack)))
-		(<constant> val))))
+  (stack-args (val)
+    (push-stack (<constant> val))))
 
 (defprim *prim* "thread-front" nil
     "pushes the front of a thread"
@@ -110,15 +103,15 @@
 
 (defprim *prim* "r<-" nil
     "push onto return stack"
-  (push (pop-stack)
+  (push (arg-pop)
 	rstack))
 
 (defprim *prim* "r->" nil
     "pop from return stack"
   (if rstack
       (push-stack (pop rstack))
-      (unwind "Attempt to pop from empty return stack"
-              :rstack-bottom-error)))
+      (op-fail "Attempt to pop from empty return stack"
+               :rstack-bottom-error)))
 
 ;;;; path
 (defprim *prim* "path-pop" nil
@@ -129,8 +122,8 @@
 	(progn
 	  (setf path p)
 	  (push-stack e))
-        (unwind "Attempt to pop path bottom"
-                :path-bottom-error))))
+        (op-fail "Attempt to pop path bottom"
+                 :path-bottom-error))))
 
 (defprim *prim* "path-push" nil
     "pushes onto the path"
@@ -140,7 +133,7 @@
 
 (defprim *prim* "path-access" nil
     "returns nth environment on path"
-  (push-stack (path-nth path (pop-stack))))
+  (push-stack (path-nth path (arg-pop))))
 
 (defprim *prim* "path-set" nil
     "set current environment"
@@ -207,38 +200,6 @@
     "domain of dictionary"
   (stack-args ((m map))
     (push-stack (domain m))))
-
-#|
-;;;; environment
-(defprim *prim* "env-lookup" nil
-    "environment lookup"
-  (stack-args ((e cons)
-               (k symbol))
-    (push-stack (aif (lookup e k)
-		     it
-		     <meta-nothing>))))
-
-(defprim *prim* "env-parent-set" nil
-    "set parent of environment"
-  (stack-args ((e cons)
-               (p cons))
-    (push-stack (set-parent e p))))
-
-(defprim *prim* "env-drop" nil
-    "delete from environment"
-  (stack-args ((e cons)
-               (k symbol))
-    (push-stack (drop e k))))
-
-(defprim *prim* "env-symbols" nil
-    "returns a stack containing all symbols defined in the given environment"
-  (stack-args ((e cons))
-    (push-stack (sort (fset:convert 'list
-                                    (fset:domain ([env]-content e)))
-                      (lambda (a b)
-                        (string> (symbol-name a)
-                                 (symbol-name b)))))))
-|#
 
 ;;;; binding
 (defprim *prim* "new-binding" nil

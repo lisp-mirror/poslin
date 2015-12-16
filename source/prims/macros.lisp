@@ -12,7 +12,7 @@
 (defmacro! op-fail (o!message o!data)
   `(progn
      (unwind ,g!message ,g!data)
-     (return-from unwind-target)))
+     (return-from op)))
 
 (defmacro arg-pop ()
   `(if (stack path)
@@ -21,25 +21,24 @@
                 :stack-bottom-error)))
 
 (defmacro stack-call (fn)
-  `(push-stack (,fn (pop-stack))))
+  `(push-stack (,fn (arg-pop))))
 
 (defmacro stack-args ((&rest args)
                       &body body)
-  `(block unwind-target
-     (let (,@(mapcar #`(,(if (consp a1)
-                             (car a1)
-                             a1)
-                         (arg-pop))
-                     (reverse args)))
-       (if (not (and ,@(mapcar #`(typep ,(first a1)
-                                        ',(second a1))
-                               (remove-if-not #'consp
-                                              (reverse args)))))
-           (unwind "Type error"
-                   (list :type-error
-                         ,@(mapcar #`,(if (consp a1)
-                                          (car a1)
-                                          a1)
-                                   args)))
-           (progn
-             ,@body)))))
+  `(let (,@(mapcar #`(,(if (consp a1)
+                           (car a1)
+                           a1)
+                       (arg-pop))
+                   (reverse args)))
+     (if (not (and ,@(mapcar #`(typep ,(first a1)
+                                      ',(second a1))
+                             (remove-if-not #'consp
+                                            (reverse args)))))
+         (unwind "Type error"
+                 (list :type-error
+                       ,@(mapcar #`,(if (consp a1)
+                                        (car a1)
+                                        a1)
+                                 args)))
+         (progn
+           ,@body))))

@@ -30,7 +30,7 @@
                                     ',(intern (first a1)
                                               :keyword)
                                     (binding (<prim> (lambda ()
-                                                       ,@(fourth a1))
+                                                       ,(fourth a1))
                                                      ,(first a1))
                                              ,(third a1))))
                         ,@(when (second a1)
