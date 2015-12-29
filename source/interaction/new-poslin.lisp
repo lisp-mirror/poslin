@@ -23,7 +23,7 @@
 	   (with (op-env path)
                  :. (binding <noop> "no op")))
      ,@(loop for standard in standards
-	  append
+	  nconc
 	    (mapcar #`(progn
                         (setf (op-env path)
                               (with (op-env path)
