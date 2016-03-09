@@ -1,15 +1,10 @@
 (in-package #:poslin)
 
 (defstruct [binding]
-  value
-  (doc ""
-       :type string))
+  value)
 
-(defun binding (val &optional docstring)
-  (make-[binding] :value val
-		  :doc (if docstring
-			   docstring
-			   "")))
+(defun binding (val)
+  (make-[binding] :value val))
 
 (defmethod compare ((x [binding])
                     (y [binding]))

@@ -1,8 +1,5 @@
 (in-package #:poslin)
 
-(defmacro rstack (path)
-  `([binding]-value (path-get ,path :rstack)))
-
 (defmacro stack (path)
   `([binding]-value (path-get ,path :stack)))
 

@@ -218,18 +218,6 @@
     (setf ([binding]-value b)
 	  v)))
 
-(defprim *prim* "binding-doc" nil
-    "binding doc"
-  (stack-args ((binding [binding]))
-    (push-stack ([binding]-doc binding))))
-
-(defprim *prim* "binding-doc-set" nil
-    "set binding doc"
-  (stack-args ((b [binding])
-               (d string))
-    (setf ([binding]-doc b)
-	  d)))
-
 ;;;; stack
 (defprim *prim* ".empty-stack" nil
     "create a fresh stack"
@@ -377,7 +365,7 @@
     "exponentiation"
   (stack-args ((base number)
                (power number))
-    (expt base power)))
+    (push-stack (expt base power))))
 
 (defprim *prim* "round" nil
     "correct rounding"

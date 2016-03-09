@@ -21,7 +21,7 @@
   `(progn
      (setf (op-env path)
 	   (with (op-env path)
-                 :. (binding <noop> "no op")))
+                 :. (binding <noop>)))
      ,@(loop for standard in standards
 	  nconc
 	    (mapcar #`(progn
@@ -31,8 +31,7 @@
                                               :keyword)
                                     (binding (<prim> (lambda ()
                                                        ,(fourth a1))
-                                                     ,(first a1))
-                                             ,(third a1))))
+                                                     ,(first a1)))))
                         ,@(when (second a1)
                                 `((setf (imm-env path)
                                         (with (imm-env path)
