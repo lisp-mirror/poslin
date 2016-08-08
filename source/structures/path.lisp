@@ -1,8 +1,8 @@
 (in-package #:poslin)
 
 (defstruct [path]
-  (content (<root-env> (fset:map))
-	   :type [env])
+  (content (empty-map <meta-nothing>)
+	   :type map)
   (parent nil
 	  :type (or [path] null)))
 

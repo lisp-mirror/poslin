@@ -6,29 +6,23 @@
 
 (defnprim *control-prims* "!" t
     "sets the program counter"
-  (let ((op (pop-stack)))
+  (stack-args (op)
     (let ((b (thread-back pc)))
       (unless (eq b <noop>)
         (push (thread-back pc)
               rstack))
       (setf pc (typecase op
-                 (null
-                  <noop>)
                  (symbol
                   (if (poslin-symbol? op)
-                      (let ((binding (lookup (op-env path)
-                                             op)))
-                        (if (eq binding <meta-nothing>)
-                            (unwind (format nil "Attempt to call undefined operation `~A`"
-                                            op)
-                                    :undefined-operation-error)
-                            ([binding]-value (lookup (op-env path)
-                                                     op))))
+                      (avif (lookup (op-env path)
+                                    op)
+                            ([binding]-value it)
+                            (op-fail (format nil "Attempt to call undefined operation `~A`"
+                                             op)
+                                     (list :undefined-operation-error op)))
                       (if (eq op <noop>)
                           <noop>
                           (<constant> op))))
-                 (cons
-                  (thread<-stack op))
                  (<constant>
                   op)
                  (<prim>
@@ -42,19 +36,18 @@
 
 (defprim *control-prims* "&" t
     "finds or converts to a thread"
-  (let ((op (pop-stack)))
+  (stack-args (op)
     (push-stack (typecase op
 		  (null
 		   <noop>)
 		  (symbol
 		   (if (poslin-symbol? op)
-                       (let ((binding (lookup (op-env path)
-                                              op)))
-                         (if (eq <meta-nothing> binding)
-                             (unwind (format nil "Attempt to inline undefined operation `~A`"
-                                             op)
-                                     :undefined-operation-error)
-                             ([binding]-value binding)))
+                       (avif (lookup (op-env path)
+                                     op)
+                             ([binding]-value it)
+                             (op-fail (format nil "Attempt to inline undefined operation `~A`"
+                                              op)
+                                      (list :undefined-operation-error op)))
                        (if (eq op <noop>)
                            <noop>
                            (<constant> op))))
@@ -73,8 +66,8 @@
 
 (defprim *control-prims* "#" t
     "makes a constant thread of value"
-  (push-stack (let ((val (pop-stack)))
-		(<constant> val))))
+  (stack-args (val)
+    (push-stack (<constant> val))))
 
 (defprim *control-prims* "->elem-thread" nil
     "converts an object into a primary thread"
@@ -96,15 +89,15 @@
 
 (defprim *control-prims* "r<-" nil
     "push onto return stack"
-  (push (pop-stack)
+  (push (arg-pop)
 	rstack))
 
 (defprim *control-prims* "r->" nil
     "pop from return stack"
   (if rstack
       (push-stack (pop rstack))
-      (unwind "Attempt to pop from empty return stack"
-              :rstack-bottom-error)))
+      (op-fail "Attempt to pop from empty return stack"
+               :rstack-bottom-error)))
 
 ;;;; thread
 (defparameter *thread-prims*
@@ -137,74 +130,90 @@
 	(progn
 	  (setf path p)
 	  (push-stack e))
-        (unwind "Attempt to pop path bottom"
-                :path-bottom-error))))
+        (op-fail "Attempt to pop path bottom"
+                 :path-bottom-error))))
 
 (defprim *path-prims* "path-push" nil
     "pushes onto the path"
-  (stack-args ((env [env]))
+  (stack-args ((env map))
     (setf path
           (path-push path env))))
 
 (defprim *path-prims* "path-access" nil
     "returns nth environment on path"
-  (push-stack (path-nth path (pop-stack))))
+  (push-stack (path-nth path (arg-pop))))
 
 (defprim *path-prims* "path-set" nil
     "set current environment"
-  (stack-args ((env [env]))
+  (stack-args ((env map))
     (setf path
           (path-set path env))))
 
-;;;; environment
-(defparameter *env-prims*
+;;;; sets
+(defparameter *set-prims*
   '())
 
-(defparameter *empty-env* (<root-env> (fset:empty-map)))
-(defprim *env-prims* ".empty-env" nil
-    "returns a fresh environment"
-  (push-stack *empty-env*))
+(defparameter *empty-set* (empty-set))
+(defprim *set-prims* ".empty-set" nil
+    "returns the empty set"
+  (push-stack *empty-set*))
 
-(defprim *env-prims* "env-lookup" nil
-    "environment lookup"
-  (stack-args ((e [env])
-               (k symbol))
-    (push-stack (aif (lookup e k)
-		     it
-		     <meta-nothing>))))
+(defprim *set-prims* "set-lookup" nil
+    "set lookup"
+  (stack-args ((s set)
+               v)
+    (push-stack (if (lookup s v)
+                    <true>
+                    <false>))))
 
-(defprim *env-prims* "env-set" nil
-    "environment set"
-  (stack-args ((e [env])
-               (k symbol)
-               (v [binding]))
-    (push-stack (insert e k v))))
+(defprim *set-prims* "set-insert" nil
+    "insert into set"
+  (stack-args ((s set)
+               v)
+    (push-stack (with s v))))
 
-(defprim *env-prims* "env-parent" nil
-    "parent of environment"
-  (stack-args ((env [env]))
-    (push-stack (get-parent env))))
+(defprim *set-prims* "set-drop" nil
+    "drop from set"
+  (stack-args ((s set)
+               v)
+    (push-stack (less s v))))
 
-(defprim *env-prims* "env-parent-set" nil
-    "set parent of environment"
-  (stack-args ((e [env])
-               (p [env]))
-    (push-stack (set-parent e p))))
+(defprim *set-prims* "set-arbitrary" nil
+    "return arbitrary element of set"
+  (stack-args ((s set))
+    (push-stack (fset:arb s))))
 
-(defprim *env-prims* "env-drop" nil
-    "delete from environment"
-  (stack-args ((e [env])
-               (k symbol))
-    (push-stack (drop e k))))
+;;;; dictionaries
+(defparameter *dict-prims*
+  '())
 
-(defprim *env-prims* "env-symbols" nil
-    "returns a stack containing all symbols defined in the given environment"
-  (stack-args ((e [env]))
-    (push-stack (sort (fset:convert 'list
-                                    (fset:domain ([env]-content e)))
-                      (lambda (a b)
-                        (string> (symbol-name a)
-                                 (symbol-name b)))))))
+(defparameter *empty-dict* (empty-map <meta-nothing>))
+(defprim *dict-prims* ".empty-dict" nil
+    "returns the empty dictionary"
+  (push-stack *empty-dict*))
+
+(defprim *dict-prims* "dict-lookup" nil
+    "dictionary lookup"
+  (stack-args ((m map)
+               k)
+    (push-stack (lookup m k))))
+
+(defprim *dict-prims* "dict-insert" nil
+    "insert into dictionary"
+  (stack-args ((m fset:map)
+               k v)
+    (push-stack (with m k v))))
+
+(defprim *dict-prims* "dict-drop" nil
+    "drop from dictionary"
+  (stack-args ((m map)
+               k)
+    (push-stack (less m k))))
+
+(defprim *dict-prims* "dict-domain" nil
+    "domain of dictionary"
+  (stack-args ((m map))
+    (push-stack (domain m))))
 
 ;;;; binding
 (defparameter *binding-prims*
@@ -226,18 +235,6 @@
     (setf ([binding]-value b)
 	  v)))
 
-(defprim *binding-prims* "binding-doc" nil
-    "binding doc"
-  (stack-args ((binding [binding]))
-    (push-stack ([binding]-doc binding))))
-
-(defprim *binding-prims* "binding-doc-set" nil
-    "set binding doc"
-  (stack-args ((b [binding])
-               (d string))
-    (setf ([binding]-doc b)
-	  d)))
-
 ;;;; stack
 (defparameter *stack-prims*
   '())
@@ -257,16 +254,16 @@
   (stack-args ((st (or cons null)))
     (if st
         (push-stack (first st))
-        (unwind "Attempt to pop from empty stack"
-                :stack-bottom-error))))
+        (op-fail "Attempt to pop from empty stack"
+                 :stack-bottom-error))))
 
 (defprim *stack-prims* "drop" nil
     "drop"
   (stack-args ((st (or cons null)))
     (if st
         (push-stack (rest st))
-        (unwind "Attempt to drop from empty stack"
-                :stack-bottom-error))))
+        (op-fail "Attempt to drop from empty stack"
+                 :stack-bottom-error))))
 
 (defprim *stack-prims* "swap" nil
     "swap"
@@ -275,10 +272,10 @@
         (push-stack (list* (second s)
                            (first s)
                            (cddr s)))
-        (unwind (if s
-                    "Attempt to swap on stack of size one"
-                    "Attempt to swap on empty stack")
-                :stack-botttom-error))))
+        (op-fail (if s
+                     "Attempt to swap on stack of size one"
+                     "Attempt to swap on empty stack")
+                 :stack-bottom-error))))
 
 ;;;; nothing
 (defprim *control-prims* ".nothing" nil
@@ -383,8 +380,8 @@
     "reciprocal"
   (stack-args ((x number))
     (if (zerop x)
-        (unwind "Division by zero"
-                :zero-division-error)
+        (op-fail "Division by zero"
+                 :zero-division-error)
         (push-stack (/ x)))))
 
 (defprim *arith-prims* "log" nil
@@ -397,7 +394,7 @@
     "exponentiation"
   (stack-args ((base number)
                (power number))
-    (expt base power)))
+    (push-stack (expt base power))))
 
 (defprim *arith-prims* "round" nil
     "correct rounding"
@@ -431,8 +428,8 @@
                v)
     (if (<= (length array)
             n)
-        (unwind "Tried to index array out of bounds"
-                :array-index-error)
+        (op-fail "Tried to index array out of bounds"
+                 (list :array-index-error array n v))
         (let ((array (copy-seq array)))
           (setf (aref array n)
                 v)
@@ -444,8 +441,8 @@
                (n (integer 0)))
     (if (<= (length array)
             n)
-        (unwind "Tried to index array out of bounds"
-                :array-index-error)
+        (op-fail "Tried to index array out of bounds"
+                 (list :array-index-error array n))
         (push-stack (aref array n)))))
 
 (defprim *array-prims* "array-concat" nil
@@ -483,8 +480,8 @@
                (v character))
     (if (<= (length string)
             n)
-        (unwind "Tried to index string out of bounds"
-                :string-index-error)
+        (op-fail "Tried to index string out of bounds"
+                 (list :string-index-error string n v))
         (let ((string (copy-seq string)))
           (setf (elt string n)
                 v)
@@ -496,8 +493,8 @@
                (n (integer 0)))
     (if (<= (length string)
             n)
-        (unwind "Tried to index string out of bounds"
-                :string-index-error)
+        (op-fail "Tried to index string out of bounds"
+                 (list :string-index-error string n))
         (push-stack (elt string n)))))
 
 (defprim *string-prims* "string-size" nil
@@ -570,6 +567,8 @@
                        (eq object '|:String|)
                        (eq object '|:Character|)
                        (eq object '|:Stream|)
+                       (eq object '|:Dict|)
+                       (eq object '|:Set|)
                        )
                       '|:Type|)
                      (t
@@ -588,8 +587,10 @@ Please report this bug to thomas.bartscher@weltraumschlangen.de"
                    '|:Exception|)
                   ([binding]
                    '|:Binding|)
-                  ([env]
-                   '|:Environment|)
+                  (map
+                   '|:Dict|)
+                  (set
+                   '|:Set|)
                   (array
                    (if (stringp object)
                        '|:String|
@@ -605,13 +606,6 @@ Please report this bug to thomas.bartscher@weltraumschlangen.de"
 ;;;; exceptions
 (defparameter *exception-prims*
   '())
-
-#+nil  ; replace with `throw` and `new-exception`
-(defprim *exception-prims* "unwind" nil
-    "throws an exception"
-  (stack-args ((string string)
-               data)
-    (unwind string data)))
 
 (defprim *exception-prims* "throw" nil
     "throws an exception"

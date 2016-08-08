@@ -5,7 +5,8 @@
 	)
   (:shadowing-import-from
    #:fset
-   #:compare #:lookup #:@ #:with #:less
+   #:compare #:lookup #:@ #:with #:less #:map #:set #:empty-map #:empty-set
+   #:domain
    )
   (:shadowing-import-from
    #:cl-quickcheck

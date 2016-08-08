@@ -1,11 +1,12 @@
 ;;;; poslin.asd
 
+
 (asdf:defsystem #:poslin
   :serial t
   :description "Describe poslin here"
   :author "Thomas Bartscher <thomas.bartscher@weltraumschlangen.de>"
   :license "EUPL V1.1"
-  :version "0.3.0"
+  :version "0.5.0"
   :depends-on ("split-sequence"
                "cl-ppcre"
 	       "fset"
@@ -56,13 +57,9 @@
       ((:file "nothing")
        (:file "symbol")
        (:file "binding")
-       (:file "environment"
-              :depends-on ("binding"
-                           ))
        (:file "thread")
        (:file "path"
-              :depends-on ("environment"
-                           "nothing"
+              :depends-on ("nothing"
                            ))
        (:file "bool")
        (:file "compare")

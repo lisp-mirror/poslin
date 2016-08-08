@@ -84,7 +84,9 @@
                (<handled>-handle thread))))
 
 (defmacro defnprim (standard name immediate? docstring &body body)
-  `(push '(,name ,immediate? ,docstring ,body)
+  `(push '(,name ,immediate? ,docstring
+           (block op
+             ,@body))
 	 ,standard))
 
 (defmacro defprim (standard name immediate? docstring &body body)
