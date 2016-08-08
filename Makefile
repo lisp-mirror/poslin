@@ -3,8 +3,7 @@ BINDIR ?= $(PREFIX)/bin
 LIBDIR ?= $(PREFIX)/lib/poslin
 P0 = $(BINDIR)/poslin0
 P1 = $(BINDIR)/poslin1
-P2 = $(BINDIR)/poslin2
-PF = $(BINDIR)/poslin
+P2 = $(BINDIR)/poslin
 
 all: build/poslin0
 .PHONY: all
@@ -38,9 +37,9 @@ install: all
 	cp -rv ./lib/* $(LIBDIR)/
 	cp -v ./build/poslin0 $(P0)
 	echo "#!/bin/sh\n" > $(BINDIR)/poslin1
-	echo "$(BINDIR)/poslin0 $(LIBDIR)/base.poslin "$$"*" >> $(P1)
-	echo "#!/bin/sh\n" > $(BINDIR)/poslin2
-	echo "$(BINDIR)/poslin1 $(LIBDIR)/supplemental/package.poslin \\" \
+	echo "$(P0) $(LIBDIR)/base.poslin "$$"*" >> $(P1)
+	echo "#!/bin/sh\n" > $(P2)
+	echo "$(P0) $(LIBDIR)/supplemental/package.poslin \\" \
 		>> $(P2)
 	echo "	$(LIBDIR)/supplemental/generic-op.poslin "$$"*" >> $(P2)
 	chmod +x $(P1)
