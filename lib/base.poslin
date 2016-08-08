@@ -1,0 +1,2301 @@
+0 path-access ! OP dict-lookup ! retrieve !
+curr-dict
+dict-lookup ! .nothing ! same? !
+.empty-stack !
+ 0 path-access ! OP dict-lookup ! push !
+ 0 path-access ! OP dict-lookup ! retrieve !
+ curr-dict
+ new-binding ! 0 path-access ! STACK dict-lookup ! retrieve ! top !
+ .empty-stack !
+  0 push ! path-access & push !
+ & store ! dict-insert ! push ! store & push !
+& . & ? ! !
+
+curr-dict ! OP dict-lookup ! retrieve !
+op-dict-binding
+dict-lookup ! .nothing ! same? !
+.empty-stack !
+ curr-dict ! OP dict-lookup ! push !
+ curr-dict ! OP dict-lookup ! retrieve !
+ op-dict-binding
+ new-binding ! curr-dict ! STACK dict-lookup ! retrieve ! top !
+ .empty-stack !
+  curr-dict & push ! OP push ! dict-lookup & push !
+ & store ! dict-insert ! push ! store & push !
+& . & ? ! !
+
+op-dict-binding ! retrieve !
+op-dict
+dict-lookup ! .nothing ! same? !
+.empty-stack !
+ op-dict-binding ! push ! op-dict-binding ! retrieve !
+ op-dict
+ new-binding ! curr-dict ! STACK dict-lookup ! retrieve ! top !
+ .empty-stack !
+  op-dict-binding & push ! retrieve & push !
+ & store ! dict-insert ! push ! store & push !
+& . & ? ! !
+
+op-dict !
+curr-stack-binding
+dict-lookup ! .nothing ! same? !
+.empty-stack !
+ op-dict-binding ! push ! op-dict !
+ curr-stack-binding
+ new-binding ! curr-dict ! STACK dict-lookup ! retrieve ! top !
+ .empty-stack !
+  curr-dict & push ! STACK push ! dict-lookup & push !
+ & store ! dict-insert ! push ! store & push !
+& . & ? ! !
+
+op-dict !
+curr-stack
+dict-lookup ! .nothing ! same? !
+.empty-stack !
+ op-dict-binding ! push ! op-dict !
+ curr-stack
+ new-binding ! curr-stack-binding ! retrieve ! top !
+ .empty-stack !
+  curr-stack-binding & push ! retrieve & push !
+ & store ! dict-insert ! push ! store & push !
+& . & ? ! !
+
+op-dict !
+dup-here
+dict-lookup ! .nothing ! same? !
+.empty-stack !
+ op-dict-binding ! push ! op-dict !
+ dup-here
+ new-binding ! curr-stack ! top !
+ .empty-stack !
+  curr-stack & push ! top & push !
+ & store ! dict-insert ! push ! store & push !
+& . & ? ! !
+
+op-dict !
+bind
+dict-lookup ! .nothing ! same? !
+.empty-stack !
+ op-dict-binding ! push ! op-dict !
+ bind
+ new-binding ! dup-here !
+ .empty-stack !
+  r<- & push ! new-binding & push ! dup-here & push ! r-> & push !
+  store & push !
+ & store ! dict-insert ! push ! store & push !
+& . & ? ! !
+
+op-dict !
+nothing?
+dict-lookup ! .nothing ! same? !
+.empty-stack !
+ op-dict-binding ! push ! op-dict !
+ nothing?
+ .empty-stack !
+  .nothing ! push ! same? & push !
+ & bind ! dict-insert ! push ! store & push !
+& . & ? ! !
+
+op-dict !
+dict-write
+dict-lookup ! nothing? !
+.empty-stack !
+ op-dict-binding ! push ! op-dict !
+ dict-write
+ .empty-stack !
+  bind & push ! dict-insert & push !
+ & bind ! dict-insert ! push ! store & push !
+& . & ? ! !
+
+op-dict !
+slot-insert
+dict-lookup ! nothing? !
+.empty-stack !
+ op-dict-binding ! push ! op-dict !
+ slot-insert
+ .empty-stack !
+  r<- & push ! r<- & push !
+  curr-dict & push !
+  r-> & push ! r-> & push !
+  dict-insert & push ! path-set & push !
+ & dict-write ! push ! store & push !
+& . & ? ! !
+
+op-dict !
+slot-write
+dict-lookup ! nothing? !
+.empty-stack !
+ OP push ! op-dict !
+ slot-write
+ .empty-stack !
+  bind & push ! slot-insert & push !
+ & dict-write ! bind ! push ! slot-insert & push !
+& . & ? ! !
+
+op-dict !
+'[
+dict-lookup ! nothing? !
+.empty-stack !
+ OP push ! op-dict !
+ '[
+ .empty-stack !
+  curr-dict & push !
+  STACK push ! .empty-stack ! push ! dict-write & push !
+  path-push & push !
+ & dict-write ! push ! slot-write & push !
+& . & ? ! !
+IMM
+ curr-dict ! IMM dict-lookup ! retrieve ! '[ set-insert !
+slot-write !
+
+op-dict !
+']
+dict-lookup ! nothing? !
+[ OP op-dict !
+  ']
+  [ path-pop & STACK dict-lookup & retrieve &
+  path-pop ! STACK dict-lookup ! retrieve !
+  & dict-write ! slot-write &
+path-pop ! STACK dict-lookup ! retrieve ! & . & ? ! !
+IMM
+ curr-dict ! IMM dict-lookup ! retrieve ! '] set-insert !
+slot-write !
+
+op-dict !
+drop-here
+dict-lookup ! nothing? !
+[ OP op-dict !
+  drop-here
+  [ curr-stack-binding & curr-stack &
+    drop & drop & store &
+  ] & dict-write ! slot-write &
+] & . & ? ! !
+
+op-dict !
+slot-lookup
+dict-lookup ! nothing? !
+[ OP op-dict !
+  slot-lookup
+  [ r<- & curr-dict & r-> & dict-lookup &
+  ] & dict-write ! slot-write &
+] & . & ? ! !
+
+op-dict !
+parent-pop
+dict-lookup ! nothing? !
+[ OP op-dict !
+  parent-pop
+  [ 1 path-access &
+    STACK dict-lookup & retrieve & top &
+    1 path-access &
+    STACK dict-lookup &
+    1 path-access &
+    STACK dict-lookup & retrieve & drop &
+    store &
+  ] & dict-write ! slot-write &
+] & . & ? ! !
+
+op-dict !
+'<<
+dict-lookup ! nothing? !
+[ OP op-dict !
+  '<<
+  [ '[ & r<- & #
+         parent-pop &
+         r-> & #
+    '] & '& &
+  ] & dict-write ! slot-write &
+] & . & ? ! !
+IMM
+ IMM slot-lookup ! retrieve ! '<< set-insert !
+slot-write !
+
+op-dict !
+slot-dict-insert
+dict-lookup ! nothing? !
+[ OP op-dict !
+  slot-dict-insert
+  [ [ curr-dict & <<
+      dict-lookup &
+      dup-here & retrieve &
+    ] & << <<
+    dict-insert & store &
+  ] & dict-write ! slot-write &
+] & . & ? ! !
+
+op-dict !
+slot-dict-write
+dict-lookup ! nothing? !
+[ OP slot-dict-write
+  [ bind & slot-dict-insert &
+  ] & bind ! slot-dict-insert &
+] & . & ? ! !
+
+op-dict !
+slot-dict-ensure
+dict-lookup ! nothing? !
+[ OP slot-dict-ensure
+  [ r<- &
+    dup-here & r<- & r<- &
+    slot-lookup & dup-here & retrieve &
+    r-> &
+    dict-lookup & nothing? &
+    [ dup-here & retrieve &
+      r-> & r-> &
+      dict-write & store &
+    ] & #
+    [ r-> & r-> &
+      drop-here & drop-here & drop-here &
+    ] & #
+    ? & '! &
+  ] & # slot-dict-write &
+] & . & ? ! !
+
+OP slot-dict-lookup
+[ [ slot-lookup & retrieve & ] & << dict-lookup &
+] & slot-dict-ensure !
+
+OP swap-here
+[ curr-stack-binding & curr-stack &
+  drop & swap & store &
+] & slot-dict-ensure !
+
+OP dict-get
+[ dup-here &
+  [ dup-here & <<
+    swap-here &
+  ] & <<
+  dict-lookup & dup-here & nothing? &
+  [ drop-here &
+    [ [ "undefined dict content"
+        .empty-stack !
+      ] & << push &
+    ] & << push &
+    UNDEFINED-DICT-CONTENT-ERROR push &
+    .empty-stack ! new-exception & throw &
+  ] & #
+  [ [ drop-here & drop-here & ] & <<
+    retrieve &
+  ] & #
+  ? & '! &
+] & slot-dict-ensure !
+
+OP slot-get
+[ dup-here &
+  [ 0 path-access & ] & <<
+  dict-lookup & dup-here & nothing? &
+  [ drop-here &
+    [ "undefined slot"
+      .empty-stack !
+    ] & << push &
+    UNDEFINED-SLOT-ERROR push &
+    .empty-stack ! new-exception & throw &
+  ] & #
+  [ drop-here & <<
+    retrieve &
+  ] & #
+  ? & '! &
+] & slot-dict-ensure !
+
+OP slot-dict-get
+[ curr-stack & drop & top &
+  curr-stack & drop & top &
+  slot-dict-lookup & dup-here & nothing? &
+  [ drop-here &
+    [ [ "not found via `slot-dict-get`"
+        .empty-stack !
+      ] & << push &
+    ] & << push & UNDEFINED-SLOT-CONTENT-ERROR push &
+    .empty-stack ! new-exception & throw &
+  ] & #
+  [ [ drop-here & drop-here & ] & <<
+    retrieve &
+  ] & #
+  ? & '! &
+] & slot-dict-ensure !
+
+HOOK slot-lookup ! nothing? !
+[ HOOK .empty-dict ! compilation-hook . & dict-write !
+  slot-write &
+] & . & ? ! !
+
+OP hook-lookup
+[ HOOK << slot-dict-lookup &
+] & slot-dict-ensure !
+
+OP hook-get
+[ hook-lookup & retrieve &
+] & slot-dict-ensure !
+
+OP run
+[ '! &
+] & slot-dict-ensure !
+
+OP '&+
+[ '& &
+  compilation-hook hook-get & run &
+] & slot-dict-ensure !
+IMM
+ IMM slot-get ! '&+ set-insert !
+slot-write !
+
+OP compile
+[ '&+ &
+] &+ slot-dict-ensure !
+
+OP op-write
+[ compile &
+  OP << << slot-dict-write &
+] &+ slot-dict-ensure !
+
+OP op-ensure
+[ compile &
+  OP << << slot-dict-ensure &
+] &+ slot-dict-ensure !
+
+']o?
+[ '] & op-ensure &
+] op-ensure !
+IMM
+ IMM slot-get ! ']o? set-insert !
+slot-write !
+
+slot-set-lookup
+[ slot-get & << set-lookup &
+]o?
+
+slot-set-insert
+[ [ slot-lookup & dup-here & retrieve & ] & <<
+  set-insert & store &
+]o?
+
+slot-set-lookup
+[ slot-get & << set-lookup &
+]o?
+
+']i?
+[ '] &
+  [ IMM << dup-here & ] & <<
+  op-ensure & slot-set-insert &
+]o?
+IMM ']i? slot-set-insert !
+
+']&
+[ '] & compile &
+]i?
+
+constant
+[ '# &
+]o?
+
+']#
+[ ']& & constant &
+]i?
+
+'[]
+[ .empty-stack !
+]i?
+
+'~
+[ compile & constant &
+]i?
+
+'~[
+[ '[ ~
+]i?
+
+'~]
+[ '] ~
+]i?
+
+'~]&
+[ ']& ~
+]i?
+
+'~]#
+[ ']# ~
+]i?
+
+']<<
+[ ']& & '<< &
+]i?
+
+'~]<<
+[ ']<< ~
+]i?
+
+']o*
+[ ~] op-write &
+]i?
+
+clean-stack
+[ curr-stack-binding &
+  [] store &
+]o?
+
+op-lookup
+[ OP << slot-dict-lookup &
+]o?
+
+op-get
+[ op-lookup & retrieve &
+]o?
+
+op-dict-insert
+[ OP << slot-insert &
+]o?
+
+op-dict-write
+[ OP << slot-write &
+]o?
+
+'o(
+[ curr-dict & path-push &
+  op-dict & op-dict-write &
+]i?
+
+')
+[ path-pop & drop-here &
+]i?
+
+imm-set-binding
+[ IMM slot-lookup &
+]o?
+
+imm-set
+[ imm-set-binding & retrieve &
+]o?
+
+imm-lookup
+[ imm-set & << set-lookup &
+]o?
+
+imm-set-insert
+[ IMM << & slot-insert &
+]o?
+
+imm-set-write
+[ bind & imm-set-insert &
+]o?
+
+imm-insert
+[ IMM << slot-set-insert &
+]o?
+
+']i*
+[ ~] dup-here & << op-write & imm-insert &
+]i?
+
+'i(
+[ curr-dict & path-push &
+  imm-set & imm-set-write &
+]i?
+
+']m*
+[ ~]# dup-here & <<
+  op-write & imm-insert &
+]i?
+
+']m?
+[ ~]# dup-here & <<
+  op-ensure & imm-insert &
+]i?
+
+'|
+[ ~] ~[
+]i?
+
+pop>
+[ dup-here & drop & << top &
+]o?
+
+<pop
+[ dup-here & top & << drop &
+]o?
+
+dup
+[ dup-here & top & push &
+]o?
+
+modify
+[ ~[ dup-here ~ retrieve ~
+     parent-pop & compile & store ~
+  ~]&
+]i?
+
+parent-stack-binding
+[ 1 path-access & STACK dict-lookup &
+]o?
+
+parent-stack
+[ parent-stack-binding & retrieve &
+]o?
+
+parent-top
+[ parent-stack & top &
+]o?
+
+parent-swap
+[ parent-stack-binding & swap modify
+]o?
+
+parent-drop
+[ parent-stack-binding & drop modify
+]o?
+
+']mod
+[ ~] 'modify &
+]i?
+
+'~]mod
+[ ']mod ~
+]i?
+
+parent-push
+[ [ parent-stack-binding & parent-stack & ]<<
+  push & store &
+]o?
+
+']if
+[ ~]# r<- &
+  ~[ parent-pop & compile & constant &
+     r-> &
+     ? ~ run ~
+  ~]&
+]i?
+
+']when
+[ ~]#
+  ~[ parent-pop &
+     . ~ #
+     ? ~ run ~
+  ~]&
+]i?
+
+']unless
+[ ~]#
+  ~[ . ~ #
+     parent-pop &
+     ? ~ run ~
+  ~]&
+]i?
+
+signal
+[ [] new-exception & throw &
+]o?
+
+...
+[ "Operation declared but not defined." undefined-operation-error signal &
+]m?
+
+error
+[ error signal &
+]o?
+
+'declare.
+[ ~[ parent-top & ->string &
+     "declared but not defined."
+     string-concat &
+     UNDEFINED-OPERATION-ERROR signal ~
+  ~] op-write &
+]i?
+
+'declare
+[ dup-here & 'declare. &
+]i?
+
+'call
+[ op-lookup &
+  ~[ parent-pop &
+     retrieve ~
+     run ~
+  ~]&
+]i?
+
+'dyn-call
+[ [] << push &
+  run ~ push &
+  compile &
+]i?
+
+slot-ensure
+[ r<- & dup-here & slot-lookup &
+  nothing? &
+  [ r-> & slot-write &
+  | drop-here & r-> & drop-here &
+  ]if
+]o?
+
+VAR .empty-dict ! slot-ensure !
+
+var-dict-binding
+[ VAR slot-lookup &
+]o?
+
+var-dict
+[ var-dict-binding & retrieve &
+]o?
+
+var-lookup
+[ r<- & VAR r-> &
+  slot-dict-lookup &
+]o?
+
+var-get
+[ var-lookup & retrieve &
+]o?
+
+var-dict-insert
+[ VAR << slot-insert &
+]o?
+
+var-dict-write
+[ VAR << slot-write &
+]o?
+
+var-insert
+[ VAR << << slot-dict-insert &
+]o?
+
+var-write
+[ bind & var-insert &
+]o?
+
+var-ensure
+[ VAR << << slot-dict-ensure &
+]o?
+
+'v(
+[ curr-dict & path-push &
+  VAR var-dict & slot-write &
+]i?
+
+stack-insert
+[ STACK << slot-insert &
+]o?
+
+stack-write
+[ bind & stack-insert &
+]o?
+
+dict-rewrite
+[ dict-lookup & << store &
+]o?
+
+slot-rewrite
+[ slot-lookup & << store &
+]o?
+
+slot-dict-rewrite
+[ slot-dict-lookup & << store &
+]o?
+
+op-rewrite
+[ OP << << compile & slot-dict-rewrite &
+]o?
+
+var-rewrite
+[ VAR << << slot-dict-rewrite &
+]o?
+
+stack-rewrite
+[ STACK << slot-rewrite &
+]o?
+
+']o/
+[ ~] op-rewrite &
+]i?
+
+']i/
+[ ~] dup-here & << op-rewrite &
+  imm-insert &
+]i?
+
+']m/
+[ ~]# dup-here & << op-rewrite &
+  imm-insert &
+]i?
+
+dict-overwrite
+[ r<- & dup-here & << dup-here & r<- &
+  dict-lookup & nothing? &
+  [ r-> & r-> & dict-write &
+  | r-> & r-> & dict-rewrite &
+  ]if
+]o?
+
+slot-overwrite
+[ r<- & dup-here &
+  slot-lookup & nothing? &
+  [ r-> & slot-write &
+  | r-> & slot-rewrite &
+  ]if
+]o?
+
+slot-dict-overwrite
+[ r<- & dup-here & << dup-here & r<- &
+  slot-dict-lookup & nothing? &
+  [ r-> & r-> & slot-dict-write &
+  | r-> & r-> & slot-dict-rewrite &
+  ]if
+]o?
+
+op-overwrite
+[ OP << << compile & slot-dict-overwrite &
+]o?
+
+var-overwrite
+[ VAR << << slot-dict-overwrite &
+]o?
+
+stack-overwrite
+[ STACK << slot-overwrite &
+]o?
+
+']o
+[ ~] op-overwrite &
+]i?
+
+']i
+[ ~] dup-here & << op-overwrite &
+  imm-insert &
+]i?
+
+']m
+[ ~]# dup-here & << op-overwrite &
+  imm-insert &
+]i?
+
+dict-establish
+[ r<- & dup-here & << dup-here & r<- &
+  dict-lookup & nothing? &
+  [ r-> & r-> & dict-write &
+  | r-> & r-> &
+    "attempt to establish already existing binding"
+    ALREADY-ESTABLISHED-ERROR signal &
+  ]if
+]o?
+
+slot-establish
+[ r<- & dup-here & slot-lookup & nothing? &
+  [ r-> & slot-write &
+  | "attempt to establish slot `"
+    swap-here & ->string & string-concat &
+    "` with value `" string-concat &
+    r-> & ->string & string-concat &
+    "` when it already exists" string-concat &
+    ALREADY-ESTABLISHED-ERROR signal &
+  ]if
+]o?
+
+slot-dict-establish
+[ r<- & dup-here & << dup-here & r<- &
+  slot-dict-lookup & nothing? &
+  [ r-> & r-> & slot-dict-write &
+  | "in slot `"
+    swap-here & ->string & string-concat &
+    "` attempt to establish `" string-concat &
+    r-> & ->string & string-concat &
+    "` with value `" string-concat &
+    r-> & ->string & string-concat &
+    "` when it already exists" string-concat &
+    ALREADY-ESTABLISHED-ERROR signal &
+  ]if
+]o?
+
+op-establish
+[ OP << << slot-dict-establish &
+]o?
+
+var-establish
+[ VAR << << slot-dict-establish &
+]o?
+
+stack-establish
+[ STACK << slot-establish &
+]o?
+
+']o+
+[ ~] op-establish &
+]i?
+
+']i+
+[ ~] dup-here & << op-establish &
+  imm-insert &
+]i?
+
+']m+
+[ ~]# dup-here & << op-establish &
+  imm-insert &
+]i?
+
+dict-ensure
+[ r<- & dup-here & << dup-here & r<- &
+  dict-lookup & nothing? &
+  [ r-> & r-> & dict-write &
+  | r-> & drop-here & r-> & drop-here &
+  ]if
+]o?
+
+'let
+[ var-write &
+]m?
+
+'get
+[ [] << push & var-get ~ push &
+  compile &
+]i?
+
+'set
+[ var-rewrite &
+]m?
+
+'exit
+[ r-> & drop-here &
+]m?
+
+empty-stack?
+[ .empty-stack ! same? &
+]o?
+
+=
+[ compare & .equal ! same? &
+]o?
+
+>
+[ compare & .greater ! same? &
+]o?
+
+>=
+[ compare & dup-here &
+  .greater ! same? &
+  [ .equal ! same? & ]<<
+  or &
+]o?
+
+<
+[ compare & .less ! same? &
+]o?
+
+<=
+[ compare & dup-here &
+  .less ! same? &
+  [ .equal ! same? & ]<<
+  or &
+]o?
+
+/=
+[ = & not &
+]o?
+
+negative?
+[ 0 < &
+]o?
+
+positive?
+[ 0 > &
+]o?
+
+zero?
+[ 0 = &
+]o?
+
+-
+[ negation & + &
+]o?
+
+/
+[ reciprocal & * &
+]o?
+
+';[
+op-lookup ! nothing? !
+[ ';[ 'declare &
+  .empty-dict !
+  IMM .empty-set !
+      ';[ set-insert !
+      ']; set-insert !
+  dict-write !
+  STACK [] dict-write !
+  OP .empty-dict !
+     '];
+     [ clean-stack &
+       path-pop & drop-here &
+     ]& dict-write !
+     ';[ ';[ op-lookup & dict-insert &
+  dict-write &
+  ~[ parent-pop & path-push ~
+  ~] op-rewrite &
+  ';[ imm-insert &
+]when !
+
+':[
+[ curr-dict & path-push & stack-write &
+]i?
+
+'~:[
+[ ':[ &
+]m?
+
+'def?-dict-slot
+[ dup-here & .empty-dict ! slot-ensure &
+  dup-here & << dup-here &
+  [ swap-here & -dict-insert symbol-concat & ]<<
+    ~[ parent-pop & '<< & slot-insert ~ ~]&
+  op-ensure &
+  dup-here & << dup-here &
+  [ swap-here & -dict-write symbol-concat & ]<<
+    ~[ parent-pop & '<< & slot-write ~ ~]&
+  op-ensure &
+  dup-here & << dup-here &
+  [ swap-here & -dict-binding symbol-concat & ]<<
+    ~[ parent-pop & slot-lookup ~ ~]&
+  op-ensure &
+  dup-here & << dup-here &
+  [ swap-here & -dict symbol-concat & ]<<
+    ~[ parent-pop & slot-get ~ ~]&
+  op-ensure &
+  dup-here & << dup-here &
+  [ swap-here & -lookup symbol-concat & ]<<
+    ~[ parent-pop & '<< & slot-dict-lookup ~ ~]&
+  op-ensure &
+  dup-here & << dup-here &
+  [ swap-here & -get symbol-concat & ]<<
+    ~[ parent-pop & '<< & slot-dict-get ~ ~]&
+  op-ensure &
+  dup-here & << dup-here &
+  [ swap-here & -insert symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-insert ~ ~]&
+  op-ensure &
+  dup-here & << dup-here &
+  [ swap-here & -write symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-write ~ ~]&
+  op-ensure &
+  dup-here & << dup-here &
+  [ swap-here & -rewrite symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-rewrite ~ ~]&
+  op-ensure &
+  dup-here & << dup-here &
+  [ swap-here & -overwrite symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-overwrite ~ ~]&
+  op-ensure &
+  dup-here & << dup-here &
+  [ swap-here & -ensure symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-ensure ~ ~]&
+  op-ensure &
+  [ -establish symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-establish ~ ~]&
+  op-ensure &
+]i?
+
+'def*-dict-slot
+[ dup-here & .empty-dict ! slot-write &
+  dup-here & << dup-here &
+  [ swap-here & -dict-insert symbol-concat & ]<<
+    ~[ parent-pop & '<< & slot-insert ~ ~]&
+  op-write &
+  dup-here & << dup-here &
+  [ swap-here & -dict-write symbol-concat & ]<<
+    ~[ parent-pop & '<< & slot-write ~ ~]&
+  op-write &
+  dup-here & << dup-here &
+  [ swap-here & -dict-binding symbol-concat & ]<<
+    ~[ parent-pop & slot-lookup ~ ~]&
+  op-write &
+  dup-here & << dup-here &
+  [ swap-here & -dict symbol-concat & ]<<
+    ~[ parent-pop & slot-get ~ ~]&
+  op-write &
+  dup-here & << dup-here &
+  [ swap-here & -lookup symbol-concat & ]<<
+    ~[ parent-pop & '<< & slot-dict-lookup ~ ~]&
+  op-write &
+  dup-here & << dup-here &
+  [ swap-here & -get symbol-concat & ]<<
+    ~[ parent-pop & '<< & slot-dict-get ~ ~]&
+  op-write &
+  dup-here & << dup-here &
+  [ swap-here & -insert symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-insert ~ ~]&
+  op-write &
+  dup-here & << dup-here &
+  [ swap-here & -write symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-write ~ ~]&
+  op-write &
+  dup-here & << dup-here &
+  [ swap-here & -rewrite symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-rewrite ~ ~]&
+  op-write &
+  dup-here & << dup-here &
+  [ swap-here & -overwrite symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-overwrite ~ ~]&
+  op-write &
+  dup-here & << dup-here &
+  [ swap-here & -ensure symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-ensure ~ ~]&
+  op-write &
+  [ -establish symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-establish ~ ~]&
+  op-write &
+]i?
+
+'def-dict-slot
+[ dup-here & .empty-dict ! slot-overwrite &
+  dup-here & << dup-here &
+  [ swap-here & -dict-insert symbol-concat & ]<<
+    ~[ parent-pop & '<< & slot-insert ~ ~]&
+  op-overwrite &
+  dup-here & << dup-here &
+  [ swap-here & -dict-write symbol-concat & ]<<
+    ~[ parent-pop & '<< & slot-write ~ ~]&
+  op-overwrite &
+  dup-here & << dup-here &
+  [ swap-here & -dict-binding symbol-concat & ]<<
+    ~[ parent-pop & slot-lookup ~ ~]&
+  op-overwrite &
+  dup-here & << dup-here &
+  [ swap-here & -dict symbol-concat & ]<<
+    ~[ parent-pop & slot-get ~ ~]&
+  op-overwrite &
+  dup-here & << dup-here &
+  [ swap-here & -lookup symbol-concat & ]<<
+    ~[ parent-pop & '<< & slot-dict-lookup ~ ~]&
+  op-overwrite &
+  dup-here & << dup-here &
+  [ swap-here & -get symbol-concat & ]<<
+    ~[ parent-pop & '<< & slot-dict-get ~ ~]&
+  op-overwrite &
+  dup-here & << dup-here &
+  [ swap-here & -insert symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-insert ~ ~]&
+  op-overwrite &
+  dup-here & << dup-here &
+  [ swap-here & -write symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-write ~ ~]&
+  op-overwrite &
+  dup-here & << dup-here &
+  [ swap-here & -rewrite symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-rewrite ~ ~]&
+  op-overwrite &
+  dup-here & << dup-here &
+  [ swap-here & -overwrite symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-overwrite ~ ~]&
+  op-overwrite &
+  dup-here & << dup-here &
+  [ swap-here & -ensure symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-ensure ~ ~]&
+  op-overwrite &
+  [ -establish symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-establish ~ ~]&
+  op-overwrite &
+]i?
+
+'def+-dict-slot
+[ dup-here & .empty-dict ! slot-establish &
+  dup-here & << dup-here &
+  [ swap-here & -dict-insert symbol-concat & ]<<
+    ~[ parent-pop & '<< & slot-insert ~ ~]&
+  op-establish &
+  dup-here & << dup-here &
+  [ swap-here & -dict-write symbol-concat & ]<<
+    ~[ parent-pop & '<< & slot-write ~ ~]&
+  op-establish &
+  dup-here & << dup-here &
+  [ swap-here & -dict-binding symbol-concat & ]<<
+    ~[ parent-pop & slot-lookup ~ ~]&
+  op-establish &
+  dup-here & << dup-here &
+  [ swap-here & -dict symbol-concat & ]<<
+    ~[ parent-pop & slot-get ~ ~]&
+  op-establish &
+  dup-here & << dup-here &
+  [ swap-here & -lookup symbol-concat & ]<<
+    ~[ parent-pop & '<< & slot-dict-lookup ~ ~]&
+  op-establish &
+  dup-here & << dup-here &
+  [ swap-here & -get symbol-concat & ]<<
+    ~[ parent-pop & '<< & slot-dict-get ~ ~]&
+  op-establish &
+  dup-here & << dup-here &
+  [ swap-here & -insert symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-insert ~ ~]&
+  op-establish &
+  dup-here & << dup-here &
+  [ swap-here & -write symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-write ~ ~]&
+  op-establish &
+  dup-here & << dup-here &
+  [ swap-here & -rewrite symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-rewrite ~ ~]&
+  op-establish &
+  dup-here & << dup-here &
+  [ swap-here & -overwrite symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-overwrite ~ ~]&
+  op-establish &
+  dup-here & << dup-here &
+  [ swap-here & -ensure symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-ensure ~ ~]&
+  op-establish &
+  [ -establish symbol-concat & ]<<
+    ~[ parent-pop & '<< & '<< & slot-dict-establish ~ ~]&
+  op-establish &
+]i?
+
+hook HOOK def?-dict-slot
+op   OP   def?-dict-slot
+var  VAR  def?-dict-slot
+
+1+
+[ 1 + &
+]o?
+
+1-
+[ -1 + &
+]o?
+
+'def?-delayed
+[ '~ & dup-here & <<
+  op-ensure & imm-insert &
+]i?
+
+'def*-delayed
+[ '~ & dup-here & <<
+  op-write & imm-insert &
+]i?
+
+'def/-delayed
+[ '~ & dup-here & <<
+  op-rewrite & imm-insert &
+]i?
+
+'def+-delayed
+[ '~ & dup-here & <<
+  op-establish & imm-insert &
+]i?
+
+'def-delayed
+[ '~ & dup-here & <<
+  op-overwrite & imm-insert &
+]i?
+
+'~<< '<< def?-delayed
+
+'~| '| def?-delayed
+
+'~]if ']if def?-delayed
+
+'~]when ']when def?-delayed
+
+'~]unless ']unless def?-delayed
+
+'~call 'call def?-delayed
+
+'~dyn-call 'dyn-call def?-delayed
+
+'~modify 'modify def?-delayed
+
+'~declare. 'declare. def?-delayed
+
+'~declare 'declare def?-delayed
+
+stack-elt
+[ o( %stack-elt declare
+     [ [ dup-here & empty-stack? & ]<<
+       swap-here &
+       [ drop-here & drop-here &
+         .nothing ! .false !
+       | dup-here & positive? &
+         [ drop & << 1- &
+           %stack-elt call
+         | drop-here & top &
+           .true !
+         ]if
+       ]if
+     ]o/
+     %stack-elt &
+  )
+]o?
+
+'~o( 'o( def?-delayed
+'~v( 'v( def?-delayed
+'~i( 'i( def?-delayed
+'~) ') def?-delayed
+'~]o* ']o* def?-delayed
+'~]o? ']o? def?-delayed
+'~]o/ ']o/ def?-delayed
+'~]o+ ']o+ def?-delayed
+'~]o ']o def?-delayed
+'~]i* ']i* def?-delayed
+'~]i? ']i? def?-delayed
+'~]i/ ']i/ def?-delayed
+'~]i+ ']i+ def?-delayed
+'~]i ']i def?-delayed
+'~]m* ']m* def?-delayed
+'~]m? ']m? def?-delayed
+'~]m/ ']m/ def?-delayed
+'~]m+ ']m+ def?-delayed
+'~]m ']m def?-delayed
+
+']while
+[ ~]& compile & <<
+  ~o( |while ~declare
+      ~[ parent-stack & 2 stack-elt & drop-here &
+         ~[ 2 path-access & STACK dict-get &
+            1 stack-elt & drop-here &
+            |while ~call
+         ~]when
+      ~]o/ drop-here & drop-here &
+      |while compile &
+  ~)
+]i?
+'~]while ']while def?-delayed
+
+']until
+[ ~]
+  [ [] << compile & push & not ~ push & ]<<
+  ~:[ ~]while
+]i?
+'~]until ']until def?-delayed
+
+scope SCOPE def?-dict-slot
+
+']scope*
+[ ~]& scope-write &
+]i?
+'~]scope* ']scope* def?-delayed
+
+']scope?
+[ ~]& scope-ensure &
+]i?
+'~]scope? ']scope? def?-delayed
+
+']scope/
+[ ~]& scope-rewrite &
+]i?
+'~]scope/ ']scope/ def?-delayed
+
+']scope+
+[ ~]& scope-establish &
+]i?
+'~]scope+ ']scope+ def?-delayed
+
+']scope
+[ ~]& scope-overwrite &
+]i?
+'~]scope ']scope def?-delayed
+
+'{
+[ ~[ curr-dict ~ parent-pop &
+     [ dup-here & empty-stack? &
+     | pop> & scope-get &
+       swap-here &
+     ]until drop-here &
+     path-push ~
+  ~]&
+  ~[
+]i?
+'~{ '{ def?-delayed
+
+'}&
+[ ~]&
+  [ [] << push & ]<<
+  push &
+  path-pop ~ push &
+  drop-here ~ push &
+  compile &
+]i?
+'~}& '}& def?-delayed
+
+'}#
+[ ~}& constant &
+]i?
+'~}# '}# def?-delayed
+
+'}
+[ ~}& op-overwrite &
+]i?
+'~} '} def?-delayed
+
+'}i
+[ '~}& dup-here & <<
+  op-overwrite & imm-insert &
+]i?
+'~}i '}i def?-delayed
+
+'}?
+[ ~}& op-ensure &
+]i?
+'~}? '}? def?-delayed
+
+'}i?
+[ ~}& dup-here & <<
+  op-ensure & imm-insert &
+]i?
+'~}i? '}i? def?-delayed
+
+'}/
+[ ~}& op-rewrite &
+]i?
+'~}/ '}/ def?-delayed
+
+'}i/
+[ ~}& dup-here & <<
+  op-rewrite & imm-insert &
+]i?
+'~}i/ '}i/ def?-delayed
+
+'}+
+[ ~}& op-establish &
+]i?
+'~}+ '}+ def?-delayed
+
+'}i+
+[ ~}& dup-here & <<
+  op-establish & imm-insert &
+]i?
+'~}i+ '}i+ def?-delayed
+
+'}*
+[ ~}& op-write &
+]i?
+'~}* '}* def?-delayed
+
+'}i*
+[ ~}& dup-here & <<
+  op-write & imm-insert &
+]i?
+'~}i* '}i* def?-delayed
+
+'def-std-dict-scope
+[ ~[ parent-top & parent-pop &
+     slot-get ~ dict-write ~
+  ~]scope
+]i?
+
+'def?-std-dict-scope
+[ ~[ parent-top & parent-pop &
+     slot-get ~ dict-write ~
+  ~]scope?
+]i?
+
+'def*-std-dict-scope
+[ ~[ parent-top & parent-pop &
+     slot-get ~ dict-write ~
+  ~]scope*
+]i?
+
+'def/-std-dict-scope
+[ ~[ parent-top & parent-pop &
+     slot-get ~ dict-write ~
+  ~]scope/
+]i?
+
+'def+-std-dict-scope
+[ ~[ parent-top & parent-pop &
+     slot-get ~ dict-write ~
+  ~]scope+
+]i?
+
+op OP def?-std-dict-scope
+var VAR def?-std-dict-scope
+
+imm
+[ imm-set & dict-write &
+]scope?
+
+'arg
+[ ~[ parent-pop & ~<< var-write ~
+  ~]&
+]i?
+'~arg 'arg def?-delayed
+
+']args
+[ ~] [] <<
+  [ dup-here & empty-stack? &
+  | <pop &
+    [ ~arg push & ]<<
+  ]until drop-here & compile &
+]i?
+'~]args ']args def?-delayed
+
+'~~ '~ def?-delayed
+
+'var-mod
+[ ~[ var-lookup ~
+     parent-pop & ~modify
+  ~]&
+]i?
+'~var-mod 'var-mod def?-delayed
+
+']modify
+[ ~] ~modify
+]i?
+'~]modify ']modify def?-delayed
+
+']var-mod
+[ ~] ~var-mod
+]i?
+'~]var-mod ']var-mod def?-delayed
+
+modulo [ var ]
+{ [ n div ]args
+  n get negative? &
+  [ n [ div get + & ]var-mod
+    [ n get negative? &
+    | n [ div get + & ]var-mod
+    ]while
+  | [ n get div get >= &
+    | n [ div get - & ]var-mod
+    ]while
+  ]if
+  n get
+}?
+
+even?
+[ 2 modulo & zero? &
+]o?
+
+odd?
+[ even? & not &
+]o?
+
+'repeat
+[ [] << <<
+  [ dup-here & 0 > &
+  | [ dup-here & push & << ]& <<
+    1- &
+  ]while
+  drop-here & drop-here & compile &
+]i?
+'~repeat 'repeat def?-delayed
+
+fold-stack [ var ]
+{ [ null op ]args
+  o( |fold declare
+     [ dup-here & empty-stack? &
+       [ drop-here &
+         null get
+       | pop> & |fold call <<
+         op get dyn-call
+       ]if
+     ]o/
+     |fold &
+  )
+}?
+
+append-stacks
+[ swap-here & push ~ fold-stack &
+]o?
+
+zip-stacks [ var ]
+{ [ op ]args
+  o( |zip declare
+     [ dup-here & empty-stack? &
+       [ [ dup-here & empty-stack? & ]<<
+         swap-here & ]<<
+       or &
+       [ drop-here & 2 repeat []
+       | pop> & [ pop> & << swap-here & |zip call << ]<<
+         op get dyn-call push &
+       ]if
+     ]o/
+     |zip &
+  )
+}?
+
+stack-reverse
+[ [] <<
+  [ dup-here & empty-stack? &
+  | <pop & push & <<
+  ]until drop-here &
+]o?
+
+dict-stack
+[ [] <<
+  ~[ parent-pop & push ~ ~]&
+  fold-stack &
+]o?
+
+append-stack
+[ swap-here & push ~ fold-stack &
+]o?
+
+on-stack? [ var ]
+{ item arg
+  .false !
+  [ item get = & or & ]#
+  fold-stack &
+}?
+
+stack-size
+[ 0
+  [ drop-here & 1+ & ]#
+  fold-stack &
+]o?
+
+splice
+[ curr-stack & << append-stacks &
+  stack-rewrite &
+]o?
+
+apply
+[ r<- & ~:[ r-> & run & ]~
+  splice &
+]o
+
+dict-mod
+[ dict-lookup & << ~modify run &
+]o?
+
+empty-set?
+[ .empty-set ! = &
+]o?
+
+empty-dict?
+[ .empty-dict ! = &
+]o?
+
+set-pop>
+[ dup-here & set-arbitrary &
+  dup-here & set-drop & <<
+]o?
+
+<set-pop
+[ set-pop> & swap-here &
+]o?
+
+set->stack
+[ [] <<
+  [ dup-here & empty-set? &
+  | <set-pop & push & <<
+  ]until drop-here &
+]o?
+
+map-set [ var ]
+{ op arg
+  .empty-set ! <<
+  [ dup-here & empty-set? &
+  | <set-pop &
+    [ op get dyn-call
+      set-insert &
+    ]<<
+  ]until drop-here &
+}?
+
+map-dict [ var ]
+{ [ dup-here & dict-domain & ]<<
+  [ dict domain op ]args
+  .empty-dict !
+  [ domain get empty-set? &
+  | domain
+     domain get set-pop> &
+    set <<
+    dup-here & dict get << dict-lookup &
+    op get dyn-call dict-insert &
+  ]until
+}?
+
+map-set-slot
+[ [ slot-lookup & dup-here & retrieve & ]<<
+  map-set & store &
+]o?
+
+map-dict-slot
+[ [ slot-lookup & dup-here & retrieve & ]<<
+  map-dict & store &
+]o?
+
+2*
+[ 2 * &
+]o?
+
+[2/]
+[ 2 / & floor &
+]o?
+
+dup-here2
+[ dup-here & << dup-here &
+  swap-here & <<
+]o?
+
+minimum
+[ dup-here2 & <= &
+  [ drop-here &
+  | drop-here & <<
+  ]if
+]o?
+
+maximum
+[ dup-here2 & >= &
+  [ drop-here &
+  | drop-here & <<
+  ]if
+]o?
+
+;[ for syntax:
+   [ initialization &
+   | step &
+   | continue &
+   | body &
+   ]for
+
+   for instance:
+   > 0
+     [ a 0 let
+     | a 1+ var-mod
+     | a get 10 <= &
+     | a get + &
+     ]for
+   [ 55 ]
+];
+
+']for
+[ ~]&   ;[ init step cont body& ];
+  [ [ [ ~v( ] <<
+      compile & push &
+    ]<< <<
+    swap-here &
+    [] << compile &
+  ]<< swap-here & push & <<
+  push & ~:[ ~]while push &
+  ~) # push &
+  compile &
+]i?
+
+'!(
+[ ~i( op-dict & dict-domain & imm-set-write &
+]i?
+;[ Is a delayed version sensible? I have absolutely no idea what it could ever
+   be useful for. ];
+
+']array
+[ ~]
+  dup-here & stack-size &
+  [ var ]
+  { array .nothing ! let
+    [ [ stack i ]args
+      array i get new-array & set
+      i 1- var-mod
+    | i 1- var-mod
+      stack drop var-mod
+    | stack get empty-stack? & not &
+    | array [ i get stack get top & array-set & ]var-mod
+    ]for
+    array get
+  }&
+]i?
+'~]array ']array def?-delayed
+
+bottom?
+[ curr-stack & empty-stack? &
+]o?
+
+']cond
+[ o( %cond declare
+     [ pop> & pop> & <<
+       [ var ]
+       { [ rest body cond ]args
+         rest get empty-stack? &
+         [ ~[ cond get compile &
+              body get ~:[ ~]when
+           ~]&
+         | ~[ cond get compile &
+              ~[ body get compile &
+              ~| rest get %cond call
+              ~]if
+           ~]&
+         ]if
+       }&
+     ]o
+
+     ~]
+     dup-here & empty-stack? &
+     [ "Empty conditional" empty-conditional-error signal & ]when
+     stack-reverse & %cond &
+  )
+]i?
+'~]cond ']cond def?-delayed
+
+'run-isolated
+[ ~[ curr-stack ~
+     ~:[ # parent-pop & compile &
+     ~] # top ~
+  ~]&
+]i?
+'~run-isolated 'run-isolated def?-delayed
+
+'&(
+[ ~o( op-dict & dict-domain & dup-here &
+      [ dup-here & empty-set? &
+      | set-pop> & dup-here & imm-lookup &
+        [ drop-here &
+        | dup-here & op-get & constant & op-write &
+        ]if
+      ]until drop-here &
+      imm-set-write &
+]i?
+'~&( '&( def?-delayed
+
+'&[
+[ ~&( [] stack-write &
+]i?
+'~&[ '&[ def?-delayed
+
+'&|
+[ ~] ~&[
+]i?
+'~&| '&| def?-delayed
+
+to-bottom [ var ]
+{ el arg
+  o( %to-bottom declare
+     [ bottom? &
+       [ el get
+       | %to-bottom call <<
+       ]if
+     ]o
+     %to-bottom &
+  )
+}?
+
+top-or-self
+[ dup-here & type & :STACK same? &
+   [ top & ]when
+]o?
+
+rebind
+[ retrieve & bind &
+]o?
+
+
+;[ PRINTING ];
+
+print [ var ]
+{ dup-here & string-size & l arg
+  [ i 0 let
+  | i 1+ var-mod
+  | i get l get < &
+  | dup-here & i get string-lookup &
+    .stdout ! << write-char &
+  ]for
+  drop-here &
+}?
+
+']string
+[ ~] stack-reverse & [ "" ] <<
+  [ dup-here & empty-stack? &
+  | <pop &
+    [ dup-here & type & "" type ! same? &
+      [ push & string-concat ~ push &
+      | dup-here & type & [ 1 2 ]& type ! same? &
+        [ dup-here & type & . & type ! same? & ]<<
+        or &
+        [ push & ->string ~ push & string-concat ~ push &
+        | dup-here & type & <a> type ! same? &
+          [ [ " " 0 ]<< string-set & push &
+            string-concat ~ push &
+          | ->string & push & string-concat ~ push &
+          ]if
+        ]if
+      ]if
+    ]<<
+  ]until drop-here & compile &
+]i?
+'~]string ']string def?-delayed
+
+']message
+[ ~]string [] << push & print ~ push &
+  compile &
+]i?
+'~]message ']message def?-delayed
+
+
+;[ SET AND DICT "LITERALS" ];
+stack->set
+[ .empty-set ! <<
+  [ dup-here & empty-stack? &
+  | <pop & set-insert & <<
+  ]until drop-here &
+]o?
+
+']set
+[ ~] stack->set &
+]i?
+'~]set ']set def?-delayed
+
+stack->dict
+[ .empty-dict ! <<
+  [ dup-here & empty-stack? &
+  | <pop &
+    [ swap & <pop & top & dict-insert & ]<<
+  ]until drop-here &
+]o?
+
+']dict
+[ ~] stack->dict &
+]i?
+'~]dict ']dict def?-delayed
+
+
+;[ FEATURES ];
+
+features-binding
+[ FEATURES slot-lookup &
+]o?
+
+features
+[ features-binding & retrieve &
+]o?
+
+register-feature
+[ [ features-binding & features & ]<<
+  set-insert & store &
+]o?
+
+check-feature
+[ features & << set-lookup &
+]o?
+
+'f(
+[ check-feature &
+  [ ~o( imm-set & ')f set-insert & imm-set-write &
+        ')f
+        ~[ ~) #
+        ~]i*
+  | ~o( [] stack-write &
+        [ ')f ]set imm-set-write &
+        ')f
+        ~[ ~) #
+        ~]i*
+  ]if
+]i?
+
+'-f(
+[ check-feature &
+  [ ~o( [] stack-write &
+        [ ')f ]set imm-set-write &
+        ')f
+        ~[ ~) #
+        ~]i*
+  | ~o( imm-set & ')f set-insert & imm-set-write &
+        ')f
+        ~[ ~) #
+        ~]i*
+  ]if
+]i?
+
+
+;[ TYPES ];
+
+:Nothing [ .nothing ! type ! ]i?
+:Symbol [ op type ! ]i?
+:Boolean [ .true ! type ! ]i?
+:Comparison [ .equal ! type ! ]i?
+:Type [ :Nothing type ! ]i?
+:ConstantThread [ 1 # type ! ]i?
+:ElementaryThread [ + & type ! ]i?
+:Thread [ [ 1 2 ]& type ! ]i?
+:HandledThread [ + & + & handle ! type ! ]i?
+:Precise [ 0 type ! ]i?
+:Imprecise [ 0.0 type ! ]i?
+:EmptyStack [ [] type ! ]i?
+:Stack [ [ 1 ] type ! ]i?
+:Binding [ new-binding ! type ! ]i?
+:Dict [ .empty-dict ! type ! ]i?
+:Set [ .empty-set ! type ! ]i?
+:Array [ 1 new-array ! type ! ]i?
+:String [ "" type ! ]i?
+:Character [ <a> type ! ]i?
+:Exception [ 0 reciprocal & type & handle ! ! ]i?
+
+
+;[ CLASSES (this is not OOP but rather an extendable mechanism for defining
+   types) ];
+
+class CLASS def?-dict-slot
+
+class?
+[ dup-here & class-lookup & dup-here & nothing? &
+  [ drop-here & type & << same? &
+  | drop-here & << retrieve & run &
+  ]if
+]o?
+
+']class
+[ ~]& class-overwrite &
+]i?
+'~]class ']class def?-delayed
+
+']class*
+[ ~]& class-write &
+]i?
+'~]class* ']class* def?-delayed
+
+']class/
+[ ~]& class-rewrite &
+]i?
+'~]class/ ']class/ def?-delayed
+
+']class+
+[ ~]& class-establish &
+]i?
+'~]class+ ']class+ def?-delayed
+
+']class?
+[ ~]& class-ensure &
+]i?
+'~]class? ']class? def?-delayed
+
+
+:Any
+[ drop-here & .true !
+]class?
+
+
+;[ STRUCTS ];
+
+STRUCT .empty-set ! slot-write !
+
+:Struct
+[ dup-here & type & :Array same? &
+  [ dup-here & array-size & positive? &
+    [ 0 array-lookup &
+      [ STRUCT slot-lookup ! retrieve & ]<<
+      set-lookup & nothing? &
+      [ .false !
+      | .true !
+      ]if
+    | drop-here & .false !
+    ]if
+  | drop-here & .false !
+  ]if
+]class?
+
+']struct
+[ ~]
+  [ var ]
+  { stack-reverse &
+    [ struct-name slots ]args
+    type unique-symbol & let
+    slots-num slots get stack-size & let
+
+    STRUCT slot-lookup !
+    STRUCT slot-lookup ! retrieve & type get set-insert &
+    store &
+
+    new- struct-name get symbol-concat &
+    ~[ slots-num get 1+ & new-array &
+       0 type get array-set &
+    ~]o
+
+    [ slots-local slots get let
+      i 1 let
+    | slots-local drop var-mod
+      i 1+ var-mod
+    | slots-local get empty-stack? & not &
+    | struct-name get -> symbol-concat & slots-local get top & symbol-concat &
+      ~[ dup-here ~ 0 array-lookup ~ type get same? ~
+         ~[ i get array-lookup ~
+         ~| dup-here ~ [] << # push ~ TYPE-ERROR push ~
+            ~[ ~[ "Expected a `" struct-name get
+                  "` in `" struct-name get "->" slots-local get top &
+                  "` but got `"
+               ~]string swap-here ~
+               ->string ~ string-concat ~ "` instead." string-concat ~
+            ~]<< signal ~
+         ~]if
+      ~]o
+
+      struct-name get <- symbol-concat & slots-local get top & symbol-concat &
+      ~[ r<- ~ dup-here ~ 0 array-lookup ~ type get same? ~
+         ~[ i get r-> ~ array-set ~
+         ~| dup-here ~ [] r-> ~ push ~ swap-here ~ push ~
+            TYPE-ERROR push ~
+            ~[ ~[ "Expected a `" struct-name get
+                  "` in `" struct-name get "->" slots-local get top &
+                  "` but got `"
+               ~]string swap-here ~
+               ->string ~ string-concat ~ "` instead." string-concat ~
+            ~]<< signal ~
+         ~]if
+      ~]o
+    ]for
+
+    '] struct-name get symbol-concat &
+    ~[ ~] # dup-here ~ stack-size ~
+       slots get stack-size ~ = ~
+       ~[ ~[ slots get stack-size & 1+ & new-array &
+             0 type get array-set &
+          ~]<<
+          [ stack-reverse & slots arg
+            i 1 let
+          | slots drop var-mod
+            i 1+ var-mod
+          | slots get empty-stack? & not &
+          | i get slots get top & array-set &
+          ]for #
+       ~| "Wrong number of arguments for struct type `"
+          struct-name get ->string & string-concat &
+          "`." string-concat &
+          STRUCT-ARITY-ERROR signal ~
+       ~]if
+    ~]i
+
+    : struct-name get symbol-concat &
+    ~[ dup-here ~ :Array class? ~
+       ~[ dup-here ~ array-size ~ positive? ~
+          ~[ 0 array-lookup ~ type get same? ~
+          ~| drop-here ~ .false !
+          ~]if
+       ~| drop-here ~ .false !
+       ~]if
+    ~]class
+  }&
+]i?
+'~]struct ']struct def?-delayed
+
+curr-dict ! STRUCT dict-drop ! path-set !
+
+
+;[ EXCEPTIONS ];
+
+exception-type
+[ exception-data & top-or-self &
+]o?
+
+exception-type?
+[ exception-type & << same? &
+]o?
+
+']catch
+[ ~] compile & <<
+  o( %rec declare
+     [ dup-here & empty-stack? &
+       [ pop> & [ dup-here & empty-stack? & ]<<
+         swap-here &
+         [ "Unbalanced catch" UNBALANCED-CATCH-ERROR signal &
+         | [ pop> & %rec call <<
+             ~[ exception get # parent-pop & top &
+                exception-type? ~
+             ~] push &
+           ]<<
+           push &
+         ]if
+       ]unless
+     ]o
+     ~[ ~v( # [ exception ]args #
+              parent-pop & %rec &
+              ~:[ [ .true !
+                  | exception get throw &
+                  ]
+              ~]cond
+        ~) #
+     ~]&
+  ) handle &
+]i?
+'~]catch ']catch def?-delayed
+
+
+;[ SETS AND DICTS ];
+
+set-union
+[ [ dup-here & empty-set? &
+  | <set-pop & set-insert & <<
+  ]until drop-here &
+]o?
+
+set-intersection
+[ .empty-set ! << <<
+  [ dup-here & empty-set? &
+  | <set-pop &
+    [ dup-here2 & set-lookup &
+      [ swap-here & set-insert & <<
+      | drop-here &
+      ]if
+    ]<<
+  ]until drop-here & drop-here &
+]o?
+
+set-difference
+[ [ dup-here & empty-set? &
+  | <set-pop & set-drop & <<
+  ]until drop-here &
+]o?
+
+set-difference2
+[ dup-here2 &
+  set-difference & << <<
+  swap-here & set-difference &
+  set-union &
+]o?
+
+dict-pop>
+[ dup-here & dict-domain & set-arbitrary &
+  dup-here2 & dup-here &
+  [ dict-lookup & dict-drop & << ]<<
+  swap-here &
+]o?
+
+<dict-pop
+[ dict-pop> & swap-here & << swap-here &
+]o?
+
+dict-union
+[ [ dup-here & empty-dict? &
+  | <dict-pop & dict-insert & <<
+  ]until drop-here &
+]o?
+
+dict-difference
+[ dict-domain &
+  [ dup-here & empty-set? &
+  | <set-pop & dict-drop & <<
+  ]until drop-here &
+]o?
+
+dict-difference2
+[ dup-here2 &
+  dict-difference & << <<
+  swap-here & dict-difference &
+  dict-union &
+]o?
+
+dict-intersection
+[ dup-here2 &
+  dict-union & << <<
+  dict-difference2 &
+  dict-difference &
+]o?
+
+union
+[ dup-here & :Set class? &
+  [ [ dup-here & :Set class? & ]<<
+    swap-here &
+    [ set-union &
+    | TYPE-ERROR error &
+    ]if
+  | dup-here & :Dict class? &
+    [ [ dup-here & :Dict class? & ]<<
+      swap-here &
+      [ dict-union &
+      | TYPE-ERROR error &
+      ]if
+    | TYPE-ERROR error &
+    ]if
+  ]if
+]o?
+
+dict-restrict [ var ]
+{ [ d s ]args
+  .empty-dict !
+  [ s get empty-set? &
+  | s get set-pop> & [ s << let ]<< dup-here &
+    d get << dict-lookup &
+    dict-insert &
+  ]until
+}?
+
+restrict
+[ dup-here & << swap-here &
+  dup-here & :Set class? &
+  [ drop-here & set-intersection &
+  | :Dict class? &
+    [ dict-restrict &
+    | TYPE-ERROR error &
+    ]if
+  ]if
+]o?
+
+dict-merge [ var ]
+{ [ d1 d2 ]args
+  .empty-dict !
+  d1 get dict-domain &
+  [ dup-here & empty-set? &
+  | <set-pop &
+    [ d2 get << dup-here & dict-get & <<
+      d1 get << dup-here & [ dict-get & union & ]<<
+      swap-here & dict-write &
+    ]<<
+  ]until drop-here &
+}?
+
+restrict+
+[ dup-here2 & nothing? & nothing? & << or &
+  [ drop-here & :Dict class? &
+    [ .empty-dict !
+    | .empty-set !
+    ]if
+  | restrict &
+  ]if
+]o?
+
+sub-restrict [ var ]
+{ [ d r ]args
+  .empty-dict !
+  [ r get empty-dict? &
+  | r get <dict-pop &
+    r << let
+    [ dup-here & d get <<
+      dict-lookup & retrieve &
+    ]<<
+    retrieve & restrict+ & dict-write &
+  ]until
+}?
+
+dict-rebind
+[ .empty-dict ! <<
+  [ dup-here & empty-dict? &
+  | <dict-pop &
+    [ rebind & dict-insert & ]<<
+  ]until drop-here &
+]o?
+
+dict-minus [ var ]
+{ [ d1 d2 ]args
+  [ d2 get empty-dict? &
+  | d1 get dup-here &
+    d2 get <dict-pop & d2 << set
+    [ dup-here & dict-lookup & << swap-here & ]<<
+    = &
+    [ dict-drop & d1 << set
+    | drop-here & drop-here &
+    ]if
+  ]until
+  d1 get
+}?
+
+dict-sub-minus [ var ]
+{ [ d1 d2 ]args
+  [ d2 get empty-dict? &
+  | d2 get <dict-pop &
+    d2 << set
+    retrieve &
+    [ var ]
+    { [ name slot2 ]args
+      slot1 d1 get name get dict-get & let
+      d1 d1 get & name get
+      [ [ slot1 get :Dict class? &
+          slot2 get :Dict class? & and &
+        | slot1 get slot2 get dict-minus &
+        ]
+        [ slot1 get :Dict class? &
+          slot2 get :Dict class? & and &
+        | slot1 get slot2 get set-difference &
+        ]
+        [ .true !
+        | slot1 get
+        ]
+      ]cond
+      dict-write & set &
+    }&
+  ]until
+  d1 get
+}?
+
+
+;[ FINALLY ];
+
+STD-LIB register-feature !
+[ STD-LIB 0.2.1 ] register-feature !
+
+;[ standard library version 0.2.1 ];

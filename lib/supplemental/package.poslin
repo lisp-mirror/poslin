@@ -1,0 +1,309 @@
+pkg PKG def?-dict-slot
+CPKG .nothing ! slot-write !
+
+package
+[ content
+  uses
+  exports
+]struct
+
+package-dict-slots
+ [ OP VAR HOOK CLASS SCOPE ]set
+var-write !
+package-set-slots
+ [ IMM FEATURES ]set
+var-write !
+
+'register-pkg-dict-slot
+[ [ package-dict-slots var-lookup ! dup-here !
+    retrieve &
+  ]<< set-insert & store &
+]i?
+'~register-pkg-dict-slot 'register-pkg-dict-slot def?-delayed
+
+'register-pkg-set-slot
+[ [ package-set-slots var-lookup ! dup-here !
+    retrieve &
+  ]<< set-insert & store &
+]i?
+'~register-pkg-set-slot 'register-pkg-set-slot def?-delayed
+
+package-slots
+[ package-dict-slots get package-set-slots get
+  set-union &
+]o?
+
+empty-package
+[ new-package !
+  .empty-dict !
+   package-dict-slots var-lookup ! retrieve &
+   [ dup-here & empty-set? & not &
+   | <set-pop &
+     [ .empty-dict ! dict-write & ]<<
+   ]while drop-here &
+   package-set-slots var-lookup ! retrieve &
+   [ dup-here & empty-set? & not &
+   | <set-pop &
+     [ .empty-set ! dict-write & ]<<
+   ]while drop-here &
+  package<-content &
+  [] package<-uses &
+  .empty-dict !
+   package-dict-slots var-lookup ! retrieve &
+   [ dup-here & empty-set? & not &
+   | <set-pop &
+     [ .empty-set ! dict-write & ]<<
+   ]while drop-here &
+   package-set-slots var-lookup ! retrieve &
+   [ dup-here & empty-set? & not &
+   | <set-pop &
+     [ .empty-set ! dict-write & ]<<
+   ]while drop-here &
+  package<-exports &
+]o?
+
+curr-pkg-binding
+[ CPKG slot-get &
+  dup-here & nothing? &
+  [ drop-here & empty-package & bind &
+  | pkg-lookup &
+  ]if
+]o?
+
+curr-pkg
+[ CPKG slot-get &
+  dup-here & nothing? &
+  [ drop-here & empty-package &
+  | pkg-get &
+  ]if
+]o?
+
+package-from-curr-dict
+[ empty-package &
+   curr-dict &
+   package-slots & dict-restrict &
+  package<-content &
+]o?
+
+pkg-exports
+[ pkg-get & package->exports &
+]o?
+
+dict-sub-merge [ var ]
+{ [ d1 d2 ]args
+  .empty-dict !
+  d1 get dict-domain & d2 get dict-domain & set-union &
+  [ dup-here & empty-set? &
+  | <set-pop &
+    [ d1 get << dup-here & dict-lookup & <<
+      d2 get << dup-here & dict-lookup & <<
+      [ var ]
+      { [ s1 s2 ]args <<
+        s2 get nothing? &
+        [ s1 get retrieve & dict-write &
+        | [ [ s1 get retrieve & :Dict class? &
+              s2 get retrieve & :Dict class? & and &
+            | s1 get retrieve & s2 get retrieve &
+              dict-union & dict-write &
+            ]
+            [ s1 get retrieve & :Set class? &
+              s2 get retrieve & :Set class? & and &
+            | s1 get retrieve & s2 get retrieve &
+              set-union & dict-write &
+            ]
+            [ .true !
+            | s2 get retrieve & dict-write &
+            ]
+          ]cond
+        ]if
+      }&
+    ]<<
+  ]until drop-here &
+}?
+
+package->dict
+[ o( p->d declare [ var ]
+     { dup-here & package->uses &
+       [ package uses ]args
+       package get package->content &
+       [ uses get empty-stack? &
+       | uses get <pop &
+         uses << set
+         pkg-get & dup-here &
+         package->exports &
+         p->d call << sub-restrict &
+         dict-sub-merge &
+       ]until
+     }/ p->d &
+  )
+]o?
+
+
+ ;[
+ foo
+ [ [ OP foo bar baz ]
+   [ IMM bar ]
+   [ CLASS quux ]
+ | std
+ ]pkg
+
+ foo
+ p(
+  math import
+  ...
+ )p
+
+ foo @
+ ];
+
+'@  ;[ merge specified package into the current dict ];
+[ [ empty-package & []
+  ]<< push & package<-uses &
+  curr-dict & package<-content &
+  package->dict & path-set &
+  drop-here & drop-here &
+]i?
+
+'p(
+[ CPKG << dup-here &
+  pkg-get & package->dict &
+  curr-dict &
+  curr-dict & dict-domain & package-slots & set-difference &
+  dict-restrict & dict-union &
+  path-push &
+  slot-write &
+]i?
+'~p( 'p( def?-delayed
+
+import-dict [ var ]
+{ package->uses &
+  [ uses ]args
+  .empty-dict !
+  [ uses get empty-stack? &
+  | uses get <pop & uses << set
+    pkg-get & dup-here &
+    package->exports &
+    package->dict & << sub-restrict &
+    dict-union &
+  ]until
+}?
+
+')p
+[ CPKG slot-get &
+  curr-pkg &
+  curr-dict & package-slots & dict-restrict &
+  curr-pkg & import-dict &
+  dict-sub-minus & package<-content &
+  pkg-rewrite &
+  ~)
+]i?
+'~)p ')p def?-delayed
+
+'import
+[ [ curr-pkg-binding & curr-pkg &
+    dup-here & package->uses &
+  ]<<
+  push & package<-uses & store &
+  CPKG slot-get & ')p & 'p( &
+]i?
+
+']pkg
+[ ~]
+  [ var ]
+  { [ exports uses ]args
+    empty-package &
+    uses get package<-uses &
+    .empty-dict ! exports get
+    [ dup-here & empty-stack? &
+    | <pop &
+      [ stack-reverse & <pop &
+        stack->set & dict-write &
+      ]<<
+    ]until drop-here & package<-exports &
+    pkg-overwrite &
+  }&
+]i?
+
+']pkg*
+[ ~]
+  [ var ]
+  { [ exports uses ]args
+    empty-package &
+    uses get package<-uses &
+    .empty-dict ! exports get
+    [ dup-here & empty-stack? &
+    | <pop &
+      [ stack-reverse & <pop &
+        stack->set & dict-write &
+      ]<<
+    ]until drop-here & package<-exports &
+    pkg-write &
+  }&
+]i?
+
+']pkg/
+[ ~]
+  [ var ]
+  { [ exports uses ]args
+    empty-package &
+    uses get package<-uses &
+    .empty-dict ! exports get
+    [ dup-here & empty-stack? &
+    | <pop &
+      [ stack-reverse & <pop &
+        stack->set & dict-write &
+      ]<<
+    ]until drop-here & package<-exports &
+    pkg-rewrite &
+  }&
+]i?
+
+']pkg?
+[ ~]
+  [ var ]
+  { [ exports uses ]args
+    empty-package &
+    uses get package<-uses &
+    .empty-dict ! exports get
+    [ dup-here & empty-stack? &
+    | <pop &
+      [ stack-reverse & <pop &
+        stack->set & dict-write &
+      ]<<
+    ]until drop-here & package<-exports &
+    pkg-ensure &
+  }&
+]i?
+
+']pkg+
+[ ~]
+  [ var ]
+  { [ exports uses ]args
+    empty-package &
+    uses get package<-uses &
+    .empty-dict ! exports get
+    [ dup-here & empty-stack? &
+    | <pop &
+      [ stack-reverse & <pop &
+        stack->set & dict-write &
+      ]<<
+    ]until drop-here & package<-exports &
+    pkg-establish &
+  }&
+]i?
+
+
+std
+ package-from-curr-dict !
+ curr-dict ! dict-rebind !
+ package-slots ! dict-restrict !
+ [ retrieve &
+   dup-here & :Dict class? &
+   [ dict-domain &
+   ]when bind &
+ ]& map-dict ! package<-exports !
+pkg-write !
+
+
+PACKAGES register-feature !
+[ PACKAGES 0.1.0 ] register-feature !

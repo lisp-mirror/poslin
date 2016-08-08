@@ -1,0 +1,176 @@
+generic-op
+[ [ OP
+    ']generic
+    ']generic*
+    ']generic?
+    ']generic+
+    ']generic/
+    ']method
+    arity
+  ]
+  [ IMM
+    ']generic
+    ']generic*
+    ']generic?
+    ']generic+
+    ']generic/
+    ']method
+  ]
+| std
+]pkg
+
+
+ ;[
+
+    lookup
+    [ collection key ]generic
+
+    lookup
+    [ :Set :Any
+    | set-lookup &
+    ]method
+
+ ];
+
+
+generic-op
+p( g-op G-OP def?-dict-slot
+   G-OP register-pkg-dict-slot
+
+   gen-op
+   [ args methods ]struct
+   '~]gen-op ']gen-op def?-delayed
+
+   check-applicability
+   [ curr-stack &
+     ~:[ .true ! <<
+         [ dup-here & empty-stack? & not &
+           [ dup-here & << swap-here & ]<<
+         and &
+         | <pop &
+           [ swap-here &
+             [ class? &
+             ]<<
+           and &
+           ]<<
+         ]while drop-here &
+     ~] top & drop-here & <<
+   ]o?
+
+   insert-method [ var ]
+   { [ gen-op args body ]args
+     gen-op get
+     gen-op get gen-op->methods &
+     ~[ body get args get ~] push &
+     gen-op<-methods &
+   }?
+
+   method-write [ var ]
+   { [ name args body ]args
+     name get
+     name get g-op-get &
+     dup-here & gen-op->args &
+     args get stack-size & = &
+     [ args get body get insert-method &
+       g-op-rewrite &
+     | drop-here & drop-here &
+       [ "Wrong number of arguments in `"
+         args get
+         "` for generic operation `"
+         name get
+         "`. Expected exactly "
+         [ name get g-op-get & gen-op->args & ]&
+         "."
+       ]string
+       ~[ name get args get ARGLIST-MISMATCH-ERROR ~]
+       signal &
+     ]if
+   }?
+
+   arity
+   [ dup-here &
+     g-op-lookup & nothing? &
+     [ "No generic operation called `" << dup-here &
+       [ ->string & string-concat & `" found" string-concat &
+         []
+       ]<<
+       push & UNDEFINED-GENERIC-OPERATION push &
+       signal &
+     | g-op-get & gen-op->args &
+     ]if
+   ]o?
+
+   call-method
+   [ o( _recurse declare
+        [ dup-here & empty-stack? &
+          [ "Unknown method" UNKNOWN-METHOD-ERROR signal &
+          | <pop &
+            [ <pop & check-applicability & <<
+              swap-here &
+            ]<<
+            swap-here &
+            [ drop-here &
+              top & run &
+            | drop-here & <<
+              _recurse call
+            ]if
+          ]if
+        ]o/
+        gen-op->methods & _recurse &
+     )
+   ]o?
+
+   ']generic
+   [ ~] stack-size & dup-here & <<
+     [] << push &
+     [] push &
+     ~:[ ~]gen-op g-op-overwrite &
+     ~[ parent-top & g-op-lookup &
+        retrieve ~ call-method ~
+     ~] op-overwrite &
+   ]i?
+
+   ']generic*
+   [ ~] stack-size &
+     [] << push &
+     [] push &
+     ~:[ ~]gen-op g-op-write &
+     ~[ parent-top & g-op-lookup &
+        retrieve ~ call-method ~
+     ~] op-write &
+   ]i?
+
+   ']generic?
+   [ ~] stack-size &
+     [] << push &
+     [] push &
+     ~:[ ~]gen-op g-op-ensure &
+     ~[ parent-top & g-op-lookup &
+        retrieve ~ call-method ~
+     ~] op-ensure &
+   ]i?
+
+   ']generic/
+   [ ~] stack-size &
+     [] << push &
+     [] push &
+     ~:[ ~]gen-op g-op-rewrite &
+     ~[ parent-top & g-op-lookup &
+        retrieve ~ call-method ~
+     ~] op-rewrite &
+   ]i?
+
+   ']generic+
+   [ ~] stack-size &
+     [] << push &
+     [] push &
+     ~:[ ~]gen-op g-op-establish &
+     ~[ parent-top & g-op-lookup &
+        retrieve ~ call-method ~
+     ~] op-establish &
+   ]i?
+
+   ']method
+   [ ~]& method-write &
+   ]i?
+)p
