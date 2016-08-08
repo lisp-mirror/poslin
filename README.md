@@ -5,6 +5,11 @@
 
 You need [sbcl](http://sbcl.org) and [quicklisp](https://www.quicklisp.org).
 
+To install quicklisp, in the directory where you saved `quicklisp.lisp` in a
+terminal execute `sbcl --load quicklisp.lisp`. In the resulting sbcl process
+execute `(quicklisp-quickstart:install)`, followed by
+`(ql:add-to-init-file)`. Afterwards, leave sbcl with `(exit)`.
+
 ## Compiling
 
 Simply run `make` in the toplevel of the repository.
