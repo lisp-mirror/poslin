@@ -84,7 +84,11 @@ version ~A~%"
               (4 "An interactive compiler.")
               )))
   (apply #'repl
-         (new-poslin *prim*)
+         (new-poslin *control-prims* *thread-prims* *path-prims* *env-prims*
+                     *binding-prims* *stack-prims* *boolean-prims*
+                     *comparison-prims* *arith-prims* *array-prims*
+                     *string-prims* *char-prims* *type-prims* *exception-prims*
+                     *symbol-prims* *stream-prims*)
          #+sbcl (rest sb-ext:*posix-argv*)
          #+lispworks system:*line-arguments*
          #+cmu extensions:*command-line-words*

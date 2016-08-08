@@ -41,22 +41,25 @@
 		   :. (binding <false>)))
      ,@(loop for standard in standards
 	  append
-	    (mapcar #`(setf (op-env path)
-                            (insert (op-env path)
-                                    ',(intern (first a1)
-                                              :keyword)
-                                    (binding (<prim> (lambda ()
-                                                       ,@(fourth a1))
-                                                     ,(first a1))
-                                             ,(third a1)))
-                            (imm-env path)
-                            (insert (imm-env path)
-                                    ',(intern (first a1)
-                                              :keyword)
-                                    (binding ,(if (second a1)
-                                                  '<true>
-                                                  '<false>))))
-                    (symbol-value standard)))))
+	    (mapcar #`(progn
+                        ,(format t "~&  ~A~%"
+                                 (first a1))
+                        (setf (op-env path)
+                              (insert (op-env path)
+                                      ',(intern (first a1)
+                                                :keyword)
+                                      (binding (<prim> (lambda ()
+                                                         ,@(fourth a1))
+                                                       ,(first a1))
+                                               ,(third a1)))
+                              (imm-env path)
+                              (insert (imm-env path)
+                                      ',(intern (first a1)
+                                                :keyword)
+                                      (binding ,(if (second a1)
+                                                    '<true>
+                                                    '<false>)))))
+                    (reverse (symbol-value standard))))))
 
 (defun immediate? (v path)
   (if (symbolp v)
