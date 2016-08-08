@@ -1,4 +1,0 @@
-2015-05-20
-    Operator `>t<` for constructing threads created.
-    Welcome message moved to REPL-DYN
-        Continuing after an error now doesn't show the welcome message
