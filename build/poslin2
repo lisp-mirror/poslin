@@ -1,0 +1,8 @@
+#!/bin/sh
+
+POSLIN_DIR=$(dirname "$(cd "$(dirname "$0")" && pwd -P)/$(basename "$0")")
+SUPP_DIR=$POSLIN_DIR/../lib/supplemental
+$POSLIN_DIR/poslin1 \
+    $SUPP_DIR/package.poslin \
+    $SUPP_DIR/generic-op.poslin \
+    $*
