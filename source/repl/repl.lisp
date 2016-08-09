@@ -18,7 +18,9 @@
                         t)
           (loop do
                (progn
-                 (format t "~%> ")
+                 (if stepping
+                     (format t "~%* ")
+                     (format t "~%> "))
                  (finish-output)
                  (dolist (v (poslin-read-block *standard-input*
                                                *parse-order*))
