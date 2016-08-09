@@ -2,7 +2,7 @@
 
 (asdf:defsystem #:poslin
   :serial t
-  :description "Describe poslin here"
+  :description "Poslin is a concatenative programming language."
   :author "Thomas Bartscher <thomas.bartscher@weltraumschlangen.de>"
   :license "OSL-3.0"
   :version "0.5.0"

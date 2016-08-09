@@ -81,9 +81,21 @@
   (format stream "~A"
 	  (symbol-name object)))
 
+(defparameter *binding-numbers*
+  (empty-map))
+(defparameter *binding-counter*
+  0)
 (defmethod poslin-print ((object [binding])
 			 stream)
-  (format stream "b<..>"))
+  (aif (@ *binding-numbers* object)
+       (format stream "b<~A>"
+               it)
+       (progn
+         (setf *binding-numbers*
+               (with *binding-numbers*
+                     object (incf *binding-counter*)))
+         (format stream "b<~A>"
+                 *binding-counter*))))
 
 (defmethod poslin-print ((object (eql <noop>))
 			 stream)
@@ -168,7 +180,8 @@
        (concatenate 'string
                     (poslin-print ([path]-content [path])
                                   nil)
-                    " " (show-path it))
+                    (string #\Newline)
+                    (show-path it))
        (poslin-print ([path]-content [path])
                      nil))
   #+nil
@@ -183,7 +196,9 @@
 
 (defmacro print-status ()
   `(progn
-     (format t "Return Stack:~%~A~%
+     (format t "
+======================================================================
+Return Stack:~%~A~%
 Path:~%~A~%
 Program Counter:~%~A~%
 Stack:~%~A~%"
