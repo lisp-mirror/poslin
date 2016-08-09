@@ -1,6 +1,5 @@
 ;;;; poslin.asd
 
-
 (asdf:defsystem #:poslin
   :serial t
   :description "Describe poslin here"
