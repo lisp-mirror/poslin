@@ -2304,4 +2304,4 @@ dict-sub-minus [ var ]
 STD-LIB register-feature !
 [ STD-LIB 0.2.1 ] register-feature !
 
-;[ standard library version 0.2.1 ];
+;[ standard library version 0.2.2 ];
