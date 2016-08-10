@@ -1788,8 +1788,10 @@ print [ var ]
     [ dup-here & type & "" type ! same? &
       [ push & string-concat ~ push &
       | dup-here & type & [ 1 2 ]& type ! same? &
-        [ dup-here & type & . & type ! same? & ]<<
-        or &
+        [ dup-here & type & . & type ! same? &
+          [ dup-here & type & 1 # type ! same? & ]<<
+        ]<<
+        or & or &
         [ push & ->string ~ push & string-concat ~ push &
         | dup-here & type & <a> type ! same? &
           [ [ " " 0 ]<< string-set & push &
