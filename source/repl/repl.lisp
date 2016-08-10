@@ -56,6 +56,12 @@
       (when (y-or-n-p "~%Continue?")
         (repl poslin)))))
 
+(defmacro one-of (&body options)
+  `(case (random ,(length options))
+     ,@(loop for x from 0
+          for option in options
+          collect `(,x ,option))))
+
 (defun repl-dyn ()
   (format t "
 ******        **        ****   ****        **** ***  ****
@@ -74,16 +80,16 @@
 =========================================================
 
 © 2015-2016 Thomas Bartscher
-version ~A~%"
+Version ~A~%"
           (asdf:component-version (asdf:find-system "poslin")))
   (let ((*random-state* (make-random-state t)))
     (format t "~A~%"
-            (case (random 5)
-              (0 "Everything is possible. Watch out!")
-              (1 "Contains parts for a screw factory. Screws not included.")
-              (2 "Forget scope. Then invent it yourself.")
-              (3 "Yell if you want something.")
-              (4 "An interactive compiler.")
+            (one-of
+              "Everything is possible. Watch out!"
+              "Contains parts for a screw factory. Screws not included."
+              "Forget scope. Then invent it yourself."
+              "Yell if you want something."
+              "An interactive compiler."
               )))
   (apply #'repl
          (new-poslin *control-prims* *thread-prims* *path-prims* *set-prims*
