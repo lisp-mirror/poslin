@@ -44,3 +44,8 @@ install: all
 	echo "	$(LIBDIR)/supplemental/generic-op.poslin "$$"*" >> $(P2)
 	chmod +x $(P1)
 	chmod +x $(P2)
+
+.PHONY: libinstall
+libinstall:
+	mkdir -pv $(LIBDIR)
+	cp -rv ./lib/* $(LIBDIR)/
