@@ -37,11 +37,11 @@ install: all
 	cp -rv ./lib/* $(LIBDIR)/
 	cp -v ./build/poslin0 $(P0)
 	echo "#!/bin/sh\n" > $(BINDIR)/poslin1
-	echo "$(P0) $(LIBDIR)/base.poslin '$'*" >> $(P1)
+	echo "exec $(P0) $(LIBDIR)/base.poslin "$$"*" >> $(P1)
 	echo "#!/bin/sh\n" > $(P2)
-	echo "$(P1) $(LIBDIR)/supplemental/package.poslin \\" \
+	echo "exec $(P1) $(LIBDIR)/supplemental/package.poslin \\" \
 		>> $(P2)
-	echo "	$(LIBDIR)/supplemental/generic-op.poslin '$'*" >> $(P2)
+	echo "	$(LIBDIR)/supplemental/generic-op.poslin "$$"*" >> $(P2)
 	chmod +x $(P1)
 	chmod +x $(P2)
 
