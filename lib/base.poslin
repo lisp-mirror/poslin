@@ -471,7 +471,7 @@ imm-lookup
 ]o?
 
 imm-set-insert
-[ IMM << & slot-insert &
+[ IMM << slot-insert &
 ]o?
 
 imm-set-write
@@ -651,6 +651,7 @@ var-dict-insert
 
 var-dict-write
 [ VAR << slot-write &
+
 ]o?
 
 var-insert
@@ -2297,6 +2298,105 @@ dict-sub-minus [ var ]
   ]until
   d1 get
 }?
+
+
+;[ ARITY ];
+
+v( arities
+   [ [ '! & 1 ]
+     [ '& & 1 ]
+     [ '# & 1 ]
+     [ ->elem-thread & 2 ]
+     [ ? & 3 ]
+     [ r<- & 1 ]
+     [ r-> & 0 ]
+     [ thread-front & 1 ]
+     [ thread-back & 1 ]
+     [ thread-concat & 2 ]
+     [ path-pop & 0 ]
+     [ path-push & 1 ]
+     [ path-access & 1 ]
+     [ path-set & 1 ]
+     [ .empty-set & 0 ]
+     [ set-lookup & 2 ]
+     [ set-insert & 2 ]
+     [ set-drop & 2 ]
+     [ set-arbitrary & 1 ]
+     [ .empty-dict & 0 ]
+     [ dict-lookup & 2 ]
+     [ dict-insert & 3 ]
+     [ dict-drop & 2 ]
+     [ dict-domain & 1 ]
+     [ new-binding & 0 ]
+     [ retrieve & 1 ]
+     [ store & 2 ]
+     [ .empty-stack & 0 ]
+     [ push & 2 ]
+     [ top & 1 ]
+     [ drop & 1 ]
+     [ swap & 1 ]
+     [ .nothing & 0 ]
+     [ .true & 0 ]
+     [ .false & 0 ]
+     [ and & 2 ]
+     [ or & 2 ]
+     [ not & 1 ]
+     [ same? & 2 ]
+     [ compare & 2 ]
+     [ .less & 0 ]
+     [ .greater & 0 ]
+     [ .equal & 0 ]
+     [ .unequal & 0 ]
+     [ + & 2 ]
+     [ * & 2 ]
+     [ negation & 1 ]
+     [ reciprocal & 1 ]
+     [ log & 2 ]
+     [ pow & 2 ]
+     [ round & 1 ]
+     [ floor & 1 ]
+     [ ceiling & 1 ]
+     [ new-array & 1 ]
+     [ array-set & 3 ]
+     [ array-lookup & 2 ]
+     [ array-concat & 2 ]
+     [ array-size & 1 ]
+     [ ->string & 1 ]
+     [ string-concat & 2 ]
+     [ string-set & 3 ]
+     [ string-lookup & 2 ]
+     [ string-size & 1 ]
+     [ int->char & 1 ]
+     [ char->int & 1 ]
+     [ type & 1 ]
+     [ throw & 1 ]
+     [ handle & 2 ]
+     [ new-exception & 3 ]
+     [ exception-message & 1 ]
+     [ exception-data & 1 ]
+     [ exception-stack & 1 ]
+     [ thread-handle & 1 ]
+     [ unique-symbol & 0 ]
+     [ symbol-concat & 2 ]
+     [ load & 1 ]
+     [ open & 2 ]
+     [ .stdin & 0 ]
+     [ .stdout & 0 ]
+     [ close & 1 ]
+     [ read-char & 1 ]
+     [ write-char & 2 ]
+   ]dict let !
+
+   arity
+   [ [ arities var-lookup ! retrieve & ]<<
+     dict-lookup &
+   ]o?
+
+   arity-write
+   [ [ arities var-lookup ! dup-here ! retrieve & ]<< <<
+     dict-insert & store &
+   ]o?
+)
 
 
 ;[ FINALLY ];

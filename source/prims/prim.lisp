@@ -680,7 +680,7 @@ symbols"
 (defprim *stream-prims* "open" nil
     "makes a file handle"
   (stack-args ((filename string)
-               (direction (member :|write| :|input| :|rw|)))
+               (direction (member :|write| :|read| :|rw|)))
     (push-stack (open filename
                       :direction (case direction
                                    (:|write| :output)
