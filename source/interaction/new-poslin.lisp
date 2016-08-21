@@ -43,13 +43,13 @@
   (lookup (imm-env path)
           v))
 
-(defun get-op (v path)
-  (avif (lookup (op-env path)
-                v)
-        ([binding]-value it)
-        (unwind (format nil "Attempt to call undefined operation `~A`"
-                        v)
-                (list 'undefined-operation-error v))))
+(defmacro! get-op (o!v o!path)
+  `(avif (lookup (op-env ,g!path)
+                 ,g!v)
+         ([binding]-value it)
+         (unwind (format nil "Attempt to call undefined operation `~A`"
+                         ,g!v)
+                 (list 'undefined-operation-error ,g!v))))
 
 (defmacro new-poslin (&rest standards)
   `(the function

@@ -150,32 +150,7 @@
                          stream)
   (format stream "<<stream>>"))
 
-#+nil
-(defun show-env (env &optional (envmap (fset:empty-map)))
-  (let ((found (lookup envmap env)))
-    (if found
-        (aif ([env]-parent env)
-             (multiple-value-bind (n m)
-                 (show-env it envmap)
-               (values (format nil "e~A:~A"
-                               found n)
-                       m))
-             (values (format nil "e~A"
-                             found)
-                     envmap))
-        (let* ((envnum (fset:size envmap))
-               (nenvmap (with envmap env envnum)))
-          (aif ([env]-parent env)
-               (multiple-value-bind (n m)
-                   (show-env it nenvmap)
-                 (values (format nil "e~A:~A"
-                                 envnum n)
-                         m))
-               (values (format nil "e~A"
-                               envnum)
-                       nenvmap))))))
-
-(defun show-path ([path] &optional (envmap (fset:empty-map)))
+(defun show-path ([path])
   (aif ([path]-parent [path])
        (concatenate 'string
                     (poslin-print ([path]-content [path])
