@@ -1511,7 +1511,7 @@ stack-reverse
   ]until drop-here &
 ]o?
 
-dict-stack
+map-stack
 [ [] <<
   ~[ parent-pop & push ~ ~]&
   fold-stack &
