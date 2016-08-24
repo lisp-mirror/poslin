@@ -21,7 +21,7 @@ build/poslin0: poslin.asd package.lisp utility/symb.lisp utility/flatten.lisp \
 	source/prims/macros.lisp source/prims/prim.lisp source/repl/read.lisp \
 	source/repl/print.lisp source/repl/repl.lisp ./compile-poslin.lisp
 	sbcl --noinform --disable-ldb --lose-on-corruption \
-		--dynamic-space-size 8192 \
+		--dynamic-space-size 4096 \
 		--userinit ./sbclinit \
 		--load ./compile-poslin.lisp
 	mv -v ./poslin0 build/poslin0
@@ -37,11 +37,11 @@ install: all
 	cp -rv ./lib/* $(LIBDIR)/
 	cp -v ./build/poslin0 $(P0)
 	echo "#!/bin/sh\n" > $(BINDIR)/poslin1
-	echo "exec $(P0) $(LIBDIR)/base.poslin "$$"*" >> $(P1)
+	echo "exec $(P0) $(LIBDIR)/base.poslin "$$"@" >> $(P1)
 	echo "#!/bin/sh\n" > $(P2)
 	echo "exec $(P1) $(LIBDIR)/supplemental/package.poslin \\" \
 		>> $(P2)
-	echo "	$(LIBDIR)/supplemental/generic-op.poslin "$$"*" >> $(P2)
+	echo "	$(LIBDIR)/supplemental/generic-op.poslin "$$"@" >> $(P2)
 	chmod +x $(P1)
 	chmod +x $(P2)
 

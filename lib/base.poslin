@@ -585,7 +585,7 @@ signal
 ]o?
 
 ...
-[ "Operation declared but not defined." undefined-operation-error signal &
+[ "Operation not yet implemented." undefined-operation-error signal &
 ]m?
 
 error
@@ -594,7 +594,7 @@ error
 
 'declare.
 [ ~[ parent-top & ->string &
-     "declared but not defined."
+     " declared but not defined."
      string-concat &
      UNDEFINED-OPERATION-ERROR signal ~
   ~] op-write &
