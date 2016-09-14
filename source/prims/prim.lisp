@@ -122,6 +122,10 @@
 (defparameter *path-prims*
   '())
 
+(defprim *path-prims* "path-binding" nil
+    "pushes the path binding onto the current stack"
+  (push-stack path))
+
 (defprim *path-prims* "path-pop" nil
     "pops the top of the path"
   (let ((e (path-top path))

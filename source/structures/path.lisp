@@ -1,46 +1,32 @@
 (in-package #:poslin)
 
-(defstruct [path]
-  (content (empty-map <meta-nothing>)
-	   :type map)
-  (parent nil
-	  :type (or [path] null)))
+(defun <root> (dict)
+  (binding (list dict)))
 
-(defun <root> (env)
-  (make-[path] :content env))
-
-(defun <path> (env path)
-  (make-[path] :content env
-	       :parent path))
-
-(defun path-push (path env)
-  (<path> env path))
+(defun path-push (dict path)
+  (push dict ([binding]-value path)))
 
 (defun path-pop (path)
-  ([path]-parent path))
+  (pop ([binding]-value path)))
 
 (defun path-top (path)
-  ([path]-content path))
+  (car ([binding]-value path)))
 
 (defun path-nth (path integer)
   (if (< integer 0)
-      'negative-path-access-error
-      (if (= integer 0)
-	  (path-top path)
-	  (aif (path-pop path)
-	       (path-nth it (1- integer))
-	       'path-bottom-error))))
+      (error "Negative path access")
+      (aif (nth integer ([binding]-value path))
+           it
+           (error "Path bottom error"))))
 
 (defun path-get (path symbol)
   (aif (@ (path-top path)
-	  symbol)
+          symbol)
        it
        <meta-nothing>))
 
-(defun path-set (path env)
-  (<path> env (path-pop path)))
+(defun path-set (path dict)
+  (path-push dict (path-pop path)))
 
 (defun path-length (path)
-  (if path
-      (1+ (path-length ([path]-parent path)))
-      0))
+  (length ([binding]-value path)))
