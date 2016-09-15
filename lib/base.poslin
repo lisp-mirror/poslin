@@ -1609,6 +1609,10 @@ stack-size
   fold-stack &
 ]o?
 
+path-size
+[ path & stack-size &
+]o?
+
 splice
 [ curr-stack & << append-stacks &
   stack-rewrite &
