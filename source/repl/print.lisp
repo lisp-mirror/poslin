@@ -152,13 +152,18 @@
 
 (defmethod show-path (([path] cons)
                       &optional (stream t))
-  (format t "[~{ ~A~%~}]"
-          [path]))
+  (format stream "[~{ ~A~%~}]"
+          (nreverse (mapcar (lambda (dict)
+                              (poslin-print dict nil))
+                            [path]))))
 
 (defmethod show-path (([path] [binding])
                       &optional (stream t))
   (show-path ([binding]-value [path])
              stream))
+
+(defmethod show-path ([path] &optional (stream t))
+  (format stream "!CORRUPTED PATH!"))
 
 (defmacro print-status ()
   `(progn
@@ -169,8 +174,7 @@ Path:~%~A~%
 Program Counter:~%~A~%
 Stack:~%~A~%"
              (poslin-print rstack nil)
-             #+nil(show-path path)
-             #-nil(poslin-print path nil)
+             (show-path path)
              (poslin-print pc nil)
              (poslin-print (stack path)
                            nil))))
