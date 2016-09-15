@@ -126,33 +126,6 @@
     "pushes the path binding onto the current stack"
   (push-stack path))
 
-(defprim *path-prims* "path-pop" nil
-    "pops the top of the path"
-  (let ((e (path-top path))
-	(p (path-pop path)))
-    (if p
-	(progn
-	  (setf path p)
-	  (push-stack e))
-        (op-fail "Attempt to pop path bottom"
-                 :path-bottom-error))))
-
-(defprim *path-prims* "path-push" nil
-    "pushes onto the path"
-  (stack-args ((env map))
-    (setf path
-          (path-push path env))))
-
-(defprim *path-prims* "path-access" nil
-    "returns nth environment on path"
-  (push-stack (path-nth path (arg-pop))))
-
-(defprim *path-prims* "path-set" nil
-    "set current environment"
-  (stack-args ((env map))
-    (setf path
-          (path-set path env))))
-
 ;;;; sets
 (defparameter *set-prims*
   '())

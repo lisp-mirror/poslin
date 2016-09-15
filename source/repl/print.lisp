@@ -150,24 +150,15 @@
                          stream)
   (format stream "<<stream>>"))
 
-(defun show-path ([path])
-  (aif ([path]-parent [path])
-       (concatenate 'string
-                    (poslin-print ([path]-content [path])
-                                  nil)
-                    (string #\Newline)
-                    (show-path it))
-       (poslin-print ([path]-content [path])
-                     nil))
-  #+nil
-  (aif ([path]-parent [path])
-       (multiple-value-bind (en em)
-           (show-env ([path]-content [path])
-                     envmap)
-         (concatenate 'string
-                      en " " (show-path it em)))
-       (show-env ([path]-content [path])
-                 envmap)))
+(defmethod show-path (([path] cons)
+                      &optional (stream t))
+  (format t "[~{ ~A~%~}]"
+          [path]))
+
+(defmethod show-path (([path] [binding])
+                      &optional (stream t))
+  (show-path ([binding]-value [path])
+             stream))
 
 (defmacro print-status ()
   `(progn
@@ -178,7 +169,8 @@ Path:~%~A~%
 Program Counter:~%~A~%
 Stack:~%~A~%"
              (poslin-print rstack nil)
-             (show-path path)
+             #+nil(show-path path)
+             #-nil(poslin-print path nil)
              (poslin-print pc nil)
              (poslin-print (stack path)
                            nil))))

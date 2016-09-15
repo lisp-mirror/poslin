@@ -26,7 +26,8 @@
        <meta-nothing>))
 
 (defun path-set (path dict)
-  (path-push dict (path-pop path)))
+  (setf ([binding]-value path)
+        (cons dict (cdr ([binding]-value path)))))
 
 (defun path-length (path)
   (length ([binding]-value path)))

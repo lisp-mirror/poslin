@@ -1,13 +1,29 @@
-0 path-access ! OP dict-lookup ! retrieve !
+path-binding ! retrieve ! top !
+OP dict-lookup ! retrieve !
+path
+dict-lookup ! .nothing ! same? !
+.empty-stack !
+ path-binding ! retrieve ! top ! OP dict-lookup ! push !
+ path-binding ! retrieve ! top ! OP dict-lookup ! retrieve !
+ path
+ new-binding ! path-binding ! retrieve ! top ! STACK dict-lookup ! retrieve ! top !
+ .empty-stack !
+  path-binding & push !
+  retrieve & push !
+ & store ! dict-insert ! push ! store & push !
+& . & ? ! !
+
+path ! top ! OP dict-lookup ! retrieve !
 curr-dict
 dict-lookup ! .nothing ! same? !
 .empty-stack !
- 0 path-access ! OP dict-lookup ! push !
- 0 path-access ! OP dict-lookup ! retrieve !
+ path ! top ! OP dict-lookup ! push !
+ path ! top ! OP dict-lookup ! retrieve !
  curr-dict
- new-binding ! 0 path-access ! STACK dict-lookup ! retrieve ! top !
+ new-binding ! path ! top ! STACK dict-lookup ! retrieve ! top !
  .empty-stack !
-  0 push ! path-access & push !
+  path & push !
+  top & push !
  & store ! dict-insert ! push ! store & push !
 & . & ? ! !
 
@@ -108,6 +124,21 @@ dict-lookup ! nothing? !
 & . & ? ! !
 
 op-dict !
+path-set
+dict-lookup ! nothing? !
+.empty-stack !
+ op-dict-binding ! push ! op-dict !
+ path-set
+ .empty-stack !
+  r<- & push !
+  path-binding & push !
+  path & push ! drop & push !
+  r-> & push !
+  push & push ! store & push !
+ & dict-write ! push ! store & push !
+& . & ? ! !
+
+op-dict !
 slot-insert
 dict-lookup ! nothing? !
 .empty-stack !
@@ -133,6 +164,20 @@ dict-lookup ! nothing? !
 & . & ? ! !
 
 op-dict !
+path-push
+dict-lookup ! nothing? !
+.empty-stack !
+ OP push ! op-dict !
+ path-push
+ .empty-stack !
+  r<- & push !
+  path-binding & push ! path & push !
+  r-> & push !
+  push & push ! store & push !
+ & dict-write ! push ! slot-write & push !
+& . & ? ! !
+
+op-dict !
 '[
 dict-lookup ! nothing? !
 .empty-stack !
@@ -147,6 +192,30 @@ dict-lookup ! nothing? !
 IMM
  curr-dict ! IMM dict-lookup ! retrieve ! '[ set-insert !
 slot-write !
+
+op-dict !
+path-pop
+dict-lookup ! nothing? !
+.empty-stack !
+ OP push ! op-dict !
+ path-pop
+ .empty-stack !
+  curr-stack-binding & push !
+  path & push ! drop & push ! top & push ! STACK push ! dict-lookup & push !
+  same? & push !
+  .empty-stack !
+   path & push ! top & push !
+   path-binding & push ! path & push ! drop & push ! store & push !
+  & # push !
+  .empty-stack !
+   path & push ! drop & push ! top & push !
+   STACK push ! dict-lookup & push ! dup-here & push ! retrieve & push !
+   path & push ! top & push ! push & push ! store & push !
+   path-binding & push ! path & push ! drop & push ! store & push !
+  & # push !
+  ? & push ! '! & push !
+ & dict-write ! push ! slot-write & push !
+& . & ? ! !
 
 op-dict !
 ']
@@ -185,11 +254,11 @@ parent-pop
 dict-lookup ! nothing? !
 [ OP op-dict !
   parent-pop
-  [ 1 path-access &
+  [ path & drop & top &
     STACK dict-lookup & retrieve & top &
-    1 path-access &
+    path & drop & top &
     STACK dict-lookup &
-    1 path-access &
+    path & drop & top &
     STACK dict-lookup & retrieve & drop &
     store &
   ] & dict-write ! slot-write &
@@ -282,7 +351,7 @@ OP dict-get
 
 OP slot-get
 [ dup-here &
-  [ 0 path-access & ] & <<
+  curr-dict & <<
   dict-lookup & dup-here & nothing? &
   [ drop-here &
     [ "undefined slot"
@@ -524,7 +593,8 @@ modify
 ]i?
 
 parent-stack-binding
-[ 1 path-access & STACK dict-lookup &
+[ path & drop & top &
+  STACK dict-lookup &
 ]o?
 
 parent-stack
@@ -1241,7 +1311,8 @@ stack-elt
 [ ~]& compile & <<
   ~o( |while ~declare
       ~[ parent-stack & 2 stack-elt & drop-here &
-         ~[ 2 path-access & STACK dict-get &
+         ~[ path & drop & drop & top &
+            STACK dict-get &
             1 stack-elt & drop-here &
             |while ~call
          ~]when
@@ -1257,6 +1328,10 @@ stack-elt
   ~:[ ~]while
 ]i?
 '~]until ']until def?-delayed
+
+path-access
+[ path & << stack-elt &
+]o?
 
 scope SCOPE def?-dict-slot
 
@@ -2313,10 +2388,7 @@ v( arities
      [ thread-front & 1 ]
      [ thread-back & 1 ]
      [ thread-concat & 2 ]
-     [ path-pop & 0 ]
-     [ path-push & 1 ]
-     [ path-access & 1 ]
-     [ path-set & 1 ]
+     [ path-binding & 0 ]
      [ .empty-set & 0 ]
      [ set-lookup & 2 ]
      [ set-insert & 2 ]
