@@ -1742,6 +1742,21 @@ maximum
   compile &
 ]i?
 
+map-array [ var ]
+{ [ array operation ]args
+  [ i array get array-size & 1- & let
+  | i 1- var-mod
+  | i get 0 >= &
+  | array
+    array get i get
+    array get i get array-lookup &
+    operation get dyn-call
+    array-set &
+    set
+  ]for
+  array get
+}?
+
 '!(
 [ ~i( op-dict & dict-domain & imm-set-write &
 ]i?
@@ -2480,4 +2495,4 @@ v( arities
 STD-LIB register-feature !
 [ STD-LIB 0.2.1 ] register-feature !
 
-;[ standard library version 0.3.0 ];
+;[ standard library version 0.3.1 ];
