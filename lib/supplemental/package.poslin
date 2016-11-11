@@ -128,7 +128,7 @@ package->dict
        package get package->content &
        [ uses get empty-stack? &
        | uses get <pop &
-         uses << set
+         uses << change
          pkg-get & dup-here &
          package->exports &
          p->d call << sub-restrict &
@@ -180,7 +180,7 @@ import-dict [ var ]
   [ uses ]args
   .empty-dict !
   [ uses get empty-stack? &
-  | uses get <pop & uses << set
+  | uses get <pop & uses << change
     pkg-get & dup-here &
     package->exports &
     package->dict & << sub-restrict &

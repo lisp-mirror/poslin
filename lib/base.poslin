@@ -917,7 +917,7 @@ dict-ensure
   compile &
 ]i?
 
-'set
+'change
 [ var-rewrite &
 ]m?
 
@@ -1669,7 +1669,7 @@ map-dict [ var ]
   [ domain get empty-set? &
   | domain
      domain get set-pop> &
-    set <<
+    change <<
     dup-here & dict get << dict-lookup &
     op get dyn-call dict-insert &
   ]until
@@ -1752,7 +1752,7 @@ map-array [ var ]
     array get i get array-lookup &
     operation get dyn-call
     array-set &
-    set
+    change
   ]for
   array get
 }?
@@ -1769,7 +1769,7 @@ map-array [ var ]
   [ var ]
   { array .nothing ! let
     [ [ stack i ]args
-      array i get new-array & set
+      array i get new-array & change
       i 1- var-mod
     | i 1- var-mod
       stack drop var-mod
@@ -2355,10 +2355,10 @@ dict-minus [ var ]
 { [ d1 d2 ]args
   [ d2 get empty-dict? &
   | d1 get dup-here &
-    d2 get <dict-pop & d2 << set
+    d2 get <dict-pop & d2 << change
     [ dup-here & dict-lookup & << swap-here & ]<<
     = &
-    [ dict-drop & d1 << set
+    [ dict-drop & d1 << change
     | drop-here & drop-here &
     ]if
   ]until
@@ -2369,7 +2369,7 @@ dict-sub-minus [ var ]
 { [ d1 d2 ]args
   [ d2 get empty-dict? &
   | d2 get <dict-pop &
-    d2 << set
+    d2 << change
     retrieve &
     [ var ]
     { [ name slot2 ]args
@@ -2387,7 +2387,7 @@ dict-sub-minus [ var ]
         | slot1 get
         ]
       ]cond
-      dict-write & set &
+      dict-write & change
     }&
   ]until
   d1 get
