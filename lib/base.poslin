@@ -2493,6 +2493,6 @@ v( arities
 ;[ FINALLY ];
 
 STD-LIB register-feature !
-[ STD-LIB 0.2.1 ] register-feature !
+[ STD-LIB 0.3.2 ] register-feature !
 
-;[ standard library version 0.3.1 ];
+;[ standard library version 0.3.2 ];
