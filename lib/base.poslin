@@ -1272,20 +1272,20 @@ var  VAR  def?-dict-slot
 '~declare 'declare def?-delayed
 
 stack-elt
-[ o( %stack-elt declare
+[ o( |stack-elt declare
      [ [ dup-here & empty-stack? & ]<<
        swap-here &
        [ drop-here & drop-here &
          .nothing ! .false !
        | dup-here & positive? &
          [ drop & << 1- &
-           %stack-elt call
+           |stack-elt call
          | drop-here & top &
            .true !
          ]if
        ]if
      ]o/
-     %stack-elt &
+     |stack-elt &
   )
 ]o?
 
@@ -1569,10 +1569,12 @@ zip-stacks [ var ]
   o( |zip declare
      [ dup-here & empty-stack? &
        [ [ dup-here & empty-stack? & ]<<
-         swap-here & ]<<
+         swap-here &
+       ]<<
        or &
        [ drop-here & 2 repeat []
-       | pop> & [ pop> & << swap-here & |zip call << ]<<
+       | pop> &
+         [ pop> & << swap-here & |zip call << ]<<
          op get dyn-call push &
        ]if
      ]o/
@@ -1737,7 +1739,8 @@ maximum
     ]<< <<
     swap-here &
     [] << compile &
-  ]<< swap-here & push & <<
+  ]<<
+  swap-here & push & <<
   push & ~:[ ~]while push &
   ~) # push &
   compile &
@@ -1787,7 +1790,7 @@ bottom?
 ]o?
 
 ']cond
-[ o( %cond declare
+[ o( |cond declare
      [ pop> & pop> & <<
        [ var ]
        { [ rest body cond ]args
@@ -1797,7 +1800,7 @@ bottom?
            ~]&
          | ~[ cond get compile &
               ~[ body get compile &
-              ~| rest get %cond call
+              ~| rest get |cond call
               ~]if
            ~]&
          ]if
@@ -1807,7 +1810,7 @@ bottom?
      ~]
      dup-here & empty-stack? &
      [ "Empty conditional" empty-conditional-error signal & ]when
-     stack-reverse & %cond &
+     stack-reverse & |cond &
   )
 ]i?
 '~]cond ']cond def?-delayed
@@ -1844,13 +1847,13 @@ bottom?
 
 to-bottom [ var ]
 { el arg
-  o( %to-bottom declare
+  o( |to-bottom declare
      [ bottom? &
        [ el get
-       | %to-bottom call <<
+       | |to-bottom call <<
        ]if
      ]o
-     %to-bottom &
+     |to-bottom &
   )
 }?
 
@@ -1894,7 +1897,8 @@ print [ var ]
           ]#
           push & string-concat ~ push &
         | dup-here & type & <a> type ! same? &
-          [ [ " " 0 ]<< string-set & push &
+          [ [ " " 0 ]<<
+            string-set & push &
             string-concat ~ push &
           | ->string & push & string-concat ~ push &
           ]if
@@ -2118,7 +2122,8 @@ STRUCT .empty-set ! slot-write !
                   "` but got `"
                ~]string swap-here ~
                ->string ~ string-concat ~ "` instead." string-concat ~
-            ~]<< signal ~
+            ~]<<
+            signal ~
          ~]if
       ~]o
     ]for
@@ -2171,12 +2176,12 @@ exception-type?
 
 ']catch
 [ ~] compile & <<
-  o( %rec declare
+  o( |rec declare
      [ dup-here & empty-stack? &
        [ pop> & [ dup-here & empty-stack? & ]<<
          swap-here &
          [ "Unbalanced catch" UNBALANCED-CATCH-ERROR signal &
-         | [ pop> & %rec call <<
+         | [ pop> & |rec call <<
              ~[ exception get # parent-pop & top &
                 exception-type? ~
              ~] push &
@@ -2186,7 +2191,7 @@ exception-type?
        ]unless
      ]o
      ~[ ~v( # [ exception ]args #
-              parent-pop & %rec &
+              parent-pop & |rec &
               ~:[ [ .true !
                   | exception get throw &
                   ]
@@ -2291,7 +2296,9 @@ dict-restrict [ var ]
 { [ d s ]args
   .empty-dict !
   [ s get empty-set? &
-  | s get set-pop> & [ s << let ]<< dup-here &
+  | s get set-pop> &
+    [ s << let ]<<
+    dup-here &
     d get << dict-lookup &
     dict-insert &
   ]until
