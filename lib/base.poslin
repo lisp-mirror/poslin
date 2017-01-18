@@ -1263,6 +1263,8 @@ var  VAR  def?-dict-slot
 
 '~dyn-call 'dyn-call def?-delayed
 
+'~! '! def?-delayed
+
 '~modify 'modify def?-delayed
 
 '~declare. 'declare. def?-delayed
@@ -1545,19 +1547,18 @@ odd?
 ]i?
 '~repeat 'repeat def?-delayed
 
-fold-stack [ var ]
-{ [ null op ]args
-  o( |fold declare
-     [ dup-here & empty-stack? &
-       [ drop-here &
-         null get
-       | pop> & |fold call <<
-         op get dyn-call
-       ]if
-     ]o/
-     |fold &
-  )
-}?
+fold-stack
+[ |foldr declare
+  [ [ dup-here & << swap-here & ]<<
+    swap-here & empty-stack? &
+    [ drop-here & drop-here & <<
+    | <pop & << <<
+      dup-here &
+      [ |foldr call swap-here & ]<<
+      ~!
+    ]if
+  ]o/ |foldr &
+]o?
 
 append-stacks
 [ swap-here & push ~ fold-stack &
