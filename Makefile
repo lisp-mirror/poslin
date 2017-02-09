@@ -1,6 +1,6 @@
 PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
-LIBDIR ?= $(PREFIX)/lib/poslin
+LIBDIR ?= $(PREFIX)/share/poslin
 P0 = $(BINDIR)/poslin0
 P1 = $(BINDIR)/poslin1
 P2 = $(BINDIR)/poslin
