@@ -8,6 +8,7 @@
     "sets the program counter"
   (stack-args (op)
     (let ((b (thread-back pc)))
+      (declare (type [thread] b))
       (unless (eq b <noop>)
         (push (thread-back pc)
               rstack))
@@ -74,6 +75,7 @@
   (stack-args ((string string)
                obj)
     (push-stack (<prim> (lambda ()
+                          #.+optimization-parameters+
                           (with-pandoric (pc)
                               this
                             (setf pc obj)))
@@ -105,11 +107,11 @@
 
 (defprim *thread-prims* "thread-front" nil
     "pushes the front of a thread"
-  (stack-call thread-front))
+  (stack-call thread-front (thread [thread])))
 
 (defprim *thread-prims* "thread-back" nil
     "pushes the back of a thread"
-  (stack-call thread-back))
+  (stack-call thread-back (thread [thread])))
 
 (defprim *thread-prims* "thread-concat" nil
     "combines two threads into one"
@@ -408,6 +410,8 @@
         (op-fail "Tried to index array out of bounds"
                  (list :array-index-error array n v))
         (let ((array (copy-seq array)))
+          (declare (type (and vector (not string))
+                         array))
           (setf (aref array n)
                 v)
           (push-stack array)))))

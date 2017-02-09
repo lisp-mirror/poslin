@@ -12,6 +12,8 @@
   `(if *cons-pool*
        (setf (stack path)
              (let ((cell *cons-pool*))
+               (declare (type (or cons null)
+                              cell))
                (setf *cons-pool* (cdr *cons-pool*)
                      (car cell)
                      ,value
@@ -29,6 +31,8 @@
            (let* ((stack (stack path))
                   (new-stack (cdr stack))
                   (item (car stack)))
+             (declare (type (or cons null)
+                            stack new-stack))
              (setf (car stack)
                    nil
                    (cdr stack)
@@ -55,9 +59,6 @@
        (op-fail "Bottom of Stack popped"
                 :stack-bottom-error)))
 
-(defmacro stack-call (fn)
-  `(push-stack (,fn (arg-pop))))
-
 (defmacro stack-args ((&rest args)
                       &body body)
   `(let (,@(mapcar #`(,(if (consp a1)
@@ -77,3 +78,14 @@
                                  args)))
          (progn
            ,@body))))
+
+(defmacro stack-call (fn &rest args)
+  (if args
+      `(stack-args (,@args)
+         (push-stack (,fn ,@(mapcar #'car-or-x
+                                    args))))
+      `(push-stack (,fn (arg-pop)))))
+
+#+nil
+(defmacro stack-call (fn)
+  `(push-stack (,fn (arg-pop))))

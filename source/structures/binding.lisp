@@ -4,10 +4,14 @@
   value)
 
 (defun binding (val)
-  (make-[binding] :value val))
+  #.+optimization-parameters+
+  (the [binding]
+    (make-[binding] :value val)))
 
 (defmethod compare ((x [binding])
                     (y [binding]))
-  (if (eq x y)
-      :equal
-      :unequal))
+  #.+optimization-parameters+
+  (the (member :equal :unequal)
+    (if (eq x y)
+        :equal
+        :unequal)))

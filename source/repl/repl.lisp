@@ -1,10 +1,8 @@
 (in-package #:poslin)
 
 (defun repl (poslin &rest files)
-  (declare (optimize (debug 0)
-                     (safety 0)
-                     (speed 3))
-           (type function poslin))
+  #.+optimization-parameters+
+  (declare (type function poslin))
   (handler-case
       (let ((*print-circle* t))
         (loop for file in files
@@ -63,6 +61,7 @@
           collect `(,x ,option))))
 
 (defun repl-dyn ()
+  #.+optimization-parameters+
   (format t "
 ******        **        ****   ****        **** ***  ****
 ********    ******    *******  ****        **** ***  ****

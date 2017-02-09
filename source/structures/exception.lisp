@@ -8,9 +8,13 @@
          :type (or cons null)))
 
 (defun <exception> (string data stack)
-  (make-[exception] :string string
-                    :data data
-                    :stack stack))
+  (declare (type string string)
+           (type (or cons null)
+                 stack))
+  (the [exception]
+    (make-[exception] :string string
+                      :data data
+                      :stack stack)))
 
 (define-condition unhandled-poslin-exception ()
   ())

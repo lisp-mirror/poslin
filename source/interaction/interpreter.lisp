@@ -26,6 +26,7 @@
                  (funcall (<prim>-fun pc)))
                 ((complex-thread? pc)
                  (let ((front (thread-front pc)))
+                   (declare (type [thread] front))
                    (cond
                      ((typep front '<constant>)
                       (push (<constant>-val front)
@@ -39,6 +40,7 @@
                       (setf pc front)))))
                 ((typep pc '<handled>)
                  (let ((th (<handled>-thread pc)))
+                   (declare (type [thread] th))
                    (if (eq th <noop>)
                        #1#
                        (funcall (<prim>-fun th)))))

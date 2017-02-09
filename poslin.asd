@@ -19,6 +19,7 @@
     :depends-on ("package")
     :components
     ((:file "symb")
+     (:file "list")
      (:file "flatten")
      (:file "sharp-backquote"
             :depends-on ("symb"

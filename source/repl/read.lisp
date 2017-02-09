@@ -85,40 +85,52 @@
 (defgeneric convert-token (type token)
   (:method ((type (eql 'symbol))
 	    (token string))
-    (intern token :keyword))
+    #.+optimization-parameters+
+    (the symbol
+      (intern token :keyword)))
   (:method ((type (eql 'character))
             (token string))
-    (let ((length (length token)))
-      (assert (>= length 3))
-      (if (= length 3)
-          (elt token 1)
-          (aif (cl-unicode:character-named
-                (subseq token 1 (1- (length token))))
-               it
-               (let ((name (subseq token 1 (1- (length token)))))
-                 (cond
-                   ((string-equal name "tab")
-                    #\Tab)
-                   ((string-equal name "newline")
-                    #\Newline)
-                   (t
-                    (error "Invalid character ~A"
-                           token))))))))
+    #.+optimization-parameters+
+    (the character
+      (let ((length (length token)))
+        (declare (type (integer 0)
+                       length))
+        (assert (>= length 3))
+        (if (= length 3)
+            (elt token 1)
+            (aif (cl-unicode:character-named
+                  (subseq token 1 (1- (length token))))
+                 it
+                 (let ((name (subseq token 1 (1- (length token)))))
+                   (cond
+                     ((string-equal name "tab")
+                      #\Tab)
+                     ((string-equal name "newline")
+                      #\Newline)
+                     (t
+                      (error "Invalid character ~A"
+                             token)))))))))
   (:method ((type (eql 'quotation))
 	    (token string))
-    (<quotation> (intern (subseq token 1)
-			 :keyword)))
+    #.+optimization-parameters+
+    (the <quotation>
+      (<quotation> (intern (subseq token 1)
+                           :keyword))))
   (:method ((type (eql 'ratio))
 	    (token string))
-    (apply #'/
-	   (mapcar #'parse-integer
-		   (split-sequence #\/ token))))
+    #.+optimization-parameters+
+    (the rational
+      (apply #'/
+             (mapcar #'parse-integer
+                     (split-sequence #\/ token)))))
   (:method ((type (eql 'float))
 	    (token string))
-    (read-from-string token))
+    (the (or float double)
+      (read-from-string token)))
   (:method ((type (eql 'integer))
 	    (token string))
-    (parse-integer token))
+    (the integer
+      (parse-integer token)))
   (:method ((type (eql 'infinite-string))
             (token string))
     (error "Infinite string found"))
@@ -127,29 +139,42 @@
     (error "faulty string read"))
   (:method ((type (eql 'long-string))
 	    (token string))
-    (let ((delimiter-length (1+ (position #\Newline token
-                                          :test #'char=))))
-      (subseq token delimiter-length (- (length token)
-					delimiter-length -2))))
+    (the string
+      (let ((delimiter-length (1+ (position #\Newline token
+                                            :test #'char=))))
+        (declare (type (integer 1)
+                       delimiter-length))
+        (subseq token delimiter-length (- (length token)
+                                          delimiter-length -2)))))
   (:method ((type (eql 'short-string))
             (token string))
-    (subseq token 1 (1- (length token)))))
+    #.+optimization-parameters+
+    (the string
+      (subseq token 1 (1- (length token))))))
 
 (defun first-tokens (string parse-order)
-  (let ((tokens (mapcar (lambda (parse-tree)
-                          (multiple-value-bind (begin end)
-                              (scan parse-tree string)
-                            (list parse-tree begin end)))
-                        parse-order)))
-    (values (stable-sort (remove-if-not #'second
-                                        tokens)
-                         #'<
-                         :key #'second)
-            (mapcar #'first
-                    (remove-if #'second
-                               tokens)))))
+  #.+optimization-parameters+
+  (declare (type string string)
+           (type (or cons null)
+                 parse-order))
+  (the (or cons null)
+    (let ((tokens (mapcar (lambda (parse-tree)
+                            (multiple-value-bind (begin end)
+                                (scan parse-tree string)
+                              (list parse-tree begin end)))
+                          parse-order)))
+      (declare (type (or cons null)
+                     tokens))
+      (values (stable-sort (remove-if-not #'second
+                                          tokens)
+                           #'<
+                           :key #'second)
+              (mapcar #'first
+                      (remove-if #'second
+                                 tokens))))))
 
 (defun retrieve-token (string parse-order)
+  #.+optimization-parameters+
   (let ((tokens (stable-sort
                  (remove-if-not #'second
                                 (mapcar (lambda (parse-tree)
@@ -159,11 +184,15 @@
                                         parse-order))
                  #'<
                  :key #'second)))
+    (declare (type (or cons null)
+                   tokens))
     (apply #'values
            (first tokens))))
 
 (defun poslin-read-from-string (string parse-order)
+  #.+optimization-parameters+
   (labels ((_token< (t1 t2)
+             #.+optimization-parameters+
              (let ((tb1 (second t1))
                    (tb2 (second t2)))
                (cond
@@ -173,6 +202,7 @@
                   nil)
                  ((= tb1 tb2)
                   (labels ((_rec (t1 t2 parse-order)
+                             #.+optimization-parameters+
                              (let ((curr (first parse-order)))
                                (if curr
                                    (cond
@@ -188,6 +218,7 @@
                           (first t2)
                           parse-order))))))
            (_insert (token found acc)
+             #.+optimization-parameters+
              (if found
                  (let ((curr (first found)))
                    (if (_token< token curr)
@@ -197,6 +228,7 @@
                                 (cons curr acc))))
                  (nreverse (cons token acc))))
            (_first-ones (found n acc)
+             #.+optimization-parameters+
              (if found
                  (let ((curr (first found)))
                    (if n
@@ -214,6 +246,7 @@
                          (mapcar #'first
                                  acc))))
            (_rec (string found tokens)
+             #.+optimization-parameters+
              (multiple-value-bind (token recompute)
                  (_first-ones found nil '())
                (if token
@@ -248,6 +281,7 @@
           '())))
 
 (defun poslin-read-block (stream parse-trees)
+  #.+optimization-parameters+
   (let ((line (read-line stream))
         (tokens '())
         (in-string? nil))
@@ -281,8 +315,11 @@
                    (return (nreverse tokens)))))))))
 
 (defun poslin-read (stream parse-trees)
+  #.+optimization-parameters+
   (let ((eof (gensym "eof"))
 	(string ""))
+    (declare (type symbol eof)
+             (type string string))
     (do ((curr (read-line stream nil eof)
 	       (read-line stream nil eof)))
 	((eq curr eof)
@@ -293,5 +330,6 @@
 			 curr)))))
 
 (defun poslin-read-file (file parse-trees)
+  #.+optimization-parameters+
   (with-open-file (stream file)
     (poslin-read stream parse-trees)))

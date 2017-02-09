@@ -2,32 +2,40 @@
 
 (defgeneric poslin-print (object stream)
   (:method (object stream)
+    #.+optimization-parameters+
     (format stream "~S"
 	    object)))
 
 (defmethod poslin-print ((object null)
 			 stream)
+  #.+optimization-parameters+
   (format stream "[]"))
 
 (defmethod poslin-print ((object cons)
 			 stream)
+  #.+optimization-parameters+
   (format stream "[~{ ~A~} ]"
 	  (mapcar (lambda (obj)
+                    #.+optimization-parameters+
 		    (poslin-print obj nil))
 		  (reverse object))))
 
 (defmethod poslin-print ((object set)
                          stream)
+  #.+optimization-parameters+
   (format stream "[~{ ~A~} ]set"
           (mapcar (lambda (obj)
+                    #.+optimization-parameters+
                     (poslin-print obj nil))
                   (fset:convert 'list
                                 object))))
 
 (defmethod poslin-print ((object map)
                          stream)
+  #.+optimization-parameters+
   (format stream "[~{ ~A~} ]dict"
           (mapcar (lambda (obj)
+                    #.+optimization-parameters+
                     (format nil "[ ~A ~A ]"
                             (poslin-print (car obj)
                                           nil)
@@ -38,13 +46,17 @@
 
 (defmethod poslin-print ((object array)
                          stream)
+  #.+optimization-parameters+
   (format stream "[~{ ~A~} ]array"
           (cl:map 'list (lambda (obj)
+                          #.+optimization-parameters+
                           (poslin-print obj nil))
                   object)))
 
 (defun make-delimiter-string (string)
+  #.+optimization-parameters+
   (labels ((_rec (acc)
+             #.+optimization-parameters+
              (let* ((char (code-char (+ (random (- (char-code #\z)
                                                    (char-code #\a)))
                                         (char-code #\a))))
@@ -57,6 +69,7 @@
 
 (defmethod poslin-print ((object string)
                          stream)
+  #.+optimization-parameters+
   (if (search "\" " object)
       (let ((delim (make-delimiter-string object)))
         (format stream "$~A~%~A~A"
@@ -66,6 +79,7 @@
 
 (defmethod poslin-print ((object character)
                          stream)
+  #.+optimization-parameters+
   (cond
     ((char= object #\Newline)
      (format stream "<newline>"))
@@ -78,6 +92,7 @@
 
 (defmethod poslin-print ((object symbol)
 			 stream)
+  #.+optimization-parameters+
   (format stream "~A"
 	  (symbol-name object)))
 
@@ -87,6 +102,7 @@
   0)
 (defmethod poslin-print ((object [binding])
 			 stream)
+  #.+optimization-parameters+
   (aif (@ *binding-numbers* object)
        (format stream "b<~A>"
                it)
@@ -99,21 +115,25 @@
 
 (defmethod poslin-print ((object (eql <noop>))
 			 stream)
+  #.+optimization-parameters+
   (format stream "P{.}"))
 
 (defmethod poslin-print ((object <constant>)
 			 stream)
+  #.+optimization-parameters+
   (format stream "#{~A}"
 	  (poslin-print (<constant>-val object)
 			nil)))
 
 (defmethod poslin-print ((object <prim>)
 			 stream)
+  #.+optimization-parameters+
   (format stream "P{~A}"
 	  (<prim>-name object)))
 
 (defmethod poslin-print ((object <thread>)
 			 stream)
+  #.+optimization-parameters+
   (format stream "{~A ~A}"
 	  (poslin-print (<thread>-front object)
 			nil)
@@ -125,6 +145,7 @@
 
 (defmethod poslin-print ((object <handled>)
                          stream)
+  #.+optimization-parameters+
   (format stream "~A>>~A"
           (poslin-print (<handled>-thread object)
                         nil)
@@ -133,6 +154,7 @@
 
 (defmethod poslin-print ((object [exception])
                          stream)
+  #.+optimization-parameters+
   (format stream "[[EXCEPTION ~A ~A+~D ~A]]"
           (poslin-print ([exception]-data object)
                         nil)
@@ -144,14 +166,17 @@
 
 (defmethod poslin-print ((object (eql <meta-nothing>))
 			 stream)
+  #.+optimization-parameters+
   (format stream "<NOTHING>"))
 
 (defmethod poslin-print ((object stream)
                          stream)
+  #.+optimization-parameters+
   (format stream "<<stream>>"))
 
 (defmethod show-path (([path] cons)
                       &optional (stream t))
+  #.+optimization-parameters+
   (format stream "[~{ ~A~%~}]"
           (nreverse (mapcar (lambda (dict)
                               (poslin-print dict nil))
@@ -159,10 +184,12 @@
 
 (defmethod show-path (([path] [binding])
                       &optional (stream t))
+  #.+optimization-parameters+
   (show-path ([binding]-value [path])
              stream))
 
 (defmethod show-path ([path] &optional (stream t))
+  #.+optimization-parameters+
   (format stream "!CORRUPTED PATH!"))
 
 (defmacro print-status ()

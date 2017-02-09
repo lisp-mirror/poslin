@@ -1,6 +1,7 @@
 (in-package #:poslin)
 
 (defun sym-to-keyword (obj)
+  #.+optimization-parameters+
   (if (symbolp obj)
       (values (intern (symbol-name obj)
 		      :keyword))
@@ -12,4 +13,5 @@
 	    (with-pandoric (path)
 		,g!poslin
 	      path))
+     #.+optimization-parameters+
      (funcall ,g!poslin v)))

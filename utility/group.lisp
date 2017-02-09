@@ -1,10 +1,16 @@
 (in-package #:poslin)
 
 (defun group (source n)
+  #.+optimization-parameters+
+  (declare (type (or cons null)
+                 source)
+           (type (integer (0))
+                 n))
   (if (<= n 0)
       (error "~A length group"
 	     n)
       (labels ((_rec (source acc)
+                 #.+optimization-parameters+
 		 (let ((rest (nthcdr n source)))
 		   (if (consp rest)
 		       (_rec rest (cons (subseq source 0 n)
