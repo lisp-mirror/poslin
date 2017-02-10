@@ -125,7 +125,7 @@
                      (split-sequence #\/ token)))))
   (:method ((type (eql 'float))
 	    (token string))
-    (the (or float double)
+    (the (or float double-float)
       (read-from-string token)))
   (:method ((type (eql 'integer))
 	    (token string))
