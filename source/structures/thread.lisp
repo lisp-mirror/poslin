@@ -83,7 +83,7 @@
     <noop>)
   (:method ((thread <prim>))
     #.+optimization-parameters+
-    (the <thread> thread))
+    (the <prim> thread))
   (:method ((thread <constant>))
     #.+optimization-parameters+
     (the <constant> thread))
