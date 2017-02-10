@@ -68,10 +68,7 @@
 (defprim *control-prims* "#" t
     "makes a constant thread of value"
   (stack-call <constant>
-    t)
-  #+nil
-  (stack-args (val)
-    (push-stack (<constant> val))))
+    t))
 
 (defprim *control-prims* "->elem-thread" nil
     "converts an object into a primary thread"
@@ -121,11 +118,7 @@
 (defprim *thread-prims* "thread-concat" nil
     "combines two threads into one"
   (stack-call <thread>
-    [thread] [thread])
-  #+nil
-  (stack-args ((front thread)
-               (back thread))
-    (push-stack (<thread> front back))))
+    [thread] [thread]))
 
 
 ;;;; path
@@ -156,28 +149,17 @@
 (defprim *set-prims* "set-insert" nil
     "insert into set"
   (stack-call with
-    set t)
-  #+nil
-  (stack-args ((s set)
-               v)
-    (push-stack (with s v))))
+    set t))
 
 (defprim *set-prims* "set-drop" nil
     "drop from set"
   (stack-call less
-    set t)
-  #+nil
-  (stack-args ((s set)
-               v)
-    (push-stack (less s v))))
+    set t))
 
 (defprim *set-prims* "set-arbitrary" nil
     "return arbitrary element of set"
   (stack-call arb
-    set)
-  #+nil
-  (stack-args ((s set))
-    (push-stack (fset:arb s))))
+    set))
 
 ;;;; dictionaries
 (defparameter *dict-prims*
@@ -191,37 +173,22 @@
 (defprim *dict-prims* "dict-lookup" nil
     "dictionary lookup"
   (stack-call lookup
-    map t)
-  #+nil
-  (stack-args ((m map)
-               k)
-    (push-stack (lookup m k))))
+    map t))
 
 (defprim *dict-prims* "dict-insert" nil
     "insert into dictionary"
   (stack-call with
-    map t t)
-  #+nil
-  (stack-args ((m fset:map)
-               k v)
-    (push-stack (with m k v))))
+    map t t))
 
 (defprim *dict-prims* "dict-drop" nil
     "drop from dictionary"
   (stack-call less
-    map t)
-  #+nil
-  (stack-args ((m map)
-               k)
-    (push-stack (less m k))))
+    map t))
 
 (defprim *dict-prims* "dict-domain" nil
     "domain of dictionary"
   (stack-call domain
-    map)
-  #+nil
-  (stack-args ((m map))
-    (push-stack (domain m))))
+    map))
 
 ;;;; binding
 (defparameter *binding-prims*
@@ -234,10 +201,7 @@
 (defprim *binding-prims* "retrieve" nil
     "read binding"
   (stack-call [binding]-value
-    [binding])
-  #+nil
-  (stack-args ((binding [binding]))
-    (push-stack ([binding]-value binding))))
+    [binding]))
 
 (defprim *binding-prims* "store" nil
     "set binding"
@@ -373,28 +337,17 @@
 (defprim *arith-prims* "+" nil
     "addition"
   (stack-call +
-    number number)
-  #+nil
-  (stack-args ((x number)
-               (y number))
-    (push-stack (+ x y))))
+    number number))
 
 (defprim *arith-prims* "*" nil
     "multiplication"
   (stack-call *
-    number number)
-  #+nil
-  (stack-args ((x number)
-               (y number))
-    (push-stack (* x y))))
+    number number))
 
 (defprim *arith-prims* "negation" nil
     "negation"
   (stack-call -
-    number)
-  #+nil
-  (stack-args ((x number))
-    (push-stack (- x))))
+    number))
 
 (defprim *arith-prims* "reciprocal" nil
     "reciprocal"
@@ -407,44 +360,27 @@
 (defprim *arith-prims* "log" nil
     "logarithm"
   (stack-call log
-    number number)
-  #+nil
-  (stack-args ((exponent number)
-               (base number))
-    (push-stack (log exponent base))))
+    number number))
 
 (defprim *arith-prims* "pow" nil
     "exponentiation"
   (stack-call expt
-    number number)
-  #+nil
-  (stack-args ((base number)
-               (power number))
-    (push-stack (expt base power))))
+    number number))
 
 (defprim *arith-prims* "round" nil
     "correct rounding"
   (stack-call round
-    real)
-  #+nil
-  (stack-args ((x real))
-    (push-stack (round x))))
+    real))
 
 (defprim *arith-prims* "floor" nil
     "round down"
   (stack-call floor
-    real)
-  #+nil
-  (stack-args ((x real))
-    (push-stack (floor x))))
+    real))
 
 (defprim *arith-prims* "ceiling" nil
     "round up"
   (stack-call ceiling
-    real)
-  #+nil
-  (stack-args ((x real))
-    (push-stack (ceiling x))))
+    real))
 
 ;;;; arrays
 (defparameter *array-prims*
@@ -492,10 +428,7 @@
 (defprim *array-prims* "array-size" nil
     "returns the size of the array"
   (stack-call array-total-size
-    (and vector (not string)))
-  #+nil
-  (stack-args ((array (and vector (not string))))
-    (push-stack (array-total-size array))))
+    (and vector (not string))))
 
 ;;;; strings
 (defparameter *string-prims*
@@ -540,10 +473,7 @@
 (defprim *string-prims* "string-size" nil
     "returns the size of the array"
   (stack-call length
-    string)
-  #+nil
-  (stack-args ((string string))
-    (push-stack (length string))))
+    string))
 
 ;;;; characters
 (defparameter *char-prims*
@@ -552,18 +482,12 @@
 (defprim *char-prims* "int->char" nil
     "converts an integer into a character"
   (stack-call code-char
-    (integer 0))
-  #+nil
-  (stack-args ((int (integer 0)))
-    (push-stack (code-char int))))
+    (integer 0)))
 
 (defprim *char-prims* "char->int" nil
     "converts a character into an integer"
   (stack-call char-code
-    character)
-  #+nil
-  (stack-args ((char character))
-    (push-stack (char-code char))))
+    character))
 
 ;;;; type
 (defparameter *type-prims*
@@ -659,10 +583,7 @@ Please report this bug to thomas.bartscher@weltraumschlangen.de"
 (defprim *exception-prims* "throw" nil
     "throws an exception"
   (stack-call pthrow
-    [exception])
-  #+nil
-  (stack-args ((exception [exception]))
-    (pthrow exception)))
+    [exception]))
 
 (defprim *exception-prims* "handle" nil
     "constructs a handled thread"
@@ -675,43 +596,27 @@ Please report this bug to thomas.bartscher@weltraumschlangen.de"
 (defprim *exception-prims* "new-exception" nil
     "creates a new exception"
   (stack-call <exception>
-    string t (or cons null))
-  #+nil
-  (stack-args ((message string)
-               data (stack (or cons null)))
-    (push-stack (<exception> message data stack))))
+    string t (or cons null)))
 
 (defprim *exception-prims* "exception-message" nil
     "gets the message of an exception"
   (stack-call [exception]-string
-    [exception])
-  #+nil
-  (stack-args ((exception [exception]))
-    (push-stack ([exception]-string exception))))
+    [exception]))
 
 (defprim *exception-prims* "exception-data" nil
     "gets the meta data of an exception"
   (stack-call [exception]-data
-    [exception])
-  #+nil
-  (stack-args ((exception [exception]))
-    (push-stack ([exception]-data exception))))
+    [exception]))
 
 (defprim *exception-prims* "exception-stack" nil
     "gets the unwound return stack of an exception"
   (stack-call [exception]-stack
-    [exception])
-  #+nil
-  (stack-args ((exception [exception]))
-    (push-stack ([exception]-stack exception))))
+    [exception]))
 
 (defprim *exception-prims* "thread-handle" nil
     "returns the handle of a handled thread"
   (stack-call <handled>-thread
-    <handled>)
-  #+nil
-  (stack-args ((thread <handled>))
-    (push-stack (<handled>-thread thread))))
+    <handled>))
 
 ;;;; symbols
 (defparameter *symbol-prims*
@@ -765,10 +670,7 @@ symbols"
 (defprim *stream-prims* "close" nil
     "closes a stream"
   (stack-call close
-    stream)
-  #+nil
-  (stack-args ((stream stream))
-    (close stream)))
+    stream))
 
 (defprim *stream-prims* "read-char" nil
     "read a character from a stream"

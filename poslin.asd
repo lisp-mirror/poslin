@@ -5,7 +5,7 @@
   :description "Poslin is a concatenative programming language."
   :author "Thomas Bartscher <thomas.bartscher@weltraumschlangen.de>"
   :license "MPL-v2.0"
-  :version "0.6.1"
+  :version "0.6.2"
   :depends-on ("split-sequence"
                "cl-ppcre"
 	       "fset"
