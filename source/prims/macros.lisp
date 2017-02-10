@@ -79,13 +79,10 @@
          (progn
            ,@body))))
 
-(defmacro stack-call (fn &rest args)
-  (if args
-      `(stack-args (,@args)
-         (push-stack (,fn ,@(mapcar #'car-or-x
-                                    args))))
-      `(push-stack (,fn (arg-pop)))))
-
-#+nil
-(defmacro stack-call (fn)
-  `(push-stack (,fn (arg-pop))))
+(defmacro stack-call (fn &body types)
+  (let ((args (mapcar (lambda (type)
+                        (gensym (mkstr type)))
+                      types)))
+    `(stack-args (,@(mapcar #'list
+                            args types))
+       (push-stack (,fn ,@ args)))))
