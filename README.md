@@ -20,7 +20,7 @@ Simply run `make` in the toplevel of the repository.
 
 Run `make install`. This will install the poslin binary `poslin0` and the
 scripts `poslin1` and `poslin` in `/usr/local/bin` as well as putting the poslin
-standard libraries in `/usr/local/lib/poslin`.
+standard libraries in `/usr/local/share/poslin`.
 
 If you want to install in another prefix, run make with the `PREFIX` environment
 variable set to the desired prefix, like this: `PREFIX=~/.local make
