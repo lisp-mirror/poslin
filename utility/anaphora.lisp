@@ -10,9 +10,10 @@
                 &body body)
   `(let (this ,@letargs)
      (setq this ,@(last body))
-     ,@(butlast body)
-     (lambda (&rest params)
-       (apply this params))))
+     (locally (declare (type function this))
+       ,@(butlast body)
+       (lambda (&rest params)
+         (apply this params)))))
 
 (defmacro avif (test then &optional else)
   (let ((g!test (gensym "test")))

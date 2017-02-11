@@ -57,4 +57,5 @@
   (declare (type [binding] path))
   (the (integer (0))  ; putting an empty stack onto the path has undefined
                       ; consequences
-    (length ([binding]-value path))))
+    (length (the (or cons null)
+              ([binding]-value path)))))

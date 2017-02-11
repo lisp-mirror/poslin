@@ -81,6 +81,8 @@
 (defparameter *parse-order*
   '(infinite-string long-string short-string faulty-string integer
     float ratio quotation character symbol))
+(declaim (type (or cons null)
+               *parse-order*))
 
 (defgeneric convert-token (type token)
   (:method ((type (eql 'symbol))
@@ -102,6 +104,7 @@
                   (subseq token 1 (1- (length token))))
                  it
                  (let ((name (subseq token 1 (1- (length token)))))
+                   (declare (type string name))
                    (cond
                      ((string-equal name "tab")
                       #\Tab)
@@ -175,6 +178,9 @@
 
 (defun retrieve-token (string parse-order)
   #.+optimization-parameters+
+  (declare (type string string)
+           (type (or cons null)
+                 parse-order))
   (let ((tokens (stable-sort
                  (remove-if-not #'second
                                 (mapcar (lambda (parse-tree)
@@ -191,85 +197,131 @@
 
 (defun poslin-read-from-string (string parse-order)
   #.+optimization-parameters+
+  (declare (type string string)
+           (type (or cons null)
+                 parse-order))
   (labels ((_token< (t1 t2)
              #.+optimization-parameters+
-             (let ((tb1 (second t1))
-                   (tb2 (second t2)))
-               (cond
-                 ((< tb1 tb2)
-                  t)
-                 ((> tb1 tb2)
-                  nil)
-                 ((= tb1 tb2)
-                  (labels ((_rec (t1 t2 parse-order)
-                             #.+optimization-parameters+
-                             (let ((curr (first parse-order)))
-                               (if curr
-                                   (cond
-                                     ((eq t1 curr)
-                                      t)
-                                     ((eq t2 curr)
-                                      nil)
-                                     (t
-                                      (_rec t1 t2 (rest parse-order))))
-                                   (error "unknown token types ~S ~S"
-                                          t1 t2)))))
-                    (_rec (first t1)
-                          (first t2)
-                          parse-order))))))
+             (declare (type (or cons null)
+                            t1 t2))
+             (the boolean
+               (let ((tb1 (second t1))
+                     (tb2 (second t2)))
+                 (declare (type (integer 0)
+                                tb1 tb2))
+                 (cond
+                   ((< tb1 tb2)
+                    t)
+                   ((> tb1 tb2)
+                    nil)
+                   ((= tb1 tb2)
+                    (labels ((_rec (t1 t2 parse-order)
+                               #.+optimization-parameters+
+                               (the boolean
+                                 (let ((curr (first parse-order)))
+                                   (if curr
+                                       (cond
+                                         ((eq t1 curr)
+                                          t)
+                                         ((eq t2 curr)
+                                          nil)
+                                         (t
+                                          (_rec t1 t2 (rest parse-order))))
+                                       (error "unknown token types ~S ~S"
+                                              t1 t2))))))
+                      (_rec (first t1)
+                            (first t2)
+                            parse-order)))))))
            (_insert (token found acc)
              #.+optimization-parameters+
-             (if found
-                 (let ((curr (first found)))
-                   (if (_token< token curr)
-                       (nconc (nreverse (cons token acc))
-                              found)
-                       (_insert token (rest found)
-                                (cons curr acc))))
-                 (nreverse (cons token acc))))
+             (declare (type (or cons null)
+                            token found acc))
+             (the (or cons null)
+               (if found
+                   (let ((curr (first found)))
+                     (declare (type (or cons null)
+                                    curr))
+                     (if (_token< token curr)
+                         (nconc (nreverse (cons token acc))
+                                found)
+                         (_insert token (rest found)
+                                  (cons curr acc))))
+                   (nreverse (cons token acc)))))
            (_first-ones (found n acc)
+             (declare (type (or (integer 0)
+                                null)
+                            n))
              #.+optimization-parameters+
-             (if found
-                 (let ((curr (first found)))
-                   (if n
-                       (if (<= (second curr)
-                               n)
-                           (_first-ones (rest found)
-                                        n (cons curr acc))
-                           (values (first (last acc))
-                                   (mapcar #'first
-                                           acc)))
-                       (_first-ones (rest found)
-                                    (third curr)
-                                    (list curr))))
-                 (values (first (last acc))
-                         (mapcar #'first
-                                 acc))))
+             (the (values (or cons null)
+                          (or cons null))
+               (if found
+                   (let ((curr (first found)))
+                     (declare (type (or cons null)
+                                    curr))
+                     (if n
+                         (locally (declare (type (integer 0)
+                                                 n))
+                           (if (<= (the (integer 0)
+                                        (second curr))
+                                   n)
+                               (_first-ones (rest found)
+                                            n (cons curr acc))
+                               (values (first (last acc))
+                                       (mapcar #'first
+                                               acc))))
+                         (_first-ones (rest found)
+                                      (third curr)
+                                      (list curr))))
+                   (values (first (last acc))
+                           (mapcar #'first
+                                   acc)))))
            (_rec (string found tokens)
              #.+optimization-parameters+
+             (declare (type string string)
+                      (type (or cons null)
+                            found tokens))
              (multiple-value-bind (token recompute)
                  (_first-ones found nil '())
+               (declare (type (or cons null)
+                              token recompute))
                (if token
                    (let* ((token-type (first token))
                           (begin (second token))
                           (end (third token))
                           (nstring (subseq string end))
                           (found (mapcar (lambda (tok)
+                                           (declare (type (or cons null)
+                                                          tok))
                                            (list (first tok)
-                                                 (- (second tok)
+                                                 (- (the (integer 0)
+                                                      (second tok))
                                                     end)
-                                                 (- (third tok)
+                                                 (- (the (integer 0)
+                                                      (third tok))
                                                     end)))
                                          (remove-if (lambda (a)
                                                       (member (first a)
                                                               recompute))
                                                     found))))
+                     (declare (type symbol token-type)
+                              (type (integer 0)
+                                    begin end)
+                              (type string nstring)
+                              (type (or cons null)
+                                    found))
                      (_rec nstring (reduce (lambda (found recomp)
                                              (multiple-value-bind (b e)
                                                  (scan recomp nstring)
+                                               (declare (type (or (integer 0)
+                                                                  null)
+                                                              b e))
                                                (if b
-                                                   (_insert (list recomp b e)
-                                                            found '())
+                                                   (locally
+                                                       (declare
+                                                        (type (integer 0)
+                                                              b e))
+                                                     (_insert (list recomp b e)
+                                                              found '()))
                                                    found)))
                                            recompute
                                            :initial-value found)

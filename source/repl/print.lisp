@@ -98,8 +98,11 @@
 
 (defparameter *binding-numbers*
   (empty-map))
+(declaim (type map *binding-numbers*))
 (defparameter *binding-counter*
   0)
+(declaim (type (integer 0)
+               *binding-counter*))
 (defmethod poslin-print ((object [binding])
 			 stream)
   #.+optimization-parameters+
