@@ -1,7 +1,8 @@
 (in-package #:poslin)
 
 (defmacro stack (path)
-  `([binding]-value (path-get ,path :stack)))
+  `(the (or cons null)
+     ([binding]-value (path-get ,path :stack))))
 
 (defmacro interpreter ()
   `(loop while (or (not (eq pc <noop>))
