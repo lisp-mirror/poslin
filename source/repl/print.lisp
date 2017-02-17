@@ -161,7 +161,7 @@
   (format stream "[[EXCEPTION ~A ~A+~D ~A]]"
           (poslin-print ([exception]-data object)
                         nil)
-          (poslin-print (first (last ([exception]-stack object)))
+          (poslin-print (first ([exception]-stack object))
                         nil)
           (1- (length ([exception]-stack object)))
           (poslin-print ([exception]-string object)
