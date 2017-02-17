@@ -203,7 +203,8 @@ Return Stack:~%~A~%
 Path:~%~A~%
 Program Counter:~%~A~%
 Stack:~%~A~%"
-             (poslin-print rstack nil)
+             (poslin-print (rstack)
+                           nil)
              (show-path path)
              (poslin-print pc nil)
              (poslin-print (stack path)

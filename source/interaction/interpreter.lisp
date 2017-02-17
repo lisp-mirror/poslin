@@ -4,9 +4,23 @@
   `(the (or cons null)
      ([binding]-value (path-get ,path :stack))))
 
+(defmacro rstack ()
+  `(the (or cons null)
+     ([binding]-value rstack)))
+
+(defmacro push-rstack (obj)
+  `(push ,obj (rstack)))
+
+(defmacro pop-rstack ()
+  `(pop (rstack)))
+
+(defmacro null-rstack ()
+  `(setf (rstack)
+         nil))
+
 (defmacro interpreter ()
   `(loop while (or (not (eq pc <noop>))
-                   rstack)
+                   (rstack))
       do
         (progn
           (when (and stepping
@@ -16,7 +30,7 @@
             (print-status)
             (read-line))
           (if (eq pc <noop>)
-              #1=(setf pc (or (pop rstack)
+              #1=(setf pc (or (pop-rstack)
                               <noop>))
               (cond
                 ((typep pc '<constant>)
@@ -36,8 +50,7 @@
                      ((typep front '<prim>)
                       (funcall (<prim>-fun front)))
                      (t
-                      (push (thread-back pc)
-                            rstack)
+                      (push-rstack (thread-back pc))
                       (setf pc front)))))
                 ((typep pc '<handled>)
                  (let ((th (<handled>-thread pc)))

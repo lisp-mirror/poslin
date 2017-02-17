@@ -7,15 +7,14 @@
   `([binding]-value (path-get ,path :imm)))
 
 (defmacro poslin-setup-registers ()
-  `(setf pc
-	 <noop>
-	 path
-	 (<root>
-	  (map (:stack (binding '()))
-               (:op (binding (empty-map <meta-nothing>)))
-               (:imm (binding (empty-set)))
-               (:features (binding (set :prim)))
-               :default <meta-nothing>))))
+  `(setf pc <noop>
+         rstack (binding '())
+	 path (<root>
+               (map (:stack (binding '()))
+                    (:op (binding (empty-map <meta-nothing>)))
+                    (:imm (binding (empty-set)))
+                    (:features (binding (set :prim)))
+                    :default <meta-nothing>))))
 
 (defmacro poslin-install-prims (&rest standards)
   `(progn

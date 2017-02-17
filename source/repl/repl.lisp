@@ -48,7 +48,7 @@
           poslin
         (print-status)
         (setf pc <noop>)
-        (setf rstack nil))
+        (null-rstack))
       (format t "~%~%Implementation error~%~A~%~%"
               err)
       (when (y-or-n-p "~%Continue?")

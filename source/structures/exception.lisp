@@ -24,19 +24,17 @@
      (push-stack ,g!exception)
      (if (typep pc '<handled>)
          (progn
-           (push (<handled>-handle pc)
-                 rstack)
+           (push-rstack (<handled>-handle pc))
            (setf pc <noop>))
          (let ((,g!message ([exception]-string ,g!exception))
                (,g!data ([exception]-data ,g!exception)))
            (setf pc <noop>)
            (loop
-              (if rstack
+              (if (rstack)
                   (let ((,g!ex (pop (stack path)))
-                        (,g!el (pop rstack)))
+                        (,g!el (pop-rstack)))
                     (when (typep ,g!el '<handled>)
-                      (push (<handled>-handle ,g!el)
-                            rstack)
+                      (push-rstack (<handled>-handle ,g!el))
                       (setf pc <noop>)
                       (return-from ,g!throw))
                     (push-stack

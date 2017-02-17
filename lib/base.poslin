@@ -89,6 +89,18 @@ dict-lookup ! .nothing ! same? !
 & . & ? ! !
 
 op-dict !
+rstack
+dict-lookup ! .nothing ! same? !
+.empty-stack !
+ op-dict-binding ! push ! op-dict !
+ rstack
+ new-binding ! dup-here !
+ .empty-stack !
+  rstack-binding & push ! retrieve & push !
+ & store ! dict-insert ! push ! store & push !
+& . & ? ! !
+
+op-dict !
 bind
 dict-lookup ! .nothing ! same? !
 .empty-stack !
@@ -999,6 +1011,10 @@ op-lookup ! nothing? !
   ~] op-rewrite &
   ';[ imm-insert &
 ]when !
+
+'];
+[ "Unmatched comment close parenthesis" UNMATCHED-COMMENT-CLOSE-ERROR signal &
+]i?
 
 ':[
 [ curr-dict & path-push & stack-write &

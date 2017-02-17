@@ -10,8 +10,7 @@
     (let ((b (thread-back pc)))
       (declare (type [thread] b))
       (unless (eq b <noop>)
-        (push (thread-back pc)
-              rstack))
+        (push-rstack (thread-back pc)))
       (setf pc (typecase op
                  (symbol
                   (if (poslin-symbol? op)
@@ -89,15 +88,18 @@
                   (<true> then)
                   (<false> else)))))
 
+(defprim *control-prims* "rstack-binding" nil
+    "pushes the binding containing the return stack"
+  (push-stack rstack))
+
 (defprim *control-prims* "r<-" nil
     "push onto return stack"
-  (push (arg-pop)
-	rstack))
+  (push-rstack (arg-pop)))
 
 (defprim *control-prims* "r->" nil
     "pop from return stack"
-  (if rstack
-      (push-stack (pop rstack))
+  (if (rstack)
+      (push-stack (pop-rstack))
       (op-fail "Attempt to pop from empty return stack"
                :rstack-bottom-error)))
 
@@ -640,8 +642,7 @@ symbols"
 (defprim *control-prims* "load" nil
     "loads a file as poslin code"
   (stack-args ((path string))
-    (push (thread-back pc)
-          rstack)
+    (push-rstack (thread-back pc))
     (setf pc <noop>)
     (mapcar this (poslin-read-file path *parse-order*))))
 
