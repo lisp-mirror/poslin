@@ -11,6 +11,23 @@
   #.+optimization-parameters+
   (format stream "[]"))
 
+(defmethod poslin-print ((object double-float)
+                         stream)
+  #.+optimization-parameters+
+  (format stream "~A"
+          (let* ((printed (format nil "~S"
+                                  object))
+                 (length (length printed)))
+            (if (string= (subseq printed (- length 2)
+                                 length)
+                         "d0")
+                (subseq printed 0 (- length 2))
+                (cl:map 'string (lambda (char)
+                                  (if (char= char #\d)
+                                      #\e
+                                      char))
+                        printed)))))
+
 (defmethod poslin-print ((object cons)
 			 stream)
   #.+optimization-parameters+

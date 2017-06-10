@@ -384,6 +384,11 @@
   (stack-call ceiling
     real))
 
+(defprim *arith-prims* "->imprecise" nil
+    "convert a number to an imprecise number"
+  (stack-call float
+    real))
+
 ;;;; arrays
 (defparameter *array-prims*
   '())

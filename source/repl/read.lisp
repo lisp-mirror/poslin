@@ -129,7 +129,8 @@
   (:method ((type (eql 'float))
 	    (token string))
     (the (or float double-float)
-      (read-from-string token)))
+      (let ((*read-default-float-format* 'double-float))
+        (read-from-string token))))
   (:method ((type (eql 'integer))
 	    (token string))
     (the integer
