@@ -78,7 +78,7 @@
 =========================================================
 =========================================================
 
-© 2015-2016 Thomas Bartscher
+© 2015-2018 Thomas Bartscher
 Version ~A~%"
           (asdf:component-version (asdf:find-system "poslin")))
   (let ((*random-state* (make-random-state t)))
