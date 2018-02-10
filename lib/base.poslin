@@ -1564,16 +1564,17 @@ odd?
 '~repeat 'repeat def?-delayed
 
 fold-stack
-[ |foldr declare
-  [ [ dup-here & << swap-here & ]<<
-    swap-here & empty-stack? &
-    [ drop-here & drop-here & <<
-    | <pop & << <<
-      dup-here &
-      [ |foldr call swap-here & ]<<
-      ~!
-    ]if
-  ]o/ |foldr &
+[ o( |foldr declare
+     [ [ dup-here & << swap-here & ]<<
+       swap-here & empty-stack? &
+       [ drop-here & drop-here & <<
+       | <pop & << <<
+         dup-here &
+         [ |foldr call swap-here & ]<<
+         ~!
+       ]if
+     ]o/ |foldr &
+  )
 ]o?
 
 append-stacks
