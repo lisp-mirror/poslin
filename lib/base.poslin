@@ -509,6 +509,12 @@ constant
 [ ~] op-write &
 ]i?
 
+here
+[ ~[ curr-stack-binding ~ curr-stack ~ drop ~
+     parent-pop & store ~
+  ~]&
+]i?
+
 clean-stack
 [ curr-stack-binding &
   [] store &
