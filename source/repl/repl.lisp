@@ -12,6 +12,8 @@
                   (funcall poslin v)))
         (with-pandoric (path stepping)
             poslin
+          (format t "~A"
+                  (1- (length ([binding]-value path))))
           (poslin-print (stack path)
                         t)
           (loop do
@@ -34,6 +36,8 @@
                       (format t "Read error: infinite string~%"))
                      (t
                       (funcall poslin v))))
+                 (format t "~A"
+                         (1- (length ([binding]-value path))))
                  (poslin-print (stack path)
                                t)))))
     (unhandled-poslin-exception ()
