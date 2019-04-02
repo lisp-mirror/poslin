@@ -1639,9 +1639,9 @@ splice
 ]o?
 
 apply
-[ r<- & ~:[ r-> & run & ]~
+[ r<- & ~:[ r-> & run & ~]
   splice &
-]o
+]o?
 
 dict-mod
 [ dict-lookup & << ~modify run &
