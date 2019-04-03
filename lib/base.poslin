@@ -511,7 +511,7 @@ constant
 
 here
 [ ~[ curr-stack-binding ~ curr-stack ~ drop ~
-     parent-pop & store ~
+     parent-pop & '& & store ~
   ~]&
 ]i?
 
