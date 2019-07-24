@@ -91,7 +91,7 @@ p( g-op G-OP def?-dict-slot
    [ dup-here &
      g-op-lookup & nothing? &
      [ "No generic operation called `" << dup-here &
-       [ ->string & string-concat & `" found" string-concat &
+       [ ->string & string-concat & "` found" string-concat &
          []
        ]<<
        push & UNDEFINED-GENERIC-OPERATION push &
