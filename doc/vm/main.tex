@@ -1,0 +1,205 @@
+\documentclass[a4paper]{article}
+
+\newcommand{\opdef}[1]{\subsubsection{\texttt{#1}}}
+
+\begin{document}
+\title{Poslin VM Documentation}
+\author{Thomas Bartscher}
+\date{2020-03-10}
+\maketitle
+
+\tableofcontents
+
+
+\section{Type System}
+\subsection{Scalar Types}
+\subsubsection{Nothing}
+This type is inhabited by one value called ``nothing''.
+\subsubsection{Type}
+This type is inhabited by one object for each primitive type the VM recognizes.
+\subsubsection{Symbol}
+Symbols have names and represent an identity. There exist interned symbols and
+uninterned symbols. Interned symbols can be reverenced via their name,
+uninterned symbols cannot.
+\subsubsection{Boolean}
+The two boolean values are true and false.
+\subsubsection{Comparison}
+\subsubsection{Precise}
+\subsubsection{Imprecise}
+\subsubsection{Character}
+\subsubsection{Empty Stack}
+\subsubsection{Elementary Thread}
+\subsubsection{ConstantThread}
+
+\subsection{Compound Types}
+\subsubsection{Binding}
+\subsubsection{Stack}
+\subsubsection{Set}
+\subsubsection{Dictionary}
+\subsubsection{Thread}
+\subsubsection{HandledThread}
+\subsubsection{Exception}
+
+
+\section{Internal State}
+\subsection{The Path}
+The path binding is a constant binding containing a stack. That stack is called
+the path.
+\subsubsection{The Current Environment}
+The top of the path must always contain a binding containing a dictionary. That
+dictionary is called the current environment, the binding the current
+environment binding. The current environment must always have entries for the
+symbols \texttt{STACK}, \texttt{OP} and \texttt{IMM}.
+\subsubsection{The Current Stack}
+The \texttt{STACK} entry in the current environment must map to a binding
+containing a stack. This stack is called the current stack, the binding the
+current stack binding.
+\subsubsection{Current Operations}
+The \texttt{OP} entry in the current environment must map to a binding
+containing a dictionary. The dictionary is called the current operation
+environment, the binding the current operation environment binding.
+
+The current operation environment should map symbols to bindings containing
+threads. The symbols mapped by the current operation environment are called
+operations.
+\subsubsection{Current Immediateness}
+The \texttt{IMM} entry in the current environment must map to a binding
+containing a set. The set is called the current immediateness environment, the
+binding the current immediateness environment binding.
+
+The set should contain symbols who are operations.
+
+\subsection{The Return Stack}
+The return stack binding is a constant binding containing a stack. That stack is
+called the return stack.
+
+\subsection{The Instruction Pointer}
+The instruction pointer points towards the next thread to evaluate or to
+nothing. If it points to nothing, execution stops. If it points to a elementary
+or constant thread it executes that thread, then checks whether the return stack
+is empty. If it is not, the topmost value is popped off the return stack and the
+instruction pointer pointed to that value. If the return stack is empty, the vm
+stops.
+
+
+\section{Operations}
+\subsection{Control}
+\opdef{!}
+\opdef{\&}
+\opdef{\#}
+\opdef{->elem-thread}
+\opdef{?}
+\opdef{rstack-binding}
+\opdef{r<-}
+\opdef{r->}
+
+\subsection{Thread}
+\opdef{thread-front}
+\opdef{thread-back}
+\opdef{thread-concat}
+
+\subsection{Path}
+\opdef{path-binding}
+
+\subsection{Nothing}
+\opdef{.nothing}
+
+\subsection{Boolean}
+\opdef{.true}
+\opdef{.false}
+\opdef{and}
+\opdef{or}
+\opdef{not}
+\opdef{same?}
+
+\subsection{Comparison}
+\opdef{.less}
+\opdef{.greater}
+\opdef{.equal}
+\opdef{.unequal}
+\opdef{compare}
+
+\subsection{Type}
+\opdef{type}
+
+\subsection{Symbol}
+\opdef{unique-symbol}
+\opdef{symbol-concat}
+
+\subsection{Arithmetic}
+\opdef{+}
+\opdef{*}
+\opdef{negation}
+\opdef{reciprocal}
+\opdef{log}
+\opdef{pow}
+\opdef{round}
+\opdef{floor}
+\opdef{ceiling}
+\opdef{->imprecise}
+
+\subsection{Binding}
+\opdef{new-binding}
+\opdef{retrieve}
+\opdef{store}
+
+\subsection{Character}
+\opdef{int->char}
+\opdef{char->int}
+
+\subsection{Stack}
+\opdef{.empty-stack}
+\opdef{top}
+\opdef{push}
+\opdef{drop}
+\opdef{swap}
+
+\subsection{Array}
+\opdef{new-array}
+\opdef{array-lookup}
+\opdef{array-set}
+\opdef{array-size}
+\opdef{array-concat}
+
+\subsection{String}
+\opdef{->string}
+\opdef{string-lookup}
+\opdef{string-set}
+\opdef{string-size}
+\opdef{string-concat}
+
+\subsection{Set}
+\opdef{.empty-set}
+\opdef{set-lookup}
+\opdef{set-insert}
+\opdef{set-drop}
+\opdef{set-arbitrary}
+
+\subsection{Dictionary}
+\opdef{.empty-dict}
+\opdef{dict-lookup}
+\opdef{dict-insert}
+\opdef{dict-drop}
+\opdef{dict-domain}
+
+\subsection{Stream}
+\opdef{.stdin}
+\opdef{.stdout}
+\opdef{open}
+\opdef{close}
+\opdef{read-char}
+\opdef{write-char}
+
+\subsection{Exception}
+\opdef{new-exception}
+\opdef{throw}
+\opdef{handle}
+\opdef{exception-message}
+\opdef{exception-data}
+\opdef{exception-stack}
+\opdef{thread-handle}
+
+\subsection{Loading}
+\opdef{load}
+
+\end{document}
