@@ -542,7 +542,6 @@
                        (eq object '|:EmptyStack|)
                        (eq object '|:Stack|)
                        (eq object '|:Binding|)
-                       (eq object '|:Environment|)
                        (eq object '|:Array|)
                        (eq object '|:String|)
                        (eq object '|:Character|)
