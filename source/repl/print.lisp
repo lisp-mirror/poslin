@@ -1,3 +1,5 @@
+;;;;; TODO: Add printer for boolean values that doesn't make them look like
+;;;;; characters.
 (in-package #:poslin)
 
 (defgeneric poslin-print (object stream)
