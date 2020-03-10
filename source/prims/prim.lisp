@@ -425,6 +425,7 @@
                  (list :array-index-error array n))
         (push-stack (aref array n)))))
 
+;;; TODO: remove this, implement in standard library
 (defprim *array-prims* "array-concat" nil
     "concatenate two arrays"
   (stack-args ((a1 (and vector (not string)))
@@ -438,6 +439,7 @@
     (and vector (not string))))
 
 ;;;; strings
+;;; TODO: Add pretty printing operation
 (defparameter *string-prims*
   '())
 
@@ -643,6 +645,7 @@ symbols"
                         :keyword))))
 
 ;;;; loading
+;;; TODO: Make `load` keep track of filename and line number
 (defprim *control-prims* "load" nil
     "loads a file as poslin code"
   (stack-args ((path string))
