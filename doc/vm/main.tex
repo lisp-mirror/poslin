@@ -12,6 +12,9 @@
 
 
 \section{Type System}
+In the VM every object has exactly one type. The types are fixed, new types
+cannot be defined.
+
 \subsection{Scalar Types}
 \subsubsection{Nothing}
 This type is inhabited by one value called ``nothing''.
@@ -24,12 +27,20 @@ uninterned symbols cannot.
 \subsubsection{Boolean}
 The two boolean values are true and false.
 \subsubsection{Comparison}
+The comparison values are ``less'', ``greater'', ``equal'' and ``unequal''.
 \subsubsection{Precise}
+This type is inhabited by rational numbers. Poslin does not differentiate
+integers.
 \subsubsection{Imprecise}
+This type is inhabited by double floats.
 \subsubsection{Character}
+This type is inhabited by unicode values.
 \subsubsection{Empty Stack}
+This type is inhabited by the empty stack.
 \subsubsection{Elementary Thread}
+This type is inhabited by all elementary threads.
 \subsubsection{ConstantThread}
+This type is inhabited by threads that always return a constant value.
 
 \subsection{Compound Types}
 \subsubsection{Binding}
