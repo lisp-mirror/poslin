@@ -187,7 +187,7 @@
 (defmethod poslin-print ((object (eql <meta-nothing>))
 			 stream)
   #.+optimization-parameters+
-  (format stream "<NOTHING>"))
+  (format stream "<<NOTHING>>"))
 
 (defmethod poslin-print ((object stream)
                          stream)
