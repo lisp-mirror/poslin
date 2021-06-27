@@ -542,7 +542,8 @@ op-dict-write
 ]i?
 
 ')
-[ path-pop & drop-here &
+[ path-binding &
+  path-binding & retrieve & drop & store &
 ]i?
 
 imm-set-binding
@@ -1417,7 +1418,7 @@ scope SCOPE def?-dict-slot
 '~} '} def?-delayed
 
 '}i
-[ '~}& dup-here & <<
+[ ~}& dup-here & <<
   op-overwrite & imm-insert &
 ]i?
 '~}i '}i def?-delayed
@@ -1569,7 +1570,7 @@ odd?
 ]i?
 '~repeat 'repeat def?-delayed
 
-fold-stack
+stack-fold
 [ o( |foldr declare
      [ [ dup-here & << swap-here & ]<<
        swap-here & empty-stack? &
@@ -1583,11 +1584,7 @@ fold-stack
   )
 ]o?
 
-append-stacks
-[ swap-here & push ~ fold-stack &
-]o?
-
-zip-stacks [ var ]
+stack-zip [ var ]
 { [ op ]args
   o( |zip declare
      [ dup-here & empty-stack? &
@@ -1609,30 +1606,55 @@ stack-reverse
 [ [] <<
   [ dup-here & empty-stack? &
   | <pop & push & <<
-  ]until drop-here &
+  ]until drop here
 ]o?
 
-map-stack
+stack-map
 [ [] <<
   ~[ parent-pop & push ~ ~]&
-  fold-stack &
+  stack-fold &
 ]o?
 
-append-stack
-[ swap-here & push ~ fold-stack &
+stack-append
+[ swap here push ~ stack-fold &
+]o?
+
+stack-keep
+[ ~[ dup here # parent-pop &
+     ~[ push ~
+     ~| drop here #
+     ~]if
+  ~]&
+  [] <<
+  stack-fold &
+]o?
+
+stack-remove
+[ ~[ parent-pop & not ~
+  ~]&
+  stack-keep &
+]o?
+
+stack-count
+[ ~[ parent-pop &
+     ~[ 1 + ~
+     ~]when
+  ~]&
+  0 <<
+  stack-fold &
 ]o?
 
 on-stack? [ var ]
 { item arg
   .false !
   [ item get = & or & ]#
-  fold-stack &
+  stack-fold &
 }?
 
 stack-size
 [ 0
   [ drop-here & 1+ & ]#
-  fold-stack &
+  stack-fold &
 ]o?
 
 path-size
@@ -1640,7 +1662,7 @@ path-size
 ]o?
 
 splice
-[ curr-stack & << append-stacks &
+[ curr-stack & << stack-append &
   stack-rewrite &
 ]o?
 
