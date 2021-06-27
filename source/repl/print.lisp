@@ -216,7 +216,7 @@
 
 (defmacro print-status ()
   `(progn
-     (format t "
+     (format t "~%
 ======================================================================
 Return Stack:~%~A~%
 Path:~%~A~%
