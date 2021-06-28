@@ -224,7 +224,7 @@ Program Counter:~%~A~%
 Stack:~%~A~%"
              (poslin-print (rstack)
                            nil)
-             (show-path path)
+             (show-path path nil)
              (poslin-print pc nil)
              (poslin-print (stack path)
                            nil))))
