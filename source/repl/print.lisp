@@ -219,12 +219,12 @@
      (format t "~%
 ======================================================================
 Return Stack:~%~A~%
-Path:~%~A~%
 Program Counter:~%~A~%
+Path:~%~A~%
 Stack:~%~A~%"
              (poslin-print (rstack)
                            nil)
-             (show-path path nil)
              (poslin-print pc nil)
+             (show-path path nil)
              (poslin-print (stack path)
                            nil))))
