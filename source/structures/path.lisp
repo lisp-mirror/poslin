@@ -39,11 +39,8 @@
   #.+optimization-parameters+
   (declare (type [binding] path)
            (type symbol symbol))
-  (the (or map (eql <meta-nothing>))
-    (aif (@ (path-top path)
-            symbol)
-         it
-         <meta-nothing>)))
+  (@ (path-top path)
+     symbol))
 
 (defun path-set (path dict)
   #.+optimization-parameters+
